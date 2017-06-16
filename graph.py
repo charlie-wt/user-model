@@ -14,7 +14,7 @@ class Node:
         chance = max(0, 0.75 - (i/20))
         if ( random.random() < chance):
             new = ns[math.floor(random.random() * (len(ns)-1))]
-            if( (new not in self.connections) and (self not in new.connections) ):
+            if ( (new not in self.connections) and (self not in new.connections) ):
                 self.connections.append(new)
             self.gencons(ns, i+1)
         else:
@@ -89,11 +89,30 @@ class Agent:
 agt = Agent(ns, 0)
 
 # Traverse the graph randomly until the agent gets stuck or max steps reached
+def decide ( curr, ns ):
+    # decision function
+    return distance(curr, ns)
+    #return rand(curr, ns)
+
+def distance ( curr, ns ):
+    mindist = float('inf')
+    minidx = -1
+    for n in ns:
+        d = dist(curr, n)
+        if ( d < mindist ):
+            mindist = d
+            minidx = ns.index(n)
+    return minidx
+
+def rand ( curr, ns ):
+    return math.floor(random.random() * len(ns))
+
 def traverse ( agt, high=10 ):
     count = 0
     while ( count < high and len(agt.loc.connections) != 0 ):
-        choices = len(agt.loc.connections)
-        choice = agt.loc.connections[math.floor(random.random() * choices)]
+        #choices = len(agt.loc.connections)
+        #choice = agt.loc.connections[math.floor(random.random() * choices)]
+        choice = agt.loc.connections[decide(agt.loc, agt.loc.connections)]
         agt.move(choice)
         count += 1
 traverse(agt)
@@ -110,6 +129,3 @@ for n in agt.path:
     c += 1
 print("\n-- PATH --")
 print(msg)
-
-d = dist(ns[0], ns[1])
-print("dist from (", ns[0].lat, ",", ns[0].lon, ") to (", ns[1].lat, ",", ns[1].lon, ") is", d)
