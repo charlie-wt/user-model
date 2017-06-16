@@ -23,11 +23,6 @@ class Node:
 def dist ( n1, n2 ):
     return math.sqrt((n2.lat - n1.lat)**2 + (n2.lon - n1.lon)**2)
 
-# Create & fill list of nodes
-ns = []
-for i in range (0, 10):
-    ns.append(Node([]))
-
 # Define edges of graph
 def gengraph (ns, start=-1, i=0):
     if ( start != -1 ):
@@ -41,7 +36,6 @@ def gengraph (ns, start=-1, i=0):
         for n in ns[i].connections:
             if not n.genned:
                 gengraph(ns, start, ns.index(n))
-gengraph(ns, 0)
 
 # Print graph
 def printcons ( ns, i ):
@@ -53,79 +47,3 @@ def printcons ( ns, i ):
 def printgraph ( ns ):
     for i in range (0, len(ns)-1):
         printcons(ns, i)
-
-print("-- GRAPH --")
-printgraph(ns)
-msg = "Num connections: [ "
-for n in ns:
-    msg += str(len(n.connections))
-    msg += " "
-msg += "]"
-print("                   0 1 2 3 4 5 6 7 8 9")
-print(msg)
-
-# Define agent to travel through graph
-class Agent:
-    def __init__ ( self, ns=[], start=-1 ):
-        self.path = []
-        self.loc = None
-        self.start(ns, start)
-
-    def move ( self, n ):
-        self.loc = n
-        self.path.append(self.loc)
-
-    def start ( self, ns, start=-1 ):
-        if ( ns == [] ): return
-        n = ns[start]
-        if start == -1:
-            while ( True ):
-                idx = math.floor(random.random() * (len(ns)-1))
-                if ( len(ns[idx].connections) > 0 ):
-                    n = ns[idx]
-                    break
-        self.move(n)
-
-agt = Agent(ns, 0)
-
-# Traverse the graph randomly until the agent gets stuck or max steps reached
-def decide ( curr, ns ):
-    # decision function
-    return distance(curr, ns)
-    #return rand(curr, ns)
-
-def distance ( curr, ns ):
-    mindist = float('inf')
-    minidx = -1
-    for n in ns:
-        d = dist(curr, n)
-        if ( d < mindist ):
-            mindist = d
-            minidx = ns.index(n)
-    return minidx
-
-def rand ( curr, ns ):
-    return math.floor(random.random() * len(ns))
-
-def traverse ( agt, high=10 ):
-    count = 0
-    while ( count < high and len(agt.loc.connections) != 0 ):
-        #choices = len(agt.loc.connections)
-        #choice = agt.loc.connections[math.floor(random.random() * choices)]
-        choice = agt.loc.connections[decide(agt.loc, agt.loc.connections)]
-        agt.move(choice)
-        count += 1
-traverse(agt)
-
-# Print path
-msg = ""
-c = 0
-for n in agt.path:
-    msg += ( "_" if n == None else str(ns.index(n)))
-    if ( c == 10 and len(agt.loc.connections) != 0 ):
-        msg += " ... "
-    elif ( c != (len(agt.path)-1) ):
-        msg += " -> "
-    c += 1
-print("\n-- PATH --")
-print(msg)
