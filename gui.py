@@ -15,19 +15,16 @@ class Window (tk.Frame):
         self.ns = []
         self.es = []
         
-        self.initUI()
-    
-    def initUI ( self ):
         self.parent.title("graph")
         self.pack(fill=tk.BOTH, expand=1)
 
     def graph ( self, graph ):
+    # Draw the nodes & edges that make up the graph
         canvsize = 495
         canv = tk.Canvas(self.top, bg="white", width=str(canvsize), height=str(canvsize))
         canv.pack()
 
-        ns = []
-
+        # get coordinate bounds
         xmin = graph[0].lon
         xmax = graph[0].lon
         ymin = graph[0].lat
@@ -43,28 +40,47 @@ class Window (tk.Frame):
         bounds = (xmin-margin, xmax+margin, ymin-margin, ymax+margin, canvsize, canvsize)
 
         for i in range(0, len(graph)):
+            # add nodes
             node = graph[i]
-            ns.append(Node(node.lon, node.lat, i, canv, bounds))
+            self.ns.append(Node(node.lon, node.lat, i, canv, bounds))
+            
+            # add edges
+            for con in node.connections:
+                edge = Edge(node, con, canv, bounds)
+
+                # avoid duplicate edges
+                # TODO - necessary? takes up time
+                new = True
+                for e in self.es:
+                    if (e.n1 == edge.n1 and e.n2 == edge.n2) or (e.n1 == edge.n2 and e.n2 == edge.n1):
+                        new = False
+                if new:
+                    self.es.append(Edge(node, con, canv, bounds))
 
     def display ( self ):
         self.top.mainloop()
 
-class Node:
+def screen ( x, y, bounds ):
+# Convert lat/lon coords to screen coords with bounds = ( xmin, xmax, ymin, ymax, canvwidth, canvheight )
+    rx = (x - bounds[0]) / (bounds[1] - bounds[0]) if (bounds[1] - bounds[0]) != 0 else 0
+    ry = (y - bounds[2]) / (bounds[3] - bounds[2]) if (bounds[3] - bounds[2]) != 0 else 0
+    screenX = rx*bounds[4]
+    screenY = ry*bounds[5]
 
+    return [ screenX, screenY ]
+
+class Node:
     col = "green"
     size = 20
 
-    def __init__ ( self, x, y, label, canv, bounds=() ):
+    def __init__ ( self, x, y, label, canv, bounds ):
         self.x = x
         self.y = y
-        self.sx = x
-        self.sy = y
+        sc = screen(self.x, self.y, bounds)
+        self.sx = sc[0]
+        self.sy = sc[1]
         self.label = label
         self.canv = canv
-
-        if ( len(bounds) == 6 ):
-            self.updateSC(bounds)
-
         self.circle = canv.create_oval( 
                 self.sx-(Node.size/2),
                 self.sy-(Node.size/2),
@@ -72,20 +88,13 @@ class Node:
                 self.sy+(Node.size/2),
                 fill=Node.col)
 
-    def updateSC ( self, bounds ):
-        sc = self.screen(bounds)
-        self.sx = sc[0]
-        self.sy = sc[1]
-
-    def screen ( self, bounds ):
-        rx = (self.x - bounds[0]) / (bounds[1] - bounds[0]) if (bounds[1] - bounds[0]) != 0 else 0
-        ry = (self.y - bounds[2]) / (bounds[3] - bounds[2]) if (bounds[3] - bounds[2]) != 0 else 0
-        screenX = rx*bounds[4]
-        screenY = ry*bounds[5]
-
-        return [ screenX, screenY ]
-
 class Edge:
-    def __init__ ( self, n1, n2 ):
+    col="black"
+    
+    def __init__ ( self, n1, n2, canv, bounds ):
         self.n1 = n1
         self.n2 = n2
+        self.bounds = bounds
+        self.p0 = screen(n1.lon, n1.lat, bounds)
+        self.p1 = screen(n2.lon, n2.lat, bounds)
+        self.line = canv.create_line(self.p0[0], self.p0[1], self.p1[0], self.p1[1], fill=Edge.col)
