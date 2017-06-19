@@ -1,3 +1,5 @@
+import math
+
 import tkinter as tk
 import graph as gr
 import agent as ag
@@ -39,12 +41,9 @@ class Window (tk.Frame):
         margin = 50
         bounds = (xmin-margin, xmax+margin, ymin-margin, ymax+margin, canvsize, canvsize)
 
+        # add edges
         for i in range(0, len(graph)):
-            # add nodes
             node = graph[i]
-            self.ns.append(Node(node.lon, node.lat, i, canv, bounds))
-            
-            # add edges
             for con in node.connections:
                 edge = Edge(node, con, canv, bounds)
 
@@ -56,6 +55,11 @@ class Window (tk.Frame):
                         new = False
                 if new:
                     self.es.append(Edge(node, con, canv, bounds))
+
+        # add nodes
+        for i in range(0, len(graph)):
+            node = graph[i]
+            self.ns.append(Node(node.lon, node.lat, i, canv, bounds))
 
     def display ( self ):
         self.top.mainloop()
@@ -69,8 +73,12 @@ def screen ( x, y, bounds ):
 
     return [ screenX, screenY ]
 
+def dist ( p0, p1 ):
+    return math.sqrt((p1[0] - p0[0])**2 + (p1[1] - p0[1])**2)
+
 class Node:
-    col = "green"
+    ncol = "green"
+    tcol = "white"
     size = 20
 
     def __init__ ( self, x, y, label, canv, bounds ):
@@ -86,10 +94,11 @@ class Node:
                 self.sy-(Node.size/2),
                 self.sx+(Node.size/2),
                 self.sy+(Node.size/2),
-                fill=Node.col)
+                fill=Node.ncol)
+        self.text = canv.create_text(self.sx, self.sy, text=str(label), fill=Node.tcol)
 
 class Edge:
-    col="black"
+    ncol="black"
     
     def __init__ ( self, n1, n2, canv, bounds ):
         self.n1 = n1
@@ -97,4 +106,9 @@ class Edge:
         self.bounds = bounds
         self.p0 = screen(n1.lon, n1.lat, bounds)
         self.p1 = screen(n2.lon, n2.lat, bounds)
-        self.line = canv.create_line(self.p0[0], self.p0[1], self.p1[0], self.p1[1], fill=Edge.col)
+        self.line = canv.create_line(self.p0[0], self.p0[1], self.p1[0], self.p1[1], fill=Edge.ncol)
+        self.text = canv.create_text(
+                self.p0[0] + (self.p1[0] - self.p0[0])/2,
+                self.p0[1] + (self.p1[1] - self.p0[1])/2,
+                text=str(round(dist([n1.lon, n1.lat], [n2.lon, n2.lat]))),
+                fill=Edge.ncol)
