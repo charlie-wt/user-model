@@ -94,10 +94,7 @@ class Graph:
             n1_in_path = self.es[i].n1 in self.agt.path[0:self.progress]
             n2_in_path = self.es[i].n2 in self.agt.path[0:self.progress+1]
             linked = n1_in_path and n2_in_path and self.agt.path[self.agt.path.index(self.es[i].n1)+1] == self.es[i].n2
-            if linked:
-                self.es[i].history = True
-            else:
-                self.es[i].history = False
+            self.es[i].history = True if linked else False
 
             # draw edge
             self.es[i].draw()
@@ -106,11 +103,7 @@ class Graph:
         for i in range(0, len(self.ns)):
             # highlighting
             self.ns[i].highlighted = True if i == self.current else False
-
-            if self.ns[i].node in self.agt.path[0:self.progress]:
-                self.ns[i].history = True
-            else:
-                self.ns[i].history = False
+            self.ns[i].history = True if self.ns[i].node in self.agt.path[0:self.progress] else False
 
             # draw node
             self.ns[i].draw()
