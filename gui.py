@@ -91,7 +91,10 @@ class Graph:
         # edges
         for i in range(0, len(self.es)):
             # hightlighthing
-            if self.es[i].n1 in self.agt.path[0:self.progress] and self.es[i].n2 in self.agt.path[0:self.progress+1]:
+            n1_in_path = self.es[i].n1 in self.agt.path[0:self.progress]
+            n2_in_path = self.es[i].n2 in self.agt.path[0:self.progress+1]
+            linked = n1_in_path and n2_in_path and self.agt.path[self.agt.path.index(self.es[i].n1)+1] == self.es[i].n2
+            if linked:
                 self.es[i].history = True
             else:
                 self.es[i].history = False
