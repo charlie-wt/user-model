@@ -1,6 +1,7 @@
 import graph as gr
 import agent as ag
 import decide as dc
+import gui
 
 # Create nodes
 ns = []
@@ -39,3 +40,5 @@ for n in agt.path:
     c += 1
 print("\n-- PATH --")
 print(msg)
+
+gui.make()
