@@ -41,4 +41,7 @@ for n in agt.path:
 print("\n-- PATH --")
 print(msg)
 
-gui.make()
+print("\n-- GUI --")
+window = gui.Window()
+window.graph(ns)
+window.display()
