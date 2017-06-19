@@ -42,6 +42,5 @@ print("\n-- PATH --")
 print(msg)
 
 print("\n-- GUI --")
-window = gui.Window()
-window.graph(ns)
+window = gui.Window(ns)
 window.display()
