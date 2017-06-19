@@ -5,7 +5,7 @@ import graph as gr
 import agent as ag
 
 class Window (tk.Frame):
-    def __init__ ( self, graph ):
+    def __init__ ( self, graph, agt ):
         self.top = tk.Tk()
         self.top.geometry("500x500")
         
@@ -16,21 +16,26 @@ class Window (tk.Frame):
         self.parent.title("graph")
         self.pack(fill=tk.BOTH, expand=1)
         
-        self.graph = Graph(graph, self.top)
+        self.graph = Graph(graph, agt, self.top)
+        self.focus_set()
+        self.bind("<Key>", self.graph.key)
+    
 
     def display ( self ):
         self.top.mainloop()
 
 class Graph:
-    def __init__ ( self, graph, parent ):
+    def __init__ ( self, graph, agt, parent ):
         # variables
         self.canvsize = 495
         self.canv = tk.Canvas(parent, bg="white", width=str(self.canvsize), height=str(self.canvsize))
         self.ns = []
         self.es = []
-        self.highlight = 0
+        self.progress = 0
+        self.current = 0
         self.margin = 50
         self.graph = graph
+        self.agt = agt
 
         self.canv.pack()
 
@@ -72,24 +77,53 @@ class Graph:
                     if (e.n1 == edge.n1 and e.n2 == edge.n2) or (e.n1 == edge.n2 and e.n2 == edge.n1):
                         new = False
                 if new:
-                    if i == self.highlight: edge.highlighted = True
                     self.es.append(edge)
                     edge.draw()
 
         # add nodes
         for i in range(0, len(self.graph)):
             node = self.graph[i]
-            self.ns.append(Node(node.lon, node.lat, i, self.canv, self.bounds))
-            if i == self.highlight: self.ns[len(self.ns)-1].highlighted = True
+            self.ns.append(Node(node, i, self.canv, self.bounds))
+            if i == self.current: self.ns[len(self.ns)-1].highlighted = True
             self.ns[len(self.ns)-1].draw()
         
     def redraw ( self ):
+        # edges
         for i in range(0, len(self.es)):
-            self.es[i].highlighted = True if i == self.highlight else False
+            # hightlighthing
+            if self.es[i].n1 in self.agt.path[0:self.progress] and self.es[i].n2 in self.agt.path[0:self.progress+1]:
+                self.es[i].history = True
+            else:
+                self.es[i].history = False
+
+            # draw edge
             self.es[i].draw()
+
+        # nodes
         for i in range(0, len(self.ns)):
-            self.ns[i].highlighted = True if i == self.highlight else False
+            # highlighting
+            self.ns[i].highlighted = True if i == self.current else False
+
+            if self.ns[i].node in self.agt.path[0:self.progress]:
+                self.ns[i].history = True
+            else:
+                self.ns[i].history = False
+
+            # draw node
             self.ns[i].draw()
+
+    def key ( self, event ):
+    # step forward/backward through the pathfinding
+        if event.keysym == "Left":
+            self.progress = max(self.progress - 1, 0)
+            self.current = self.graph.index(self.agt.path[self.progress])
+            self.redraw()
+            return
+        if event.keysym == "Right":
+            self.progress = min(self.progress + 1, len(self.agt.path)-1)
+            self.current = self.graph.index(self.agt.path[self.progress])
+            self.redraw()
+            return
 
 def screen ( x, y, bounds ):
 # Convert lat/lon coords to screen coords with bounds = ( xmin, xmax, ymin, ymax, canvwidth, canvheight )
@@ -101,40 +135,50 @@ def screen ( x, y, bounds ):
     return [ screenX, screenY ]
 
 def dist ( p0, p1 ):
+# distance between two points
     return math.sqrt((p1[0] - p0[0])**2 + (p1[1] - p0[1])**2)
 
 class Node:
-    ncol = "green"
-    hcol = "blue"
-    tcol = "white"
+# stuff needed to draw a node of the graph
+    default_col = "green"
+    history_col = "blue"
+    highlight_col = "red"
+    text_col = "white"
+    history = False
     highlighted = False
     size = 20
 
-    def __init__ ( self, x, y, label, canv, bounds ):
-        self.x = x
-        self.y = y
-        sc = screen(self.x, self.y, bounds)
-        self.sx = sc[0]
-        self.sy = sc[1]
+    def __init__ ( self, node, label, canv, bounds ):
+        self.node = node
+        self.x = node.lon
+        self.y = node.lat
+        self.screen_coords = screen(self.x, self.y, bounds)
         self.label = label
         self.canv = canv
         self.circle = None
         self.text = None
         
     def draw ( self ):
-        col = Node.hcol if self.highlighted else Node.ncol
+        col = Node.default_col
+        if self.highlighted: col = Node.highlight_col
+        elif self.history: col = Node.history_col
         self.circle = self.canv.create_oval( 
-                self.sx-(Node.size/2),
-                self.sy-(Node.size/2),
-                self.sx+(Node.size/2),
-                self.sy+(Node.size/2),
+                self.screen_coords[0]-(Node.size/2),
+                self.screen_coords[1]-(Node.size/2),
+                self.screen_coords[0]+(Node.size/2),
+                self.screen_coords[1]+(Node.size/2),
                 fill=col)
-        self.text = self.canv.create_text(self.sx, self.sy, text=str(self.label), fill=Node.tcol)
+        self.text = self.canv.create_text(
+                self.screen_coords[0],
+                self.screen_coords[1],
+                text=str(self.label),
+                fill=Node.text_col)
 
 class Edge:
-    ncol = "black"
-    hcol = "blue"
-    highlighted = False
+# stuff needed to draw an edge of the graph
+    default_col = "black"
+    history_col = "blue"
+    history = False
     
     def __init__ ( self, n1, n2, canv, bounds ):
         self.n1 = n1
@@ -145,7 +189,7 @@ class Edge:
         self.canv = canv
         
     def draw ( self ):
-        col = Edge.hcol if self.highlighted else Edge.ncol
+        col = Edge.history_col if self.history else Edge.default_col
         self.line = self.canv.create_line(self.p0[0], self.p0[1], self.p1[0], self.p1[1], fill=col)
         self.text = self.canv.create_text(
                 self.p0[0] + (self.p1[0] - self.p0[0])/2,
