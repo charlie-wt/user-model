@@ -26,7 +26,7 @@ print(msg)
 agt = ag.Agent(ns, 0)
 
 # Traverse graph
-ag.traverse(agt, dc.rand)
+ag.traverse(agt, dc.distance)
 
 # Print path
 msg = ""

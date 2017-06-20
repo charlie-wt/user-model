@@ -8,18 +8,18 @@ class Window (tk.Frame):
     def __init__ ( self, graph, agt ):
         self.top = tk.Tk()
         self.top.geometry("500x500")
-        
+
         tk.Frame.__init__(self, self.top)
-        
+
         self.parent = self.top
-        
+
         self.parent.title("graph")
         self.pack(fill=tk.BOTH, expand=1)
-        
+
         self.graph = Graph(graph, agt, self.top)
         self.focus_set()
         self.bind("<Key>", self.graph.key)
-    
+
 
     def display ( self ):
         self.top.mainloop()
@@ -86,7 +86,7 @@ class Graph:
             self.ns.append(Node(node, i, self.canv, self.bounds))
             if i == self.current: self.ns[len(self.ns)-1].highlighted = True
             self.ns[len(self.ns)-1].draw()
-        
+
     def redraw ( self ):
         # edges
         for i in range(0, len(self.es)):
@@ -153,12 +153,12 @@ class Node:
         self.canv = canv
         self.circle = None
         self.text = None
-        
+
     def draw ( self ):
         col = Node.default_col
         if self.highlighted: col = Node.highlight_col
         elif self.history: col = Node.history_col
-        self.circle = self.canv.create_oval( 
+        self.circle = self.canv.create_oval(
                 self.screen_coords[0]-(Node.size/2),
                 self.screen_coords[1]-(Node.size/2),
                 self.screen_coords[0]+(Node.size/2),
@@ -175,7 +175,7 @@ class Edge:
     default_col = "black"
     history_col = "blue"
     history = False
-    
+
     def __init__ ( self, n1, n2, canv, bounds ):
         self.n1 = n1
         self.n2 = n2
@@ -183,7 +183,7 @@ class Edge:
         self.p0 = screen(n1.lon, n1.lat, bounds)
         self.p1 = screen(n2.lon, n2.lat, bounds)
         self.canv = canv
-        
+
     def draw ( self ):
         col = Edge.history_col if self.history else Edge.default_col
         self.line = self.canv.create_line(self.p0[0], self.p0[1], self.p1[0], self.p1[1], fill=col)
