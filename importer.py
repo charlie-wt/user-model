@@ -47,23 +47,37 @@ def storyFromJSON ( filename, prnt ):
 
     # functions
     story_functions = []
-    if prnt[2]: print(".FUNCTIONS.")
     for function in json_object["functions"]:
         story_functions.append(functionFromJSON(function))
-        if prnt[2]: print(story_functions[len(story_functions)-1].id)
-    if prnt[2]: print()
 
     # conditions
     story_conditions = []
+    if prnt[2]: print(".CONDITIONS.")
     for condition in json_object["conditions"]:
         story_conditions.append(conditionFromJSON(condition))
+        if prnt[2]: print(story_conditions[len(story_conditions)-1].id)
+    if prnt[2]: print()
+
+    # printing shenanigens
+    print(".EXISTENCE OF THE CONDITIONS OF FUNCTIONS.")
+    if prnt[3]:
+        cond_ids = (cond.id for cond in story_conditions)
+        for f in story_functions:
+            if prnt[3]:
+                cs = f.conditions
+                if len(cs) > 0:
+                    exists = True
+                    for c in cs:
+                        if c not in cond_ids: exists = False
+                    print("function", f.id, "has conditions", cs, ": do they exist? ->", exists)
+    print()
 
     # locations
     story_locations = []
     for location in json_object["locations"]:
         story_locations.append(locationFromJSON(location))
     
-    if prnt[3]: print(".STORY INFO.\n'", story_name, "' is story", story_id, "and contains", len(story_pages), "pages,", len(story_conditions), "conditions,", len(story_functions), "functions &", len(story_locations), "locations.\n")
+    if prnt[4]: print(".STORY INFO.\n'", story_name, "' is story", story_id, "and contains", len(story_pages), "pages,", len(story_conditions), "conditions,", len(story_functions), "functions &", len(story_locations), "locations.\n")
     
 def pageFromJSON ( json ):
     return page.Page(
@@ -85,7 +99,7 @@ def functionFromJSON ( json ):
                 json["id"],
                 json["conditions"],
                 json["variable"],
-                json["value"])
+                (json["value"] == "true"))  # necessary to do this? also, are ALL values bools?
     elif ( type == "chain" ):
         return chainFunction.ChainFunction(
                 json["id"],
@@ -119,7 +133,7 @@ def conditionFromJSON ( json ):
     elif ( type == "location" ):
         return locationCondition.LocationCondition(
                 json["id"],
-                json["bool"],
+                (json["bool"] == "true"),
                 json["location"])
     elif ( type == "logical" ):
         return logicalCondition.LogicalCondition(
@@ -144,8 +158,8 @@ def locationFromJSON ( json ):
     return location.Location(
             json["id"],
             json["type"],
-            json["lat"],
-            json["lon"],
-            json["radius"])
+            float(json["lat"]),
+            float(json["lon"]),
+            float(json["radius"]))
 
-storyFromJSON("Fallen branches", [ False, False, True, True ])
+storyFromJSON("Fallen branches", [ False, False, True, True, True ])
