@@ -20,6 +20,7 @@ import locationCondition
 import logicalCondition
 import timePassedCondition
 import timeRangeCondition
+import variable
 
 def storyFromJSON ( filename, prnt ):
 # load a story in from a .json file
@@ -33,7 +34,7 @@ def storyFromJSON ( filename, prnt ):
     if prnt[1]:
         print(".LOADED JSON.")
         print(json_object)
-    
+
     # id
     story_id = json_object["id"]
 
@@ -76,9 +77,9 @@ def storyFromJSON ( filename, prnt ):
     story_locations = []
     for location in json_object["locations"]:
         story_locations.append(locationFromJSON(location))
-    
+
     if prnt[4]: print(".STORY INFO.\n'", story_name, "' is story", story_id, "and contains", len(story_pages), "pages,", len(story_conditions), "conditions,", len(story_functions), "functions &", len(story_locations), "locations.\n")
-    
+
 def pageFromJSON ( json ):
     return page.Page(
             json["id"],

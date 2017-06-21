@@ -1,11 +1,11 @@
 import condition
 
 class CheckCondition (condition.Condition):
-    def __init__ ( self, id, a, b, aType, bType, operand):
+    def __init__ ( self, id, variable ):
         self.id = id
         self.type = "check"
-        self.a = a
-        self.b = b
-        self.aType = aType
-        self.bType = bType
-        self.operand = operand
+        self.variable = variable
+
+    def check ( self, vars, conds, locs=None, userLoc=None ):
+    # check the condition
+        return vars.get(self.variable) != None

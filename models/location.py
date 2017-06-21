@@ -1,3 +1,5 @@
+import math
+
 import base
 
 class Location (base.Base):
@@ -7,3 +9,6 @@ class Location (base.Base):
         self.lat = lat
         self.lon = lon
         self.radius = radius
+    
+    def withinBounds ( self, loc ):
+        return math.sqrt((self.lat-loc.lat)**2 + (self.lon-loc.lat)**2) <= radius

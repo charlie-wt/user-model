@@ -1,3 +1,5 @@
+import time
+
 import condition
 
 class TimePassedCondition (condition.Condition):
@@ -6,3 +8,15 @@ class TimePassedCondition (condition.Condition):
         self.type = "timepassed"
         self.variable = variable
         self.minutes = minutes
+        
+    def check ( self, vars, conds, locs=None, userLoc=None ):
+    # check the condition
+    # TODO - as yet untested
+        ts = vars.get(self.variable)
+        
+        now = time.time()
+        timestamp = int(ts.value)
+        
+        earliest = timestamp + now
+        
+        return earliest < now

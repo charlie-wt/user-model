@@ -9,3 +9,33 @@ class ComparisonCondition (condition.Condition):
         self.aType = aType
         self.bType = bType
         self.operand = operand
+    
+    def check ( self, vars, conds, locs=None, userLoc=None ):
+    # check the condition
+        a = self.value(self.a, self.aType, vars)
+        b = self.value(self.b, self.bType, vars)
+        
+        if   self.operand == "==":
+            return a == b
+        elif self.operand == "!=":
+            return a != b
+        elif self.operand == "<":
+            return a < b
+        elif self.operand == ">":
+            return a > b
+        elif self.operand == "<=":
+            return a <= b
+        elif self.operand == ">=":
+            return a >= b
+
+    def value ( self, value, type, vars ):
+    # get the value of a / b
+        if type == "Variable":
+            variable = vars.get(value)
+            
+            return variable.value if variable else None
+        
+        if type == "Integer":
+            return int(value)
+        
+        return value
