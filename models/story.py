@@ -8,7 +8,7 @@ class Story:
         self.conditions = []
         self.functions = []
         self.locations = []
-    
+
     def fromJSON ( self, prnt, filename ):
     # load a story in from a .json file
         # read the file, and convert to a json object
@@ -16,16 +16,16 @@ class Story:
         data = file.read()
         file.close()
         if prnt[0]: print(data)
-        
+
         json_object = json.loads(data)
         if prnt[1]: print(json_object)
-        
+
         # id
         self.id = json_object["id"]
-        
+
         # name
         self.name = json_object["name"]
-        
+
         # pages
         for page in json_object["pages"]:
             self.pages.append(Page(
@@ -33,7 +33,7 @@ class Story:
                 page["name"],
                 page["functions"],
                 page["conditions"]))
-        
+
         # conditions
         for condition in json_object["conditions"]:
             cond = Condition(condition["id"], condition["type"])
@@ -45,7 +45,7 @@ class Story:
             if ( "b" in condition ): cond.b = condition["b"]
             if ( "bType" in condition ): cond.bType = condition["bType"]
             self.conditions.append(cond)
-        
+
         # functions
         for function in json_object["functions"]:
             self.functions.append(Function(
@@ -64,7 +64,7 @@ class Story:
                 float(location["lon"]),
                 float(location["radius"])))
             if prnt[2]: print(self.locations[len(self.locations)-1].id)
-        
+
         if prnt[3]: print("'", self.name, "' is story", self.id, "and contains", len(self.pages), "pages,", len(self.conditions), "conditions,", len(self.functions), "functions &", len(self.locations), "locations.")
 
 class Page:
@@ -95,7 +95,7 @@ class Condition:
         self.aType = None
         self.b = None
         self.bType = None
-    
+
 class Location:
     def __init__ ( self, id, type, lat, lon, radius ):
         self.id = id
