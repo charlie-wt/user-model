@@ -81,17 +81,16 @@ def functionFromJSON ( json ):
                 json["variable"],
                 json["value"])
     elif ( type == "set" ):
-        if ( "value" in json ):
-            return setFunction.SetFunction(
-                    json["id"],
-                    json["conditions"],
-                    json["variable"],
-                    json["value"])
-        else:
-            return chainFunction.ChainFunction(
-                    json["id"],
-                    json["conditions"],
-                    json["functions"])
+        return setFunction.SetFunction(
+                json["id"],
+                json["conditions"],
+                json["variable"],
+                json["value"])
+    elif ( type == "chain" ):
+        return chainFunction.ChainFunction(
+                json["id"],
+                json["conditions"],
+                json["functions"])
     elif ( type == "settimestamp" ):
         return setTimestampFunction.SetTimestampFunction(
                 json["id"],
@@ -149,4 +148,4 @@ def locationFromJSON ( json ):
             json["lon"],
             json["radius"])
 
-storyFromJSON("Fire Fire", [ False, False, True, True ])
+storyFromJSON("Fallen branches", [ False, False, True, True ])
