@@ -7,3 +7,12 @@ class SetFunction (function.Function):
         self.conditions = conditions
         self.variable = variable
         self.value = value
+
+    def execute ( self, story_id, reading_id, vars, conditions, functions, locs=None, userLoc=None ):
+        if (not conditionsPass(vars, conditions, locs, userLoc)) or (not functions): return
+        
+        var = vars.get(self.variable)
+        
+        var.value = self.value
+        
+        vars.save(var)

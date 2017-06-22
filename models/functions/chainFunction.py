@@ -6,3 +6,10 @@ class ChainFunction (function.Function):
         self.type = "chain"
         self.conditions = conditions
         self.functions = functions
+
+    def execute ( self, story_id, reading_id, vars, conditions, functions, locs=None, userLoc=None ):
+        if (not conditionsPass(vars, conditions, locs, userLoc)) or (not functions): return
+        
+        for f in self.functions:
+            fun = functions.get(f)
+            fun.execute(story_id, reading_id, vars, conditions, functions, locs, userLoc)
