@@ -1,4 +1,8 @@
+import sys, os
+sys.path.append(os.path.join(sys.path[0], "../.."))
+
 import condition
+import coll as ls
 
 class LogicalCondition (condition.Condition):
     def __init__ ( self, id, operand, conditions ):
@@ -11,10 +15,10 @@ class LogicalCondition (condition.Condition):
     # check the condition
         if self.operand == "AND":
             for c in self.conditions:
-                if not conds.get(c).execute(vars, conds, locs, userLoc): return False
+                if not ls.get(conds, c).check(vars, conds, locs, userLoc): return False
             return True
         
         if self.operand == "OR":
             for c in self.conditions:
-                if conds.get(c).execute(vars, conds, locs, userLoc): return True
+                if ls.get(conds, c).check(vars, conds, locs, userLoc): return True
             return False

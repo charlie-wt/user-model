@@ -1,6 +1,10 @@
+import sys, os
+sys.path.append(os.path.join(sys.path[0], "../.."))
+
 import time
 
 import condition
+import coll as ls
 
 class TimePassedCondition (condition.Condition):
     def __init__ ( self, id, variable, minutes ):
@@ -12,7 +16,7 @@ class TimePassedCondition (condition.Condition):
     def check ( self, vars, conds, locs=None, userLoc=None ):
     # check the condition
     # TODO - as yet untested
-        ts = vars.get(self.variable)
+        ts = ls.get(vars, self.variable)
         
         now = time.time()
         timestamp = int(ts.value)

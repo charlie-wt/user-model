@@ -1,4 +1,8 @@
+import sys, os
+sys.path.append(os.path.join(sys.path[0], "../.."))
+
 import condition
+import coll as ls
 
 class LocationCondition (condition.Condition):
     def __init__ ( self, id, bool, location ):
@@ -10,6 +14,6 @@ class LocationCondition (condition.Condition):
     def check ( self, vars, conds, locs=None, userLoc=None ):
         if locs == None or userLoc == None: return True
 
-        location = locs.get(self.location)
+        location = ls.get(locs, self.location)
 
         return this.bool == True and location.withinBounds(userLoc)

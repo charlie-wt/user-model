@@ -1,4 +1,8 @@
+import sys, os
+sys.path.append(os.path.join(sys.path[0], "../.."))
+
 import condition
+import coll as ls
 
 class ComparisonCondition (condition.Condition):
     def __init__ ( self, id, a, b, aType, bType, operand):
@@ -31,7 +35,7 @@ class ComparisonCondition (condition.Condition):
     def value ( self, value, type, vars ):
     # get the value of a / b
         if type == "Variable":
-            variable = vars.get(value)
+            variable = ls.get(vars, value)
             
             return variable.value if variable else None
         
