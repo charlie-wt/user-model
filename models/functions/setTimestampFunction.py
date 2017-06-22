@@ -10,7 +10,7 @@ class SetTimestampFunction (function.Function):
         self.variable = variable
 
     def execute ( self, story_id, reading_id, vars, conditions, functions, locs=None, userLoc=None ):
-        if (not conditionsPass(vars, conditions, locs, userLoc)) or (not functions): return
+        if (not conditions_pass(vars, conditions, locs, userLoc)) or (not functions): return
         
         var = vars.get(self.var)
         

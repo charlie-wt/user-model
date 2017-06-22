@@ -162,5 +162,3 @@ def locationFromJSON ( json ):
             float(json["lat"]),
             float(json["lon"]),
             float(json["radius"]))
-
-storyFromJSON("Fallen branches", [ False, False, True, True, True ])

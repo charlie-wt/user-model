@@ -11,10 +11,10 @@ class LogicalCondition (condition.Condition):
     # check the condition
         if self.operand == "AND":
             for c in self.conditions:
-                if not c.execute(vars, conds, locs, userLoc): return False
+                if not conds.get(c).execute(vars, conds, locs, userLoc): return False
             return True
         
         if self.operand == "OR":
             for c in self.conditions:
-                if c.execute(vars, conds, locs, userLoc): return True
+                if conds.get(c).execute(vars, conds, locs, userLoc): return True
             return False

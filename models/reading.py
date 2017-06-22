@@ -8,4 +8,4 @@ class Reading ( base.Base ):
         self.vars = vars
         self.story = story_id
         self.state = state
-        self.timestamp= timestamp
+        self.timestamp = timestamp

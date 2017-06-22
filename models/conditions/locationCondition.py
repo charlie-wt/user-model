@@ -8,7 +8,7 @@ class LocationCondition (condition.Condition):
         self.location = location
 
     def check ( self, vars, conds, locs=None, userLoc=None ):
-        if loc == None: return True
+        if locs == None or userLoc == None: return True
 
         location = locs.get(self.location)
 
