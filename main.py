@@ -3,8 +3,7 @@ sys.path.append(os.path.join(sys.path[0], "models"))
 import time
 
 import importer as imp
-#import collection as col
-import coll as col
+import ls
 import reading as rd
 import user as us
 

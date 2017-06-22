@@ -1,4 +1,8 @@
+import sys, os
+sys.path.append(os.path.join(sys.path[0], ".."))
+
 import function
+import ls
 
 class ChainFunction (function.Function):
     def __init__ ( self, id, conditions, functions ):
@@ -11,5 +15,5 @@ class ChainFunction (function.Function):
         if (not conditions_pass(vars, conditions, locs, userLoc)) or (not functions): return
         
         for f in self.functions:
-            fun = functions.get(f)
+            fun = ls.get(functions, f)
             fun.execute(story_id, reading_id, vars, conditions, functions, locs, userLoc)

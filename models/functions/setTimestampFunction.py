@@ -1,6 +1,10 @@
+import sys, os
+sys.path.append(os.path.join(sys.path[0], ".."))
+
 import time
 
 import function
+import ls
 
 class SetTimestampFunction (function.Function):
     def __init__ ( self, id, conditions, variable ):
@@ -12,7 +16,7 @@ class SetTimestampFunction (function.Function):
     def execute ( self, story_id, reading_id, vars, conditions, functions, locs=None, userLoc=None ):
         if (not conditions_pass(vars, conditions, locs, userLoc)) or (not functions): return
         
-        var = vars.get(self.var)
+        var = ls.get(vars, self.var)
         
         var.value = str(time.time())
-        vars.save(var)
+        ls.save(vars, var)

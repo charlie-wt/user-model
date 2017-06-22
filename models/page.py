@@ -2,7 +2,7 @@ import sys, os
 sys.path.append(os.path.join(sys.path[0], ".."))
 
 import base
-import coll as ls
+import ls
 
 class Page (base.Base):
     def __init__ ( self, id, name, functions, conditions ):

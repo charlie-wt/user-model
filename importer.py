@@ -21,7 +21,6 @@ import logicalCondition
 import timePassedCondition
 import timeRangeCondition
 import variable
-import collection
 
 def storyFromJSON ( filename, prnt ):
 # load a story in from a .json file

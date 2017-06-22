@@ -1,4 +1,8 @@
+import sys, os
+sys.path.append(os.path.join(sys.path[0], ".."))
+
 import function
+import ls
 
 class IncrementFunction (function.Function):
     def __init__ ( self, id, conditions, variable, value ):
@@ -11,11 +15,11 @@ class IncrementFunction (function.Function):
     def execute ( self, story_id, reading_id, vars, conditions, functions, locs=None, userLoc=None ):
         if (not conditions_pass(vars, conditions, locs, userLoc)) or (not functions): return
         
-        var = vars.get(variable)
+        var = ls.get(vars, variable)
         
         curr_val = int(var.value)
         new_val = curr_val + self.value
         
         var.value = str(new_val)
 
-        vars.save(var)
+        ls.save(vars, var)

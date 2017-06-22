@@ -4,7 +4,7 @@ sys.path.append(os.path.join(sys.path[0], "../.."))
 from datetime import datetime, date, time, timedelta
 
 import condition
-import coll as ls
+import ls
 
 class TimeRangeCondition (condition.Condition):
     def __init__ ( self, id, variable, start, end ):

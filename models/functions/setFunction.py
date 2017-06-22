@@ -1,4 +1,8 @@
+import sys, os
+sys.path.append(os.path.join(sys.path[0], ".."))
+
 import function
+import ls
 
 class SetFunction (function.Function):
     def __init__ ( self, id, conditions, variable, value ):
@@ -11,8 +15,8 @@ class SetFunction (function.Function):
     def execute ( self, story_id, reading_id, vars, conditions, functions, locs=None, userLoc=None ):
         if (not conditions_pass(vars, conditions, locs, userLoc)) or (not functions): return
         
-        var = vars.get(self.variable)
+        var = ls.get(vars, self.variable)
         
         var.value = self.value
         
-        vars.save(var)
+        ls.save(vars, var)

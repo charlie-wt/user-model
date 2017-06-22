@@ -2,7 +2,7 @@ import sys, os
 sys.path.append(os.path.join(sys.path[0], "../.."))
 
 import condition
-import coll as ls
+import ls
 
 class ComparisonCondition (condition.Condition):
     def __init__ ( self, id, a, b, aType, bType, operand):

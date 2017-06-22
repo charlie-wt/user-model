@@ -1,4 +1,8 @@
+import sys, os
+sys.path.append(os.path.join(sys.path[0], "../.."))
+
 import condition
+import ls
 
 class CheckCondition (condition.Condition):
     def __init__ ( self, id, variable ):
@@ -8,4 +12,4 @@ class CheckCondition (condition.Condition):
 
     def check ( self, vars, conds, locs=None, userLoc=None ):
     # check the condition
-        return vars.get(self.variable) != None
+        return ls.get(vars, self.variable) != None
