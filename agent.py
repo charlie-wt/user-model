@@ -15,13 +15,14 @@ class Agent:
 
     def start ( self, ns, start=-1 ):
         if ( ns == [] ): return
-        n = ns[start]
         if start == -1:
             while ( True ):
                 idx = math.floor(random.random() * (len(ns)-1))
                 if ( len(ns[idx].connections) > 0 ):
                     n = ns[idx]
                     break
+        else:
+            n = ns[start]
         self.move(n)
 
 def traverse ( agt, fun, high=10 ):
