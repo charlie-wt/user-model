@@ -13,10 +13,11 @@ class SetTimestampFunction (function.Function):
         self.conditions = conditions
         self.variable = variable
 
-    def execute ( self, story_id, reading_id, vars, conditions, functions, locs=None, userLoc=None ):
-        if (not self.conditions_pass(vars, conditions, locs, userLoc)) or (not functions): return
+    #def execute ( self, story_id, reading_id, vars, conditions, functions, locs=None, userLoc=None ):
+    def execute ( self, story, reading, userLoc=None ):
+        if (not self.conditions_pass(reading.vars, story.conditions, story.locations, userLoc)) or (not story.functions): return
         
-        var = ls.get(vars, self.var)
+        var = ls.get(reading.vars, self.var)
         
         var.value = str(time.time())
-        ls.save(vars, var)
+        ls.save(reading.vars, var)

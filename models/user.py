@@ -25,4 +25,5 @@ class User ( base.Base ):
         # execute new page's function
         for f in self.page().functions:
             fn = ls.get(story.functions, f)
-            fn.execute(story.id, reading.id, reading.vars, story.conditions, story.functions, story.locations, self.loc)
+            #fn.execute(story.id, reading.id, reading.vars, story.conditions, story.functions, story.locations, self.loc)
+            fn.execute(story, reading, self.loc)

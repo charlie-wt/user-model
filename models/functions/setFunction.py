@@ -12,11 +12,12 @@ class SetFunction (function.Function):
         self.variable = variable
         self.value = value
 
-    def execute ( self, story_id, reading_id, vars, conditions, functions, locs=None, userLoc=None ):
-        if (not self.conditions_pass(vars, conditions, locs, userLoc)) or (not functions): return
+    #def execute ( self, story_id, reading_id, vars, conditions, functions, locs=None, userLoc=None ):
+    def execute ( self, story, reading, userLoc=None ):
+        if (not self.conditions_pass(reading.vars, story.conditions, story.locations, userLoc)) or (not story.functions): return
 
-        var = ls.get(vars, self.variable)
+        var = ls.get(reading.vars, self.variable)
 
         var.value = self.value
 
-        ls.save(vars, var)
+        ls.save(reading.vars, var)

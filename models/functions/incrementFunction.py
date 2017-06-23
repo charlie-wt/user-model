@@ -12,14 +12,15 @@ class IncrementFunction (function.Function):
         self.variable = variable
         self.value = value
 
-    def execute ( self, story_id, reading_id, vars, conditions, functions, locs=None, userLoc=None ):
-        if (not self.conditions_pass(vars, conditions, locs, userLoc)) or (not functions): return
+    #def execute ( self, story_id, reading_id, vars, conditions, functions, locs=None, userLoc=None ):
+    def execute ( self, story, reading, userLoc=None ):
+        if (not self.conditions_pass(reading.vars, story.conditions, story.locations, userLoc)) or (not story.functions): return
         
-        var = ls.get(vars, variable)
+        var = ls.get(reading.vars, variable)
         
         curr_val = int(var.value)
         new_val = curr_val + self.value
         
         var.value = str(new_val)
 
-        ls.save(vars, var)
+        ls.save(reading.vars, var)

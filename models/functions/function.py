@@ -16,5 +16,6 @@ class Function (base.Base):
             if not cond.check(vars, conditions, locs, userLoc): return False
         return True
 
-    def execute ( self, story_id, reading_id, vars, conditions, functions, locs=None, userLoc=None ):
+    #def execute ( self, story_id, reading_id, vars, conditions, functions, locs=None, userLoc=None ):
+    def execute ( self, story, reading, userLoc=None ):
         return
