@@ -12,7 +12,6 @@ class IncrementFunction (function.Function):
         self.variable = variable
         self.value = value
 
-    #def execute ( self, story_id, reading_id, vars, conditions, functions, locs=None, userLoc=None ):
     def execute ( self, story, reading, userLoc=None ):
         if (not self.conditions_pass(reading.vars, story.conditions, story.locations, userLoc)) or (not story.functions): return
         
