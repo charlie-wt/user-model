@@ -1,6 +1,5 @@
 import math
 import random
-import graph
 
 def distance ( curr, ns ):
     mindist = float('inf')
