@@ -36,10 +36,7 @@ class ComparisonCondition (condition.Condition):
     # get the value of a / b
         if type == "Variable":
             variable = ls.get(vars, value)
-            
             return variable.value if variable else None
-        
         if type == "Integer":
             return int(value)
-        
         return value

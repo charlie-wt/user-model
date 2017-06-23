@@ -60,7 +60,7 @@ def storyFromJSON ( filename, prnt ):
     if prnt[2]: print()
 
     # printing shenanigens
-    print(".EXISTENCE OF THE CONDITIONS OF FUNCTIONS.")
+    if prnt[3]: print(".EXISTENCE OF THE CONDITIONS OF FUNCTIONS.")
     if prnt[3]:
         cond_ids = (cond.id for cond in story_conditions)
         for f in story_functions:
@@ -71,14 +71,14 @@ def storyFromJSON ( filename, prnt ):
                     for c in cs:
                         if c not in cond_ids: exists = False
                     print("function", f.id, "has conditions", cs, ": do they exist? ->", exists)
-    print()
+    if prnt[3]: print()
 
     # locations
     story_locations = []
     for location in json_object["locations"]:
         story_locations.append(locationFromJSON(location))
 
-    if prnt[4]: print(".STORY INFO.\n'", story_name, "' is story", story_id, "and contains", len(story_pages), "pages,", len(story_conditions), "conditions,", len(story_functions), "functions &", len(story_locations), "locations.\n")
+    if prnt[4]: print(".STORY INFO.\n'", story_name, "' is story", story_id, "and contains", len(story_pages), "pages,", len(story_conditions), "conditions,", len(story_functions), "functions &", len(story_locations), "locations.")
 
     # combine into story
     return story.Story(story_id, story_name, story_pages, story_conditions, story_functions, story_locations)

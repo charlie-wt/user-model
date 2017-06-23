@@ -12,15 +12,24 @@ class Page (base.Base):
         self.conditions = conditions
         self.visible = False
 
-    def update ( self, vars, conds, locs, userLoc ):
+    def update ( self, story, reading, user ):
     # see if this page should be visible
         for c in self.conditions:
-            if not ls.get(conds, c).check(vars, conds):
+            print(c, "=", ls.get(story.conditions, c).check(reading.vars, story.conditions))
+            if not ls.get(story.conditions, c).check(reading.vars, story.conditions):
                 self.visible = False
                 return
         self.visible = True
 
-    def execute_functions ( self, story_id, reading_id, vars, conds, locs, userLoc, functions ):
+    def execute_functions ( self, story, reading, user ):
     # execute all the functions on this page
-        for f in this.functions:
-            ls.get(functions, f).execute(story_id, reading_id, vars, conds, functions, locs, userLoc)
+        for f in self.functions:
+            ls.get(story.functions, f).execute(story, reading, user)
+
+def update_all ( pages, story, reading, user ):
+# update a bunch of pages at once
+    visible = []
+    for page in pages:
+        page.update( story, reading, user )
+        if page.visible: visible.append(page)
+    return visible

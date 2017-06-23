@@ -12,8 +12,8 @@ class IncrementFunction (function.Function):
         self.variable = variable
         self.value = value
 
-    def execute ( self, story, reading, userLoc=None ):
-        if (not self.conditions_pass(reading.vars, story.conditions, story.locations, userLoc)) or (not story.functions): return
+    def execute ( self, story, reading, user=None ):
+        if (not self.conditions_pass(reading.vars, story.conditions, story.locations, user.loc)) or (not story.functions): return
         
         var = ls.get(reading.vars, variable)
         

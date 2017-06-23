@@ -13,8 +13,10 @@ class Function (base.Base):
     def conditions_pass ( self, vars, conditions, locs=None, userLoc=None ):
         for c in self.conditions:
             cond = ls.get(conditions, c)
-            if not cond.check(vars, conditions, locs, userLoc): return False
+            if not cond.check(vars, conditions, locs, userLoc):
+                print("condition", cond.id, "returned failed.")
+                return False
         return True
 
-    def execute ( self, story, reading, userLoc=None ):
+    def execute ( self, story, reading, user=None ):
         return
