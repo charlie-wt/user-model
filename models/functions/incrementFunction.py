@@ -13,7 +13,7 @@ class IncrementFunction (function.Function):
         self.value = value
 
     def execute ( self, story_id, reading_id, vars, conditions, functions, locs=None, userLoc=None ):
-        if (not conditions_pass(vars, conditions, locs, userLoc)) or (not functions): return
+        if (not self.conditions_pass(vars, conditions, locs, userLoc)) or (not functions): return
         
         var = ls.get(vars, variable)
         

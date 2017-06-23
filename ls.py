@@ -4,13 +4,13 @@ def get ( ls, id ):
     return None
 
 def index ( ls, id ):
-    for i in range (0, len(ls.data)):
-        if ls.data[i].id == id: return i
+    for i in range(0, len(ls)):
+        if ls[i].id == id: return i
     return None
 
 def save ( ls, item ):
-    idx = ls.index(item.id)
+    idx = index(ls, item.id)
     if idx is not None:
-        ls[i] = item
+        ls[idx] = item
         return
     ls.append(item)

@@ -6,13 +6,14 @@ import importer as imp
 import ls
 import reading as rd
 import user as us
+import decider as dc
 
 # create story, reading & user
-sto = imp.storyFromJSON("Fire Fire", [False, False, True, True, True ])
-reading = rd.Reading("reading-0", [], sto.id, "inprogress", time.time())
+sto = imp.storyFromJSON("Fallen branches", [False, False, False, False, True ])
+reading = rd.Reading("reading-0", [], sto, "inprogress", time.time())
 user = us.User("user-0")
 
-print(user.loc)
+print(len(reading.vars), "variables in the story.\n")
 
 # see which pages are visible
 visible = []
@@ -32,3 +33,13 @@ for p in visible:
             printed = True
             break
     if not printed: print(p.name + "\t:\t" + p.id + ", which can be accessed from anywhere.")
+
+# move to a page
+print("\n.MOVEMENT.")
+move_to_idx = dc.rand(None, visible)
+user.move(move_to_idx, visible, sto, reading)
+print("user is now at page '" + user.page().name + "', and is at location (" + str(user.loc[0]) + ", " + str(user.loc[1]) + ").")
+print("active variables:")
+for v in reading.vars:
+    if v.value is not None:
+        print(v.id, "=", v.value)
