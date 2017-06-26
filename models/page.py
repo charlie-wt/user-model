@@ -25,6 +25,15 @@ class Page (base.Base):
         for f in self.functions:
             ls.get(story.functions, f).execute(story, reading, user)
 
+    def getLoc( self, story ):
+        for cond_id in self.conditions:
+            cond = ls.get(story.conditions, cond_id)
+            if cond.type == "location":
+                page_loc = ls.get(story.locations, cond.location)
+                loc = (page_loc.lat, page_loc.lon)
+                return loc
+        return None
+
 def update_all ( pages, story, reading, user ):
 # update a bunch of pages at once
     visible = []

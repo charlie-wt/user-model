@@ -19,14 +19,20 @@ class User ( base.Base ):
         self.path.append(pages[id])
 
         # update player's location (lat, lon) to that of new page, if applicable
-        for cond_id in self.page().conditions:
-            cond = ls.get(story.conditions, cond_id)
-            if cond.type == "location":
-                page_loc = ls.get(story.locations, cond.location)
-                self.loc = (page_loc.lat, page_loc.lon)
+        page_loc = self.page().getLoc(story)
+        if page_loc is not None:
+            self.loc = (page_loc[0], page_loc[1])
 
         # execute new page's function
         self.page().execute_functions(story, reading, self)
 
         # return new list of visible pages
         return page.update_all(story.pages, story, reading, self)
+
+    def lat ( self ):
+    # simple helper
+        return self.loc[0]
+
+    def lon ( self ):
+    # simple helper
+        return self.loc[1]

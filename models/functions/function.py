@@ -14,7 +14,6 @@ class Function (base.Base):
         for c in self.conditions:
             cond = ls.get(conditions, c)
             if not cond.check(vars, conditions, locs, userLoc):
-                print("condition", cond.id, "returned failed.")
                 return False
         return True
 

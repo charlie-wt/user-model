@@ -9,40 +9,34 @@ import user as us
 import decider as dc
 import page
 
+def print_visible ( vis, story, us ):
+# print the list of visible pages
+    for p in vis:
+        page_loc = p.getLoc(story)
+        if page_loc is not None:
+            dist = imp.location.Location.metres(us.lat(), us.lon(), page_loc[0], page_loc[1])
+            print("\t", p.name + "\t:\t" + p.id + " -> " + str(dist) + " metres away.")
+        else:
+            print("\t", p.name + "\t:\t" + p.id + ", which can be accessed from anywhere.")
+
 # create story, reading & user
 sto = imp.storyFromJSON("Fallen branches", [False, False, False, False, True ])
-reading = rd.Reading("reading-0", [], sto, "inprogress", time.time())
+reading = rd.Reading("reading-0", sto, "inprogress", time.time())
 user = us.User("user-0")
 
-print(len(reading.vars), "variables in the story.\n")
+print("There are", len(reading.vars), "variables in the story.\n")
 
 # see which pages are visible
 visible = page.update_all(sto.pages, sto, reading, user)
 
-def print_visible ():
-    for p in visible:
-        printed = False
-        for cond_id in p.conditions:
-            cond = ls.get(sto.conditions, cond_id)
-            if cond.type == "location":
-                page_loc = ls.get(sto.locations, cond.location)
-                dist = imp.location.Location.metres(user.loc[0], user.loc[1], page_loc.lat, page_loc.lon)
-                print("\t", p.name + "\t:\t" + p.id + " -> " + str(dist) + " metres away.")
-                printed = True
-                break
-        if not printed: print("\t", p.name + "\t:\t" + p.id + ", which can be accessed from anywhere.")
-
 # move to a page
 print("\n.MOVEMENT.")
 for i in range(0, 11):
-    move_to_idx = dc.rand(None, visible)
+#    move_to_idx = dc.rand(user, sto, visible)
+    move_to_idx = dc.dist(user, sto, visible)
     visible = user.move(move_to_idx, visible, sto, reading)
-    print("user is now at page '" + user.page().name + "', and is at location (" + str(user.loc[0]) + ", " + str(user.loc[1]) + ").")
-#    print("\tactive variables:")
-#    for v in reading.vars:
-#        if v.value is not None:
-#            print("\t", v.id, "=", v.value)
+    print("user is now at page '" + user.page().name + "', and is at location (" + str(user.lat()) + ", " + str(user.lon()) + ").")
     print("\tvisible pages:")
-    print_visible()
+    print_visible(visible, sto, user)
     if len(visible) == 0: break
     print("\n")

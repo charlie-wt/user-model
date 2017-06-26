@@ -7,7 +7,7 @@ import story
 import variable
 
 class Reading ( base.Base ):
-    def __init__ ( self, id, vars, story, state, timestamp ):
+    def __init__ ( self, id, story, state, timestamp, vars=[] ):
         self.id = id
         self.vars = vars
         self.story = story
