@@ -39,4 +39,6 @@ class ComparisonCondition (condition.Condition):
             return variable.value if variable else None
         if type == "Integer":
             return int(value)
+        if type == "String":
+            return value == "true" if value == "true" or value == "false" else value
         return value

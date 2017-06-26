@@ -17,7 +17,6 @@ class SetFunction (function.Function):
 
         var = ls.get(reading.vars, self.variable)
 
-        print("setting", var.id, "to", self.value)
         var.value = self.value
 
         ls.save(reading.vars, var)

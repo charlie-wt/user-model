@@ -19,7 +19,6 @@ class LogicalCondition (condition.Condition):
             return True
         
         if self.operand == "OR":
-            print("checking an OR condition")
             for c in self.conditions:
                 if ls.get(conds, c).check(vars, conds, locs, userLoc): return True
             return False

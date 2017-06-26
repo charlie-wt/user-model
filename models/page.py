@@ -15,7 +15,6 @@ class Page (base.Base):
     def update ( self, story, reading, user ):
     # see if this page should be visible
         for c in self.conditions:
-            print(c, "=", ls.get(story.conditions, c).check(reading.vars, story.conditions))
             if not ls.get(story.conditions, c).check(reading.vars, story.conditions):
                 self.visible = False
                 return

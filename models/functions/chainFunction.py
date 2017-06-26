@@ -16,5 +16,4 @@ class ChainFunction (function.Function):
         
         for f in self.functions:
             fun = ls.get(story.functions, f)
-            print("about to execute chain function")
             fun.execute(story, reading, user)
