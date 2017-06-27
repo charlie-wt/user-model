@@ -12,7 +12,8 @@ class ChainFunction (function.Function):
         self.functions = functions
 
     def execute ( self, story, reading, user=None ):
-        if (not self.conditions_pass(reading.vars, story.conditions, story.locations, user.loc)) or (not story.functions): return
+        if not self.conditions_pass(reading.vars, story.conditions, story.locations, user.loc): return
+        if not self.functions: return
 
         for f in self.functions:
             fun = ls.get(story.functions, f)

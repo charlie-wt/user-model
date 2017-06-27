@@ -16,8 +16,5 @@ class SetFunction (function.Function):
         if not self.conditions_pass(reading.vars, story.conditions, story.locations, user.loc): return
 
         var = ls.get(reading.vars, self.variable)
-
-        print("setting", var.id, "to", self.value, "(", type(self.value), ")")
         var.value = self.value
-
         ls.save(reading.vars, var)
