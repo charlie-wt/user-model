@@ -16,5 +16,8 @@ class IncrementFunction (function.Function):
         if not self.conditions_pass(reading.vars, story.conditions, story.locations, user.loc): return
 
         var = ls.get(reading.vars, self.variable)
+        if var.value == None: var.value = 0
+
         var.value = int(var.value) + int(self.value)
+
         ls.save(reading.vars, var)

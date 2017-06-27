@@ -44,5 +44,10 @@ class ComparisonCondition (condition.Condition):
         if type == "Integer":
             return int(value)
         if type == "String":
-            return value == "true" if value == "true" or value == "false" else value
+            if value == "true" or value == "false":
+                return value == "true"
+            elif value.isdigit():
+                return int(value)
+            else:
+                return value
         return value

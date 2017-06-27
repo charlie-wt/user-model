@@ -11,9 +11,9 @@ import page
 
 
 
-story_name = "The Pathways of Destiny"
+story_name = "The Titanic Criminal In Southampton"
 
-num_steps = 25
+num_steps = 15
 
 
 
@@ -39,11 +39,16 @@ visible = page.update_all(sto.pages, sto, reading, user)
 # move to a page
 print("\n.MOVEMENT.")
 for i in range(0, num_steps):
+    # move to a new page
     move_to_idx = dc.rand(user, sto, visible)
 #    move_to_idx = dc.dist(user, sto, visible)
     visible = user.move(move_to_idx, visible, sto, reading)
+
+    # print stuff
     print("user is now at page '" + user.page().name + "', and is at location (" + str(user.lat()) + ", " + str(user.lon()) + ").")
     print("\tvisible pages:")
     print_visible(visible, sto, user)
+
+    # stop if you can't go anywhere
     if len(visible) == 0: break
     print("\n")
