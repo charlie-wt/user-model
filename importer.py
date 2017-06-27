@@ -99,11 +99,16 @@ def functionFromJSON ( json ):
                 json["variable"],
                 json["value"])
     elif ( type == "set" ):
+        value = None
+        if json["value"] == "true" or json["value"] == "false":
+            value = (json["value"] == "true")
+        else:
+            value = int(json["value"])
         return setFunction.SetFunction(
                 json["id"],
                 json["conditions"],
                 json["variable"],
-                (json["value"] == "true"))  # necessary to do this? also, are ALL values bools?
+                value)
     elif ( type == "chain" ):
         return chainFunction.ChainFunction(
                 json["id"],

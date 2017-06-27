@@ -9,6 +9,14 @@ import user as us
 import decider as dc
 import page
 
+
+
+story_name = "The Pathways of Destiny"
+
+num_steps = 25
+
+
+
 def print_visible ( vis, story, us ):
 # print the list of visible pages
     for p in vis:
@@ -20,10 +28,9 @@ def print_visible ( vis, story, us ):
             print("\t", p.name + "\t:\t" + p.id + ", which can be accessed from anywhere.")
 
 # create story, reading & user
-sto = imp.storyFromJSON("Fallen branches", [False, False, False, False, True ])
+sto = imp.storyFromJSON(story_name, [False, False, False, False, True ])
 reading = rd.Reading("reading-0", sto, "inprogress", time.time())
 user = us.User("user-0")
-
 print("There are", len(reading.vars), "variables in the story.\n")
 
 # see which pages are visible
@@ -31,9 +38,9 @@ visible = page.update_all(sto.pages, sto, reading, user)
 
 # move to a page
 print("\n.MOVEMENT.")
-for i in range(0, 11):
-#    move_to_idx = dc.rand(user, sto, visible)
-    move_to_idx = dc.dist(user, sto, visible)
+for i in range(0, num_steps):
+    move_to_idx = dc.rand(user, sto, visible)
+#    move_to_idx = dc.dist(user, sto, visible)
     visible = user.move(move_to_idx, visible, sto, reading)
     print("user is now at page '" + user.page().name + "', and is at location (" + str(user.lat()) + ", " + str(user.lon()) + ").")
     print("\tvisible pages:")

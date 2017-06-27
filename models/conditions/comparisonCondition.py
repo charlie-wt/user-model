@@ -13,12 +13,19 @@ class ComparisonCondition (condition.Condition):
         self.aType = aType
         self.bType = bType
         self.operand = operand
-    
+
     def check ( self, vars, conds, locs=None, userLoc=None ):
     # check the condition
         a = self.value(self.a, self.aType, vars)
         b = self.value(self.b, self.bType, vars)
-        
+        if self.operand == "<" or self.operand == ">":
+            print("a =", a, ":", self.aType, "(", type(a), ")")
+            print("b =", b, ":", self.bType, "(", type(b), ")")
+
+        # in js, ( int <comparator> undefined ) = false. in Python, it throws an error.
+        if (a is None and type(b) is int) or (b is None and type(a) is int):
+            return False
+
         if   self.operand == "==":
             return a == b
         elif self.operand == "!=":

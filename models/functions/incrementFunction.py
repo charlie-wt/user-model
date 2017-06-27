@@ -14,12 +14,10 @@ class IncrementFunction (function.Function):
 
     def execute ( self, story, reading, user=None ):
         if (not self.conditions_pass(reading.vars, story.conditions, story.locations, user.loc)) or (not story.functions): return
-        
-        var = ls.get(reading.vars, variable)
-        
-        curr_val = int(var.value)
-        new_val = curr_val + self.value
-        
-        var.value = str(new_val)
+
+        var = ls.get(reading.vars, self.variable)
+
+        print("incrementing", var.id, "from", var.value, "to", str(int(var.value) + int(self.value)))
+        var.value = int(var.value) + int(self.value)
 
         ls.save(reading.vars, var)

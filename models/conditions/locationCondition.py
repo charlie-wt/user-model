@@ -16,7 +16,5 @@ class LocationCondition (condition.Condition):
         return True
 
         #if locs == None or userLoc == None: return True
-
         #location = ls.get(locs, self.location)
-
         #return this.bool == True and location.withinBounds(userLoc)
