@@ -173,6 +173,34 @@ def locationFromJSON ( json ):
             float(json["lon"]),
             float(json["radius"]))
 
+def pathsFromJSON ( story, filename ):
+# read a log file and return a dictionary containing the paths taken through the
+# specified story, per reading.
+    # load file
+    logfile = open("json/"+filename+".json", 'r')
+    logs = logfile.read()
+    logfile.close()
+    logs_json = json.loads(logs)
+
+    # get a list of event objects for moving through the story
+    events = []
+    for e in logs_json:
+        if e["type"] == "playreadingcard" and e["data"]["storyId"] == story.id:
+            events.append(logEventFromJSON(e))
+    events.sort(key = lambda e: e.date)
+
+    # convert list into dictionary, arranged per reading
+    # dict = { reading_id1 : [ event_1, ..., event_n ], reading_id2 : ... }
+    events_per_reading = {}
+    for e in events:
+        if e.data["readingId"] not in events_per_reading:
+            events_per_reading[e.data["readingId"]] = [e]
+            continue
+        if e.id not in events_per_reading[e.data["readingId"]]:
+            events_per_reading[e.data["readingId"]].append(e)
+    
+    return events_per_reading
+
 def logEventFromJSON ( json ):
     return logevent.LogEvent(
             json["id"],

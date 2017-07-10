@@ -42,8 +42,8 @@ visible = page.update_all(sto.pages, sto, reading, user)
 print("\n.MOVEMENT.")
 for i in range(0, num_steps):
     # move to a new page
-    move_to_idx = dc.rand(user, sto, visible)
-#    move_to_idx = dc.dist(user, sto, visible)
+#    move_to_idx = dc.rand(user, sto, visible)
+    move_to_idx = dc.dist(user, sto, visible)
     visible = user.move(move_to_idx, visible, sto, reading)
 
     # print stuff
@@ -58,27 +58,10 @@ for i in range(0, num_steps):
 
 # load logs
 print("\n.LOGS.")
-logfile = open("json/old-logs.json", 'r')
-logs = logfile.read()
-logfile.close()
-logs_json = json.loads(logs)
-
-events = []
-for e in logs_json:
-    if e["type"] == "playreadingcard" and e["data"]["storyId"] == sto.id:
-        events.append(imp.logEventFromJSON(e))
-events.sort(key = lambda e: e.date)
-
-events_per_reading = {}
-for e in events:
-    if e.data["readingId"] not in events_per_reading:
-        events_per_reading[e.data["readingId"]] = [e]
-        continue
-    if e.id not in events_per_reading[e.data["readingId"]]:
-        events_per_reading[e.data["readingId"]].append(e)
+epr = imp.pathsFromJSON(sto, "old-logs")
 
 print("paths through story, per user:")
-for u in events_per_reading.keys():
+for u in epr.keys():
     print("reading "+u+":")
-    for e in events_per_reading[u]:
+    for e in epr[u]:
         print("\t", e.date)
