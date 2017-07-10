@@ -16,5 +16,5 @@ class ChainFunction (function.Function):
         if not self.functions: return
 
         for f in self.functions:
-            fun = ls.get(story.functions, f)
-            fun.execute(story, reading, user)
+            fn = ls.get(story.functions, f)
+            fn.execute(story, reading, user)

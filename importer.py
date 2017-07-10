@@ -21,8 +21,9 @@ import logicalCondition
 import timePassedCondition
 import timeRangeCondition
 import variable
+import logevent
 
-def storyFromJSON ( filename, prnt ):
+def storyFromJSON ( filename, prnt=[ False, False, False, False, True ] ):
 # load a story in from a .json file
     # read the file, and convert to a json object
     file = open("json/"+filename+".json", 'r')
@@ -102,8 +103,9 @@ def functionFromJSON ( json ):
         value = None
         if json["value"] == "true" or json["value"] == "false":
             value = (json["value"] == "true")
-        else:
+        elif json["value"].isdigit():
             value = int(json["value"])
+        else: value = json["value"]
         return setFunction.SetFunction(
                 json["id"],
                 json["conditions"],
@@ -170,3 +172,11 @@ def locationFromJSON ( json ):
             float(json["lat"]),
             float(json["lon"]),
             float(json["radius"]))
+
+def logEventFromJSON ( json ):
+    return logevent.LogEvent(
+            json["id"],
+            json["user"],
+            logevent.makeTime(json["date"]),
+            json["type"],
+            json["data"])

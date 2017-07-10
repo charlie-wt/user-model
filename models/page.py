@@ -26,6 +26,7 @@ class Page (base.Base):
             ls.get(story.functions, f).execute(story, reading, user)
 
     def getLoc( self, story ):
+    # get the location of this page (via location condition)
         for cond_id in self.conditions:
             cond = ls.get(story.conditions, cond_id)
             if cond.type == "location":

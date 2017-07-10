@@ -1,6 +1,7 @@
 import sys, os
 sys.path.append(os.path.join(sys.path[0], "models"))
 import time
+import json
 
 import importer as imp
 import ls
@@ -8,10 +9,11 @@ import reading as rd
 import user as us
 import decider as dc
 import page
+import logevent as le
 
 
 
-story_name = "The Titanic Criminal In Southampton"
+story_name = "Fallen branches"
 
 num_steps = 15
 
@@ -28,8 +30,8 @@ def print_visible ( vis, story, us ):
             print("\t", p.name + "\t:\t" + p.id + ", which can be accessed from anywhere.")
 
 # create story, reading & user
-sto = imp.storyFromJSON(story_name, [False, False, False, False, True ])
-reading = rd.Reading("reading-0", sto, "inprogress", time.time())
+sto = imp.storyFromJSON(story_name)
+reading = rd.Reading("reading-0", sto)
 user = us.User("user-0")
 print("There are", len(reading.vars), "variables in the story.\n")
 
@@ -52,3 +54,14 @@ for i in range(0, num_steps):
     # stop if you can't go anywhere
     if len(visible) == 0: break
     print("\n")
+
+
+# load logs
+logfile = open("json/old-logs.json", 'r')
+logs = logfile.read()
+logfile.close()
+logs_json = json.loads(logs)
+print("num logs:", len(logs_json))
+
+evnt = imp.logEventFromJSON(logs_json[0])
+print("Loaded log event", evnt.id, ":\n\tuser:", evnt.user, "\n\tdate:", evnt.date, "\n\ttype:", evnt.type, "\n\tdata:", evnt.data)
