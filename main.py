@@ -53,54 +53,32 @@ for i in range(0, num_steps):
 
     # stop if you can't go anywhere
     if len(visible) == 0: break
-    print("\n")
+    print()
 
 
 # load logs
+print("\n.LOGS.")
 logfile = open("json/old-logs.json", 'r')
 logs = logfile.read()
 logfile.close()
 logs_json = json.loads(logs)
-print("num logs:", len(logs_json))
-
-evnt = imp.logEventFromJSON(logs_json[0])
-print("Loaded log event", evnt.id, ":\n\tuser:", evnt.user, "\n\tdate:", evnt.date, "\n\ttype:", evnt.type, "\n\tdata:", evnt.data)
-
-print()
-count = 0
-types = set()
-for e in logs_json:
-    if "data" not in e:
-        count += 1
-        types.add(e["type"])
-print(count, "events have no data, with types:", types)
-
-count = 0
-types = set()
-for e in logs_json:
-    if "data" in e and "storyId" not in e["data"]:
-        count += 1
-        types.add(e["type"])
-print(count, "event datas have no story ID, with types:", types)
 
 events = []
 for e in logs_json:
-#    if "data" in e and "storyId" in e["data"] and e["data"]["storyId"] == sto.id:
     if e["type"] == "playreadingcard" and e["data"]["storyId"] == sto.id:
         events.append(imp.logEventFromJSON(e))
 events.sort(key = lambda e: e.date)
 
-# TODO - might want to do this per reading, not per user
-print()
-events_per_user = {}
+events_per_reading = {}
 for e in events:
-    if e.user not in events_per_user:
-        events_per_user[e.user] = [e]
+    if e.data["readingId"] not in events_per_reading:
+        events_per_reading[e.data["readingId"]] = [e]
         continue
-    if e.id not in events_per_user[e.user]:
-        events_per_user[e.user].append(e)
+    if e.id not in events_per_reading[e.data["readingId"]]:
+        events_per_reading[e.data["readingId"]].append(e)
 
-for u in events_per_user.keys():
-    print("user", u)
-    for e in events_per_user[u]:
+print("paths through story, per user:")
+for u in events_per_reading.keys():
+    print("reading "+u+":")
+    for e in events_per_reading[u]:
         print("\t", e.date)
