@@ -13,7 +13,7 @@ import logevent as le
 
 
 
-story_name = "Fallen branches"
+story_name = "Six Stories Of Southampton"
 
 num_steps = 15
 
@@ -65,3 +65,42 @@ print("num logs:", len(logs_json))
 
 evnt = imp.logEventFromJSON(logs_json[0])
 print("Loaded log event", evnt.id, ":\n\tuser:", evnt.user, "\n\tdate:", evnt.date, "\n\ttype:", evnt.type, "\n\tdata:", evnt.data)
+
+print()
+count = 0
+types = set()
+for e in logs_json:
+    if "data" not in e:
+        count += 1
+        types.add(e["type"])
+print(count, "events have no data, with types:", types)
+
+count = 0
+types = set()
+for e in logs_json:
+    if "data" in e and "storyId" not in e["data"]:
+        count += 1
+        types.add(e["type"])
+print(count, "event datas have no story ID, with types:", types)
+
+events = []
+for e in logs_json:
+#    if "data" in e and "storyId" in e["data"] and e["data"]["storyId"] == sto.id:
+    if e["type"] == "playreadingcard" and e["data"]["storyId"] == sto.id:
+        events.append(imp.logEventFromJSON(e))
+events.sort(key = lambda e: e.date)
+
+# TODO - might want to do this per reading, not per user
+print()
+events_per_user = {}
+for e in events:
+    if e.user not in events_per_user:
+        events_per_user[e.user] = [e]
+        continue
+    if e.id not in events_per_user[e.user]:
+        events_per_user[e.user].append(e)
+
+for u in events_per_user.keys():
+    print("user", u)
+    for e in events_per_user[u]:
+        print("\t", e.date)
