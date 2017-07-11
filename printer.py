@@ -45,7 +45,6 @@ def print_event_path ( story, path ):
     print("Path taken by user through "+story.name+":")
     for pg in path:
         page = ls.get(story.pages, pg.data["cardId"])
-
         print(pg.date, ":", pg.data["cardId"], ": ", end="")
         if page is not None:
             print(page.name)

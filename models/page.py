@@ -42,3 +42,14 @@ def update_all ( pages, story, reading, user ):
         page.update( story, reading, user )
         if page.visible: visible.append(page)
     return visible
+
+# TODO - should these be here?
+def fromLogEvent ( story, le ):
+    return ls.get(story.pages, le.data["cardId"])
+
+def fromLogEvents ( story, les ):
+    pages = []
+    for le in les:
+        new_page = fromLogEvent(story, le)
+        if new_page is not None: pages.append(new_page)
+    return pages
