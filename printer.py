@@ -2,6 +2,7 @@ import sys, os
 sys.path.append(os.path.join(sys.path[0], "models"))
 
 import location as lc
+import ls
 
 def print_story ( story, reading=None ):
 # print basic story info
@@ -35,4 +36,10 @@ def print_log_paths ( story, paths ):
         print("reading "+r+":")
         for e in paths[r]:
             print("\t", e.date)
+    print()
+
+def print_event_path ( story, path ):
+    print("Path taken by user through "+story.name+":")
+    for pg in path:
+        print(pg.date, ":", pg.data["cardId"], ":", ls.get(story.pages, pg.data["cardId"]).name)
     print()

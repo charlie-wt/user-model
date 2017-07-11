@@ -1,7 +1,5 @@
 import sys, os
 sys.path.append(os.path.join(sys.path[0], "models"))
-import time
-import json
 
 import importer as imp
 import ls
@@ -9,13 +7,12 @@ import reading as rd
 import user as us
 import decider as dc
 import page
-import logevent as le
 import traverser as tr
 import printer as pt
 
 
 
-story_name = "Six Stories Of Southampton"
+story_name = "A Walk In The Park"
 
 num_steps = 15
 
@@ -32,4 +29,8 @@ pt.print_path(sto, path)
 
 # load logs
 epr = imp.pathsFromJSON(sto, "old-logs")
-pt.print_log_paths(sto, epr)
+#pt.print_log_paths(sto, epr)
+path = []
+for pth in epr.values():
+    if len(pth) > len(path): path = pth
+pt.print_event_path(sto, path)
