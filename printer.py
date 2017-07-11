@@ -1,0 +1,38 @@
+import sys, os
+sys.path.append(os.path.join(sys.path[0], "models"))
+
+import location as lc
+
+def print_story ( story, reading=None ):
+# print basic story info
+    print("'"+story.name+"' is story", story.id, "and contains", len(story.pages), "pages,", len(story.conditions), "conditions,", len(story.functions), "functions", end="")
+    if reading is not None:
+        print(",", len(story.locations), "locations &", len(reading.vars), "variables.")
+    else:
+        print(" &", len(story.locations), "locations.")
+    print()
+
+def print_visible ( vis, story, us ):
+# print the list of visible pages in a story
+    for p in vis:
+        page_loc = p.getLoc(story)
+        if page_loc is not None:
+            dist = lc.Location.metres(us.lat(), us.lon(), page_loc[0], page_loc[1])
+            print("\t", p.name + "\t:\t" + p.id + " -> " + str(dist) + " metres away.")
+        else:
+            print("\t", p.name + "\t:\t" + p.id + ", which can be accessed from anywhere.")
+
+def print_path ( story, path ):
+# print the pages in a path
+    print("Path through "+story.name+":")
+    for p in path: print(p.name)
+    print()
+    
+def print_log_paths ( story, paths ):
+# print paths per reading, as output by log importer
+    print("Paths through "+story.name+", per reading:")
+    for r in paths.keys():
+        print("reading "+r+":")
+        for e in paths[r]:
+            print("\t", e.date)
+    print()

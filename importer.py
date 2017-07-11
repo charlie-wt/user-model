@@ -23,18 +23,14 @@ import timeRangeCondition
 import variable
 import logevent
 
-def storyFromJSON ( filename, prnt=[ False, False, False, False, True ] ):
+def storyFromJSON ( filename ):
 # load a story in from a .json file
     # read the file, and convert to a json object
     file = open("json/"+filename+".json", 'r')
     data = file.read()
     file.close()
-    if prnt[0]: print(".TEXT INPUT.\n"+data)
 
     json_object = json.loads(data)
-    if prnt[1]:
-        print(".LOADED JSON.")
-        print(json_object)
 
     # id
     story_id = json_object["id"]
@@ -54,32 +50,13 @@ def storyFromJSON ( filename, prnt=[ False, False, False, False, True ] ):
 
     # conditions
     story_conditions = []
-    if prnt[2]: print(".CONDITIONS.")
     for condition in json_object["conditions"]:
         story_conditions.append(conditionFromJSON(condition))
-        if prnt[2]: print(story_conditions[len(story_conditions)-1].id)
-    if prnt[2]: print()
-
-    # printing shenanigens
-    if prnt[3]: print(".EXISTENCE OF THE CONDITIONS OF FUNCTIONS.")
-    if prnt[3]:
-        cond_ids = (cond.id for cond in story_conditions)
-        for f in story_functions:
-            if prnt[3]:
-                cs = f.conditions
-                if len(cs) > 0:
-                    exists = True
-                    for c in cs:
-                        if c not in cond_ids: exists = False
-                    print("function", f.id, "has conditions", cs, ": do they exist? ->", exists)
-    if prnt[3]: print()
 
     # locations
     story_locations = []
     for location in json_object["locations"]:
         story_locations.append(locationFromJSON(location))
-
-    if prnt[4]: print(".STORY INFO.\n'", story_name, "' is story", story_id, "and contains", len(story_pages), "pages,", len(story_conditions), "conditions,", len(story_functions), "functions &", len(story_locations), "locations.")
 
     # combine into story
     return story.Story(story_id, story_name, story_pages, story_conditions, story_functions, story_locations)
