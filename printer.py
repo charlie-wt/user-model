@@ -39,7 +39,16 @@ def print_log_paths ( story, paths ):
     print()
 
 def print_event_path ( story, path ):
+# print the path of events taken through a story by a real user
+    if len(path) is 0: return
+
     print("Path taken by user through "+story.name+":")
     for pg in path:
-        print(pg.date, ":", pg.data["cardId"], ":", ls.get(story.pages, pg.data["cardId"]).name)
+        page = ls.get(story.pages, pg.data["cardId"])
+
+        print(pg.date, ":", pg.data["cardId"], ": ", end="")
+        if page is not None:
+            print(page.name)
+        else:
+            print(pg.data["cardLabel"], "("+pg.data["cardId"]+")", "(NOT FOUND)")
     print()

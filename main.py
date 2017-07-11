@@ -12,7 +12,7 @@ import printer as pt
 
 
 
-story_name = "A Walk In The Park"
+story_name = "Notes on an Illegible City"
 
 num_steps = 15
 
@@ -24,13 +24,26 @@ reading = rd.Reading("reading-0", sto)
 user = us.User("user-0")
 
 # traverse
-path = tr.traverse(sto, reading, user, dc.rand, num_steps )
-pt.print_path(sto, path)
+#path = tr.traverse(sto, reading, user, dc.rand, num_steps )
+#pt.print_path(sto, path)
 
 # load logs
-epr = imp.pathsFromJSON(sto, "old-logs")
-#pt.print_log_paths(sto, epr)
+epr = imp.pathsFromJSON("old-logs", sto)
+print("Found", len(epr), "readings for", sto.name+".")
 path = []
 for pth in epr.values():
     if len(pth) > len(path): path = pth
+
 pt.print_event_path(sto, path)
+
+#epr = imp.pathsFromJSON("old-logs")
+#counts = {}
+#for pth in epr.values():
+#    story_id = pth[0].data["storyId"]
+#    if story_id in counts:
+#        counts[story_id] += 1
+#    else:
+#        counts[story_id] = 1
+#
+#for st in counts:
+#    print(st, ":", counts[st])

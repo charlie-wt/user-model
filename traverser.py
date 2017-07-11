@@ -22,6 +22,6 @@ def traverse ( story, reading, user, fn, num_steps=10, prnt=False, visible=[] ):
         if prnt: pt.print_visible(visible, story, user)
 
         # stop if you can't go anywhere
-        if len(visible) == 0: break
+        if len(visible) == 0 or user.page().name == "Finish" or user.page() == "Finish Story": break
         if prnt: print()
     return path
