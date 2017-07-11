@@ -12,7 +12,7 @@ def traverse ( story, reading, user, fn, num_steps=10, prnt=False, visible=[] ):
     if prnt: print("traversing "+story.name+":")
     for i in range(0, num_steps):
         # move to a new page
-        move_to_idx = fn(user, story, visible)
+        move_to_idx = fn(user, story, path, visible)
         visible = user.move(move_to_idx, visible, story, reading)
         path.append(user.page())
 

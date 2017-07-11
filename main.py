@@ -2,7 +2,6 @@ import sys, os
 sys.path.append(os.path.join(sys.path[0], "models"))
 
 import importer as imp
-import ls
 import reading as rd
 import user as us
 import decider as dc
@@ -24,14 +23,15 @@ reading = rd.Reading("reading-0", sto)
 user = us.User("user-0")
 
 # traverse
-#path = tr.traverse(sto, reading, user, dc.rand, num_steps )
-#pt.print_path(sto, path)
+path = tr.traverse(sto, reading, user, dc.guess, num_steps, True )
+print("--- done ---\n")
+pt.print_path(sto, path)
 
 # load logs
-ppr = imp.pathsFromJSON("old-logs", sto)
-print("Found", len(ppr), "readings for", sto.name+".")
-path = []
-for pth in ppr.values():
-    if len(pth) > len(path): path = pth
-pages = page.fromLogEvents(sto, path)
-pt.print_path(sto, pages)
+#ppr = imp.pathsFromJSON("old-logs", sto)
+#print("Found", len(ppr), "readings for", sto.name+".")
+#path = []
+#for pth in ppr.values():
+#    if len(pth) > len(path): path = pth
+#pages = page.fromLogEvents(sto, path)
+#pt.print_path(sto, pages)
