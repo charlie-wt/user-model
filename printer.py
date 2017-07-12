@@ -28,7 +28,7 @@ def print_path ( story, path ):
     print("Path through "+story.name+":")
     for p in path: print(p.name)
     print()
-    
+
 def print_log_paths ( story, paths ):
 # print paths per reading, as output by log importer
     print("Paths through "+story.name+", per reading:")
@@ -51,3 +51,10 @@ def print_event_path ( story, path ):
         else:
             print(pg.data["cardLabel"], "("+pg.data["cardId"]+")", "(NOT FOUND)")
     print()
+
+def print_page_ranking ( pages, probs ):
+# print pages & their probabilities. Assumes desired ordering.
+    print("Page rankings:")
+    for i in range(0, len(pages)):
+        print(pages[i].name, ":", probs[i])
+    print("---")

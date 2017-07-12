@@ -4,7 +4,7 @@ sys.path.append(os.path.join(sys.path[0], "models"))
 import page
 import printer as pt
 
-def traverse ( story, reading, user, fn, num_steps=10, prnt=False, visible=[] ):
+def traverse ( story, reading, user, ranker, decider, num_steps=10, prnt=False, visible=[] ):
     path = []
     visible = page.update_all(story.pages, story, reading, user)
 
@@ -12,7 +12,7 @@ def traverse ( story, reading, user, fn, num_steps=10, prnt=False, visible=[] ):
     if prnt: print("traversing "+story.name+":")
     for i in range(0, num_steps):
         # move to a new page
-        move_to_idx = fn(user, story, path, visible)
+        move_to_idx = decider(visible, ranker(user, story, path, visible))
         visible = user.move(move_to_idx, visible, story, reading)
         path.append(user.page())
 

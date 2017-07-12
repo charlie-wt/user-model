@@ -150,7 +150,7 @@ def locationFromJSON ( json ):
             float(json["lon"]),
             float(json["radius"]))
 
-def pathsFromJSON ( filename, story=None ):
+def pathEventsFromJSON ( filename, story=None ):
 # read a log file and return a dictionary containing the paths taken through the
 # specified story, per reading.
     # load file
@@ -180,6 +180,18 @@ def pathsFromJSON ( filename, story=None ):
             events_per_reading[e.data["readingId"]].append(e)
     
     return events_per_reading
+
+def pathPagesFromJSON ( filename, story ):
+# same as pathEventsFromJSON, but the dictionary contains lists of pages,
+# instead of lists of events
+    epr = pathEventsFromJSON(filename, story)
+    ppr = {}
+    
+    for r in epr:
+        pages = page.fromLogEvents(story, epr[r])
+        ppr[r] = pages
+    
+    return ppr
 
 def logEventFromJSON ( json ):
     return logevent.LogEvent(
