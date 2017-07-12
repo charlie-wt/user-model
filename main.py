@@ -15,7 +15,7 @@ import analyser as an
 
 story_name = "Notes on an Illegible City"
 
-num_steps = 15
+num_steps = 35
 
 
 
@@ -39,10 +39,22 @@ page = sto.pages[move_to_idx]
 
 for i in range(0, num_steps):
     options = an.get_path_distribution(page, paths_per_reading, True)
+
+    to_delete = [ k for k, v in options.items() if k not in visible ]
+
+    # TODO - for some reason if I get rid of these print statements it break
+    print("\nHave to delete:")
+    for k in to_delete:
+        print(k.name) if type(k) != int else print("--End--")
+
+    for k in to_delete: del options[k]
+
     move_to = an.pick_most_likely(options)
-    user.path.append(move_to)
+    visible = user.move(visible.index(move_to), visible, sto, reading)
     page = move_to
 
-    if pg.last(page): break
+    if pg.last(page):
+        print("finished at page", page.name)
+        break
 
     print("\nNow at", page.name)

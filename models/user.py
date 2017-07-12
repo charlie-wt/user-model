@@ -14,9 +14,9 @@ class User ( base.Base ):
     def page ( self ):
         return self.path[len(self.path)-1] if len(self.path) > 0 else None
 
-    def move ( self, id, pages, story, reading ):
+    def move ( self, page_id, pages, story, reading ):
         # move to a new page
-        self.path.append(pages[id])
+        self.path.append(pages[page_id])
 
         # update player's location (lat, lon) to that of new page, if applicable
         page_loc = self.page().getLoc(story)
