@@ -1,7 +1,8 @@
-##### analyser ###############
-# various functions to analyse a set of readings of a story
-##############################
+import printer as pt
 
+##### analyser ###############
+# various functions to analyse a set of readings of a story.
+##############################
 
 def get_path_distribution ( page, ppr, prnt=False ):
 # return dictionary of page : proportion of times it was picked from given page.
@@ -22,13 +23,7 @@ def get_path_distribution ( page, ppr, prnt=False ):
         options[o] = options[o] * factor
 
     # print
-    if prnt:
-        print("Options from "+page.name+":")
-        for p in options:
-            name = "--End--"
-            if type(p) != int: name = p.name
-            percent = int(options[p] * 100)
-            print(name, ":", str(percent)+"%")
+    if prnt: pt.print_options(options, page)
 
     return options
 

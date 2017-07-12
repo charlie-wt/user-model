@@ -43,13 +43,24 @@ def update_all ( pages, story, reading, user ):
         if page.visible: visible.append(page)
     return visible
 
-# TODO - should these be here?
 def fromLogEvent ( story, le ):
+# turn 'go to page' log event into a page
     return ls.get(story.pages, le.data["cardId"])
 
 def fromLogEvents ( story, les ):
+# turn 'go to page' log events into pages
     pages = []
     for le in les:
         new_page = fromLogEvent(story, le)
         if new_page is not None: pages.append(new_page)
     return pages
+
+def last ( page, visible=None ):
+# is this page the last in its story?
+    check = \
+           page == None \
+        or page == 0 \
+        or page.name == "Finish" \
+        or page.name == "Finish Story"
+    if visible is not None: check = check or len(visible) == 0
+    return check

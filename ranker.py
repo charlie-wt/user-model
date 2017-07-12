@@ -11,7 +11,7 @@ import random
 ###### ranker ################
 # take visible pages, and return probability distribution of them for which
 # page to choose via one of the functions. output to be given to some decider
-# function
+# function.
 ##############################
 
 def dist ( user, story, path, pages ):

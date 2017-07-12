@@ -23,6 +23,10 @@ import timeRangeCondition
 import variable
 import logevent
 
+##### importer ###############
+# a set of functions to import various structures from json files.
+##############################
+
 def storyFromJSON ( filename ):
 # load a story in from a .json file
     # read the file, and convert to a json object
