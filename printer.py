@@ -29,9 +29,9 @@ def print_visible ( vis, story, us ):
         page_loc = p.getLoc(story)
         if page_loc is not None:
             dist = lc.metres(us.lat(), us.lon(), page_loc[0], page_loc[1])
-            print("\t", p.name + "\t:\t" + p.id + " -> " + str(dist) + " metres away.")
+            print("\t", p.id + "\t:\t" + p.name + " -> " + str(dist) + " metres away.")
         else:
-            print("\t", p.name + "\t:\t" + p.id + ", which can be accessed from anywhere.")
+            print("\t", p.id + "\t:\t" + p.name + ", which can be accessed from anywhere.")
 
 def print_path ( story, path ):
 # print the pages in a path
@@ -82,7 +82,8 @@ def print_options ( options, page ):
 
 def pc ( num ):
 # percentify a 0-1 fraction
-    return str(int(num*100))+"%"
+    p = str(int(num*100))+"%"
+    return " "+p if num < 0.1 else p
 
 def print_walk_full_options ( visible, options ):
 # print visible pages, options taken by users and their intersection (for use

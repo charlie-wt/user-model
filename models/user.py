@@ -12,7 +12,7 @@ class User ( base.Base ):
         self.path = []
 
     def page ( self ):
-        return self.path[len(self.path)-1] if len(self.path) > 0 else None
+        return self.path[-1] if self.path else None
 
     def move ( self, page_id, pages, story, reading ):
         # move to a new page

@@ -16,7 +16,7 @@ import ls
 
 story_name = "Notes on an Illegible City"
 
-num_steps = 35
+num_steps = 15
 
 
 
@@ -31,5 +31,10 @@ user = us.User("user-0")
 #pt.print_path(sto, user.path)
 
 # load logs
-paths_per_reading = imp.pathPagesFromJSON("old-logs", sto, True)
-an.walk(sto, reading, user, paths_per_reading, 15, True)
+paths_per_reading = imp.pathPagesFromJSON("old-logs", sto)
+store = an.walk(sto, reading, user, paths_per_reading, num_steps)
+pt.print_path(sto, user.path)
+for r in store:
+    print("page:", r.page.name)
+    for o in r.options:
+        print("\t"+pt.pc(r.options[o]), ":", (o.name if type(o) != int else "--Quit--"))
