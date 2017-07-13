@@ -79,3 +79,25 @@ def print_options ( options, page ):
         if type(p) != int: name = p.name
         percent = int(options[p] * 100)
         print(name, ":", str(percent)+"%")
+
+def pc ( num ):
+# percentify a 0-1 fraction
+    return str(int(num*100))+"%"
+
+def print_walk_full_options ( visible, options ):
+# print visible pages, options taken by users and their intersection (for use
+# during analysis walks).
+    print("popularity of pages:\n\tvisible:")
+    for p in visible:
+        amount = 0
+        for o in options.keys():
+            if type(o) != int and o.name == p.name:
+                amount = options[o]
+                break
+        print("\t\t"+p.name, ":", pc(amount))
+    print("\tnot visible/quit:")
+    for o in options.keys():
+        if type(o) == int:
+            print("\t\t--Quit-- :", pc(options[o]))
+        elif o not in visible:
+            print("\t\t"+o.name, pc(options[o]))

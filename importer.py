@@ -154,7 +154,7 @@ def locationFromJSON ( json ):
             float(json["lon"]),
             float(json["radius"]))
 
-def pathEventsFromJSON ( filename, story=None ):
+def pathEventsFromJSON ( filename, prnt=False, story=None ):
 # read a log file and return a dictionary containing the paths taken through the
 # specified story, per reading.
     # load file
@@ -174,27 +174,32 @@ def pathEventsFromJSON ( filename, story=None ):
     events.sort(key = lambda e: e.date)
 
     # convert list into dictionary, arranged per reading
-    # dict = { reading_id1 : [ event_1, ..., event_n ], reading_id2 : ... }
-    events_per_reading = {}
+    # epr = { reading_id1 : [ event_1, ..., event_n ], reading_id2 : ... }
+    epr = {}
     for e in events:
-        if e.data["readingId"] not in events_per_reading:
-            events_per_reading[e.data["readingId"]] = [e]
+        if e.data["readingId"] not in epr:
+            epr[e.data["readingId"]] = [e]
             continue
-        if e.id not in events_per_reading[e.data["readingId"]]:
-            events_per_reading[e.data["readingId"]].append(e)
+        if e.id not in epr[e.data["readingId"]]:
+            epr[e.data["readingId"]].append(e)
     
-    return events_per_reading
+    if prnt:
+        print("Found", len(epr), "readings", end="")
+        if story is not None: print(" for", story.name+".")
+        else: print(".")
+    return epr
 
-def pathPagesFromJSON ( filename, story ):
+def pathPagesFromJSON ( filename, story, prnt=False ):
 # same as pathEventsFromJSON, but the dictionary contains lists of pages,
 # instead of lists of events
-    epr = pathEventsFromJSON(filename, story)
+    epr = pathEventsFromJSON(filename, False, story)
     ppr = {}
     
     for r in epr:
         pages = page.fromLogEvents(story, epr[r])
         ppr[r] = pages
     
+    if prnt: print("Found", len(ppr), "readings for", story.name+".")
     return ppr
 
 def logEventFromJSON ( json ):
