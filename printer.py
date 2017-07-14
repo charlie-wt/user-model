@@ -29,9 +29,9 @@ def print_visible ( vis, story, us ):
         page_loc = p.getLoc(story)
         if page_loc is not None:
             dist = lc.metres(us.lat(), us.lon(), page_loc[0], page_loc[1])
-            print("\t", p.id + "\t:\t" + p.name + " -> " + str(dist) + " metres away.")
+            print("\t" + p.id + " : " + p.name + " -> " + str(dist) + " metres away.")
         else:
-            print("\t", p.id + "\t:\t" + p.name + ", which can be accessed from anywhere.")
+            print("\t" + p.id + " : " + p.name + ", which can be accessed from anywhere.")
 
 def print_path ( story, path ):
 # print the pages in a path

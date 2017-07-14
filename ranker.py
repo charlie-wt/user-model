@@ -55,7 +55,7 @@ def guess ( user, story, path, pages ):
     # visited before = worse
     for i in range(0, len(by_distance)):
         if hs.visited_before(by_distance[i], path):
-            chances[i] = chances[i]/2
+            chances[i] = chances[i] * 0.1
 
     # normalise
     factor = 1 / sum(chances)

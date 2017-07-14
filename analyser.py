@@ -25,9 +25,10 @@ def get_path_distribution ( page, ppr, prnt=False ):
             options[next_page] = options[next_page] + 1 if next_page in options else 1
 
     # normalise
-    factor = 1 / sum(options.values())
-    for o in options:
-        options[o] = options[o] * factor
+    if sum(options.values()) != 0:
+        factor = 1 / sum(options.values())
+        for o in options:
+            options[o] = options[o] * factor
 
     if prnt: pt.print_options(options, page)
     return options
@@ -61,7 +62,7 @@ def walk ( story, reading, user, paths_per_reading, max_steps=15, prnt=False, st
 
     path = []
     # traverse
-    for i in range(0, max_steps):
+    for i in range(0, max_steps-1):
         # get list of pages to visit from logs, eliminate the unreachable
         if prnt: print("---")
 #        prev_page = user.page()

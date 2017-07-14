@@ -9,13 +9,13 @@ import record as rc
 # for simulating a user moving through a story.
 ##############################
 
-def traverse ( story, reading, user, ranker, decider, num_steps=10, prnt=False, visible=[] ):
+def traverse ( story, reading, user, ranker, decider, max_steps=10, prnt=False, visible=[] ):
     visible = page.update_all(story.pages, story, reading, user)
 
     path = []
     # move to a page
     if prnt: print("traversing "+story.name+":")
-    for i in range(0, num_steps):
+    for i in range(0, max_steps):
         # move to a new page
         options = ranker(user, story, user.path, visible)
 
