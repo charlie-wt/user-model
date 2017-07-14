@@ -79,15 +79,12 @@ def walk ( story, reading, user, paths_per_reading, max_steps=15, prnt=False, st
 
         rc.add(path, prev_page, options, visible)
 
-        # TODO - need to copy options into path if I want to do it like this:
-        #        currently am putting reference to options in path, meaning
-        #        adding quit to path re-adds quit to options: bad.
-#        if quit is not None: path[-1].options[0] = quit
-
         # pick one of the remaining pages and move to it
         move_to = pick_most_likely(options)
         visible = user.move(visible.index(move_to), visible, story, reading)
         if prnt: print("\n[[ Chose", user.page().name, "]]")
+
+        if quit is not None: path[-1].options[0] = quit
 
         # stop if end reached
         if pg.last(user.page()):
