@@ -66,8 +66,7 @@ def print_page_ranking ( pages, probs ):
 # print pages & their probabilities. Assumes desired ordering.
     print("Page rankings:")
     for i in range(0, len(pages)):
-        percent = int(probs[i] * 100)
-        print(pages[i].name, ":", str(percent)+"%")
+        print(pc(probs[i]), ":", pages[i].name)
     print("---")
 
 def print_options ( options, page ):
@@ -77,8 +76,7 @@ def print_options ( options, page ):
     for p in options:
         name = "--End--"
         if type(p) != int: name = p.name
-        percent = int(options[p] * 100)
-        print(name, ":", str(percent)+"%")
+        print(pc(options[p]), ":", name)
 
 def pc ( num ):
 # percentify a 0-1 fraction
@@ -102,3 +100,15 @@ def print_walk_full_options ( visible, options ):
             print("\t\t--Quit-- :", pc(options[o]))
         elif o not in visible:
             print("\t\t"+o.name, pc(options[o]))
+
+def print_sim_log_comparison ( sim_path, log_path ):
+# compare the paths taken by a simulation, and an analysis walk
+    print("-------------------------------------------------------------------")
+    print("sim                               log")
+    print("-------------------------------------------------------------------")
+    for i in range(0, max(len(sim_path), len(log_path))):
+        s_name = sim_path[i].name if i < len(sim_path) else "---"
+        l_name = log_path[i].name if i < len(log_path) else "---"
+
+        left_pad = 34 - len(s_name)
+        print(s_name + " "*left_pad + l_name)

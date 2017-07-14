@@ -64,9 +64,9 @@ def walk ( story, reading, user, paths_per_reading, max_steps=15, prnt=False, st
     for i in range(0, max_steps):
         # get list of pages to visit from logs, eliminate the unreachable
         if prnt: print("---")
-        prev_page = user.page()
+#        prev_page = user.page()
         options = get_path_distribution(user.page(), paths_per_reading)
-        quit = options[0] if 0 in options else None
+        quit = options[0] if 0 in options else 0
         if prnt: pt.print_walk_full_options(visible, options)
 
         to_delete = [ k for k, v in options.items() if k not in visible ]
@@ -77,14 +77,14 @@ def walk ( story, reading, user, paths_per_reading, max_steps=15, prnt=False, st
             for o in options:
                 print("\t"+o.name)
 
-        rc.add(path, prev_page, options, visible)
+        rc.add(path, user.page(), options, visible)
 
         # pick one of the remaining pages and move to it
         move_to = pick_most_likely(options)
         visible = user.move(visible.index(move_to), visible, story, reading)
         if prnt: print("\n[[ Chose", user.page().name, "]]")
 
-        if quit is not None: path[-1].options[0] = quit
+        path[-1].options[0] = quit
 
         # stop if end reached
         if pg.last(user.page()):
