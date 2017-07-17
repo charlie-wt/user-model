@@ -1,6 +1,9 @@
 ##### record #################
 # contains more full state info for when walking through a story than just a
 # list of the pages visited.
+# info:
+#     options: a dictionary containing page : probability, expressing the chance
+#              of choosing that page from the current self.page
 ##############################
 
 class Record:
