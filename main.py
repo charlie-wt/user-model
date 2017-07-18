@@ -37,7 +37,10 @@ log_store = an.walk(story, reading, user, paths_per_reading, max_steps)
 log_path = user.path[:]
 
 pt.print_sim_log_comparison(sim_path, log_path)
-print("edit difference between paths:", str(an.compare_paths(story, sim_store, log_store)))
+#print("edit difference between paths:", str(an.compare_paths(story, sim_store, log_store)))
+
+print(an.levenshtein("increase", "decrease"))
+#print(an.levenshtein("subjectivism", "objectivism"))
 
 #print()
 #print("St Michael's Church:")

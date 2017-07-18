@@ -6,6 +6,7 @@ import decider as dc
 import page as pg
 import printer as pt
 import record as rc
+import ls
 
 ##### analyser ###############
 # various functions to analyse a set of readings of a story.
@@ -98,14 +99,14 @@ def compare_paths ( story, store1, store2 ):
 # compare two paths taken through a story.
 # TODO - don't just take into account the final path - also probabilities along
 #        the way.
-# TODO - currently getting a nonetype error
-    path1 = [ story.pages.index(p.page.id) for p in store1 if type(p) != int ]
-    path2 = [ story.pages.index(p.page.id) for p in store2 if type(p) != int ]
+    path1 = [-1] + [ ls.index(story.pages, p.page.id) for p in store1[1:] if type(p) != int ]
+    path2 = [-1] + [ ls.index(story.pages, p.page.id) for p in store2 if type(p) != int ]
     
     return levenshtein(path1, path2)
 
 def levenshtein ( s1, s2, l1=None, l2=None ):
 # get the edit distance between two strings
+# TODO - This is inefficient ( O(n^2) ) to the point of infeasibility.
     if l1 == None: l1 = len(s1)
     if l2 == None: l2 = len(s2)
     if min(l1, l2) == 0:
