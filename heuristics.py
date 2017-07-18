@@ -1,6 +1,7 @@
 import sys, os
 sys.path.append(os.path.join(sys.path[0], "models"))
 import location as l
+import ls
 
 ##### heuristics #############
 # a set of functions by which to judge a page's appealingness. To be used in
@@ -13,6 +14,6 @@ def distance ( page, user, story ):
     if page_loc is None: page_loc = user.loc
     return l.metres(user.lat(), user.lon(), page_loc[0], page_loc[1])
 
-def visited_before ( page, path ):
+def visits ( page, path ):
 # has the user visited this node before?
-    return page in path
+    return ls.count(path, page)

@@ -48,18 +48,36 @@ def walk ( story, reading, user, paths_per_reading, max_steps=15, prnt=False, st
 # walk through a story, based on the most popular user choices.
 #   note: choosing a start_page that's not actually a starting page of the story
 #         may break variable/condition stuff
+    if len(paths_per_reading) == 0:
+        print("there are no readings for", story.name+", and thus it cannot be walked.")
+        return
     # set things up, choose a starting page
     visible = pg.update_all(story.pages, story, reading, user)
-    if prnt:
-        print("visible:")
-        for p in visible:
-            print("\t"+p.name)
-    move_to_idx = dc.best(visible, rk.dist(user, story, user.path, visible))
-    if start_page is not None:
-        for p in visible:
-            if p.name == start_page: move_to_idx = visible.index(p)
+
+    #if prnt:
+    #    print("visible:")
+    #    for p in visible:
+    #        print("\t"+p.name)
+    #move_to_idx = dc.best(visible, rk.dist(user, story, user.path, visible))
+    #if start_page is not None:
+    #    for p in visible:
+    #        if p.name == start_page: move_to_idx = visible.index(p)
+
+    
+    firsts = {}
+    for r in paths_per_reading:
+        if len(paths_per_reading[r]) == 0: continue
+        if paths_per_reading[r][0] not in firsts:
+            firsts[paths_per_reading[r][0]] = 1
+        else:
+            firsts[paths_per_reading[r][0]] += 1
+    first = max(firsts, key = lambda p : firsts[p])
+
+    move_to_idx = ls.index(visible, first.id)
     visible = user.move(move_to_idx, visible, story, reading)
-    if prnt: print("\nStart on", user.page().name, "\n\n=== start walk ===\n")
+    if prnt: print("\nStart on", user.page().name,
+                   "("+str(firsts[first]), "votes)",
+                   "\n\n=== start walk ===\n")
 
     path = []
     # traverse

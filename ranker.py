@@ -34,10 +34,10 @@ def dist ( user, story, path, pages ):
 
 def rand ( user, story, path, pages ):
 # random
-    choice = math.floor(random.random() * len(pages))
+    prob = 1 / len(pages)
     options = {}
     for i in range(0, len(pages)):
-        options[pages[i]] = 1 if i == choice else 0
+        options[pages[i]] = prob
     return options
 
 def guess ( user, story, path, pages ):
@@ -54,8 +54,7 @@ def guess ( user, story, path, pages ):
 
     # visited before = worse
     for i in range(0, len(by_distance)):
-        if hs.visited_before(by_distance[i], path):
-            chances[i] = chances[i] * 0.1
+        chances[i] = chances[i] * (0.1)**hs.visits(by_distance[i].id, path)
 
     # normalise
     factor = 1 / sum(chances)
