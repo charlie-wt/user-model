@@ -95,23 +95,30 @@ def walk ( story, reading, user, paths_per_reading, max_steps=15, prnt=False, st
     if prnt: print("... max steps exceeded ...")
     return path
 
-def compare_paths ( story, store1, store2 ):
+def compare_paths ( story, store1, store2, prnt=False ):
 # compare two paths taken through a story.
 # TODO - don't just take into account the final path - also probabilities along
 #        the way.
     path1 = [-1] + [ ls.index(story.pages, p.page.id) for p in store1[1:] if type(p) != int ]
     path2 = [-1] + [ ls.index(story.pages, p.page.id) for p in store2 if type(p) != int ]
-    
-    return levenshtein(path1, path2)
 
-def path_similarity ( story, store1, store2 ):
+    difference = levenshtein(path1, path2)
+
+    if prnt: print("path edit difference:", difference)
+    return difference
+
+def path_similarity ( story, store1, store2, prnt=False ):
 # get the proportional similarity between two paths
     #minimum = abs(len(store1) - len(store2))
     minimum = 0
     maximum = max(len(store1), len(store2))
     possible_range = maximum - minimum
     dist = compare_paths(story, store1, store2)
-    return 1 - (dist-minimum)/possible_range if possible_range != 0 else 1
+
+    similarity = 1 - (dist-minimum)/possible_range if possible_range != 0 else 1
+
+    if prnt: print("similarity of paths:", pt.pc(similarity))
+    return similarity
 
 def levenshtein ( s1, s2 ):
 # get the edit distance between two strings
@@ -141,10 +148,29 @@ def levenshtein ( s1, s2 ):
     # bottom right of matrix = total dist
     return v0[-1]
 
-def levenshtein_similarity ( s1, s2 ):
+def levenshtein_similarity ( s1, s2, prnt=False ):
 # get proportional similarity between two strings
     minimum = 0
     maximum = max(len(s1), len(s2))
     possible_range = maximum - minimum
     dist = levenshtein(s1, s2)
-    return 1 - (dist-minimum)/possible_range if possible_range != 0 else 1
+
+    similarity = 1 - (dist-minimum)/possible_range if possible_range != 0 else 1
+
+    if prnt: print("similarity of", str(s1), "and", str(s2)+":", pt.pc(similarity))
+    return similarity
+
+def page_visits ( story, store, prnt=False ):
+# get the number of times each page in the story was visited
+    visits = []
+    path = [ p.page for p in store if p.page != None ]
+
+    for p in story.pages:
+        visits.append((p, ls.count(path, p.id)))
+
+    if prnt:
+        print("number of visits per page:")
+        for v in visits:
+            print(v[1], ":", v[0].name)
+
+    return visits

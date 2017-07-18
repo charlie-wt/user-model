@@ -18,3 +18,9 @@ def save ( ls, item ):
         ls[idx] = item
         return
     ls.append(item)
+
+def count ( ls, id ):
+    count = 0
+    for item in ls:
+        if item.id == id: count += 1
+    return count

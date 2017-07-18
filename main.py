@@ -40,3 +40,5 @@ pt.print_sim_log_comparison(sim_path, log_path)
 print("max diff:", max(len(sim_path), len(log_path)))
 print("dist:", an.compare_paths(story, sim_store, log_store))
 print("similarity of paths:", pt.pc(an.path_similarity(story, sim_store, log_store)))
+
+visits = an.page_visits(story, log_store, True)
