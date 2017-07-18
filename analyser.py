@@ -104,16 +104,29 @@ def compare_paths ( story, store1, store2 ):
     
     return levenshtein(path1, path2)
 
-def levenshtein ( s1, s2, l1=None, l2=None ):
+def levenshtein ( s1, s2 ):
 # get the edit distance between two strings
-# TODO - This is inefficient ( O(n^2) ) to the point of infeasibility.
-    if l1 == None: l1 = len(s1)
-    if l2 == None: l2 = len(s2)
-    if min(l1, l2) == 0:
-        return max(l1, l2)
-    else:
-        indicator = (0 if s1[l1-1] == s2[l2-1] else 1)
-        return min(
-                levenshtein(s1, s2, l1 - 1, l2) + 1,
-                levenshtein(s1, s2, l1, l2 - 1) + 1,
-                levenshtein(s1, s2, l1 - 1, l2 - 1) + indicator)
+# based off implementation @ https://en.wikipedia.org/wiki/Levenshtein_distance#Iterative_with_two_matrix_rows
+
+    # v0: row above the current row in the matrix.
+    #     initialise to top row; row where s1 = ""
+    v0 = list(range(0, len(s2)+1))
+    # v1: current row being calculated.
+    v1 = [0] * (len(s2)+1)
+
+    # fill v1, as distance from v0
+    for i in range(0, len(s1)):
+        v1[0] = i + 1
+
+        for j in range(0, len(s2)):
+            # substitution cost (0 if chars are the same -> no substitution)
+            cost = 0 if s1[i] == s2[j] else 1
+
+            v1[j+1] = min(v1[j] + 1,    # deletion
+                          v0[j+1] + 1,  # insertion
+                          v0[j] + cost) # substitution
+
+        # current row -> previous row for next iteration
+        v0 = v1[:]
+
+    return v0[-1]
