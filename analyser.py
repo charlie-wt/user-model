@@ -104,6 +104,15 @@ def compare_paths ( story, store1, store2 ):
     
     return levenshtein(path1, path2)
 
+def path_similarity ( story, store1, store2 ):
+# get the proportional similarity between two paths
+    #minimum = abs(len(store1) - len(store2))
+    minimum = 0
+    maximum = max(len(store1), len(store2))
+    possible_range = maximum - minimum
+    dist = compare_paths(story, store1, store2)
+    return 1 - (dist-minimum)/possible_range if possible_range != 0 else 1
+
 def levenshtein ( s1, s2 ):
 # get the edit distance between two strings
 # based off implementation @ https://en.wikipedia.org/wiki/Levenshtein_distance#Iterative_with_two_matrix_rows
@@ -129,4 +138,13 @@ def levenshtein ( s1, s2 ):
         # current row -> previous row for next iteration
         v0 = v1[:]
 
+    # bottom right of matrix = total dist
     return v0[-1]
+
+def levenshtein_similarity ( s1, s2 ):
+# get proportional similarity between two strings
+    minimum = 0
+    maximum = max(len(s1), len(s2))
+    possible_range = maximum - minimum
+    dist = levenshtein(s1, s2)
+    return 1 - (dist-minimum)/possible_range if possible_range != 0 else 1

@@ -37,18 +37,6 @@ log_store = an.walk(story, reading, user, paths_per_reading, max_steps)
 log_path = user.path[:]
 
 pt.print_sim_log_comparison(sim_path, log_path)
-print("edit difference between paths:", str(an.compare_paths(story, sim_store, log_store)))
-#print(an.levenshtein("objectivism", "subjectivism"))
-
-#print()
-#print("St Michael's Church:")
-#for r in log_store:
-#    if r.page.name == "St Michael's Church":
-#        print("log:")
-#        for o in r.options:
-#            print("\t"+pt.pc(r.options[o]), ":", (o.name if type(o) != int else "--Quit--"))
-#for r in sim_store:
-#    if r.page is not None and r.page.name == "St Michael's Church":
-#        print("sim:")
-#        for o in r.options:
-#            print("\t"+pt.pc(r.options[o]), ":", (o.name if type(o) != int else "--Quit--"))
+print("max diff:", max(len(sim_path), len(log_path)))
+print("dist:", an.compare_paths(story, sim_store, log_store))
+print("similarity of paths:", pt.pc(an.path_similarity(story, sim_store, log_store)))
