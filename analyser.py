@@ -34,6 +34,37 @@ def get_path_distribution ( page, ppr, prnt=False ):
     if prnt: pt.print_options(options, page)
     return options
 
+def get_path_distribution_discourage_loops ( page, ppr, path, prnt=False ):
+# return dictionary of page : proportion of times it was picked from given page.
+# TODO - bit of a hack to stop the analysis walk from looping around the same
+#        page forever (to see this, try 'The Titanic Criminal In Southampton',
+#        but replace the call to this function in walk with one to
+#        one to get_path_distribution).
+    options = {}
+
+    for r in ppr:
+        if page not in ppr[r]: continue
+        idx = ppr[r].index(page)
+        if idx == len(ppr[r]) - 1:
+            options[0] = options[0] + 1 if 0 in options else 1
+        else:
+            next_page = ppr[r][idx+1]
+            options[next_page] = options[next_page] + 1 if next_page in options else 1
+
+    # discourage revisiting nodes
+    for p in options:
+        if type(p) == int: continue
+        options[p] = options[p] * (0.5)**ls.count(path, p.id)
+
+    # normalise
+    if sum(options.values()) != 0:
+        factor = 1 / sum(options.values())
+        for o in options:
+            options[o] = options[o] * factor
+
+    if prnt: pt.print_options(options, page)
+    return options
+
 def pick_most_likely ( options ):
 # for a dictionary of page : likelihood, return the page with the highest.
     if len(options) == 0: return None
@@ -49,21 +80,12 @@ def walk ( story, reading, user, paths_per_reading, max_steps=15, prnt=False, st
 #   note: choosing a start_page that's not actually a starting page of the story
 #         may break variable/condition stuff
     if len(paths_per_reading) == 0:
-        print("there are no readings for", story.name+", and thus it cannot be walked.")
+        print("can't walk", story.name+"; no logged readings.")
         return
+
     # set things up, choose a starting page
     visible = pg.update_all(story.pages, story, reading, user)
 
-    #if prnt:
-    #    print("visible:")
-    #    for p in visible:
-    #        print("\t"+p.name)
-    #move_to_idx = dc.best(visible, rk.dist(user, story, user.path, visible))
-    #if start_page is not None:
-    #    for p in visible:
-    #        if p.name == start_page: move_to_idx = visible.index(p)
-
-    
     firsts = {}
     for r in paths_per_reading:
         if len(paths_per_reading[r]) == 0: continue
@@ -72,9 +94,9 @@ def walk ( story, reading, user, paths_per_reading, max_steps=15, prnt=False, st
         else:
             firsts[paths_per_reading[r][0]] += 1
     first = max(firsts, key = lambda p : firsts[p])
-
     move_to_idx = ls.index(visible, first.id)
     visible = user.move(move_to_idx, visible, story, reading)
+
     if prnt: print("\nStart on", user.page().name,
                    "("+str(firsts[first]), "votes)",
                    "\n\n=== start walk ===\n")
@@ -84,7 +106,8 @@ def walk ( story, reading, user, paths_per_reading, max_steps=15, prnt=False, st
     for i in range(0, max_steps-1):
         # get list of pages to visit from logs, eliminate the unreachable
         if prnt: print("---")
-        options = get_path_distribution(user.page(), paths_per_reading)
+#        options = get_path_distribution(user.page(), paths_per_reading)
+        options = get_path_distribution_discourage_loops(user.page(), paths_per_reading, user.path)
         quit = options[0] if 0 in options else 0
         if prnt: pt.print_walk_full_options(visible, options)
 
