@@ -11,17 +11,21 @@ class Location (base.Base):
         self.radius = radius
 
     def withinBounds ( self, loc ):
-        return metres(self.lat, self.lon, loc.lat, loc.lon) < self.radius
+#        return metres(self.lat, self.lon, loc.lat, loc.lon) < self.radius
+        return metres((self.lat, self.lon), (loc.lat, loc.lon)) < self.radius
 
-def metres ( lat1, lon1, lat2, lon2 ):
+def metres ( loc1, loc2 ):
     r = 12742000
-    dLat = deg2rad(lat2 - lat1)
-    dLon = deg2rad(lon2 - lon1)
+#    dLat = deg2rad(lat2 - lat1)
+#    dLon = deg2rad(lon2 - lon1)
+    dLat = deg2rad(loc2[0] - loc1[0])
+    dLon = deg2rad(loc2[1] - loc1[1])
 
     dLatSin = math.sin(dLat / 2)
     dLonSin = math.sin(dLon / 2)
 
-    a = dLatSin**2 + math.cos(deg2rad(lat1)) * math.cos(deg2rad(lat2)) * dLonSin**2
+#    a = dLatSin**2 + math.cos(deg2rad(lat1)) * math.cos(deg2rad(lat2)) * dLonSin**2
+    a = dLatSin**2 + math.cos(deg2rad(loc1[0])) * math.cos(deg2rad(loc2[0])) * dLonSin**2
 
     return r * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 

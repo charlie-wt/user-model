@@ -10,6 +10,7 @@ import ls
 import reading as rd
 import user as us
 import traverser as tr
+import location as lc
 
 ##### analyser ###############
 # various functions to analyse a set of readings of a story.
@@ -78,17 +79,15 @@ def pick_most_likely ( options ):
             best = o
     return best
 
-def walk ( story, reading, user, paths_per_reading, max_steps=15, prnt=False, start_page=None ):
+def walk ( story, reading, user, paths_per_reading, max_steps=15, prnt=False):
 # walk through a story, based on the most popular user choices.
-#   note: choosing a start_page that's not actually a starting page of the story
-#         may break variable/condition stuff
     if len(paths_per_reading) == 0:
         print("can't walk", story.name+"; no logged readings.")
         return
 
     # set things up, choose a starting page
     visible = pg.update_all(story.pages, story, reading, user)
-
+    # choose most popular starting page
     firsts = {}
     for r in paths_per_reading:
         if len(paths_per_reading[r]) == 0: continue
@@ -153,7 +152,6 @@ def compare_paths ( story, store1, store2, prnt=False ):
 
 def path_similarity ( story, store1, store2, prnt=False ):
 # get the proportional similarity between two paths
-    #minimum = abs(len(store1) - len(store2))
     minimum = 0
     maximum = max(len(store1), len(store2))
     possible_range = maximum - minimum
@@ -206,25 +204,21 @@ def levenshtein_similarity ( s1, s2, prnt=False ):
 
 def page_visits ( story, store, prnt=False ):
 # get the number of times each page in the story was visited
-#    visits = []
     visits = {}
     path = [ p.page for p in store if p.page != None ]
 
     for p in story.pages:
-#        visits.append((p, ls.count(path, p.id)))
         visits[p] = ls.count(path, p.id)
 
     if prnt:
         print("number of visits per page:")
         for v in visits:
-#            print(v[1], ":", v[0].name)
             print(visits[v], ":", v.name)
 
     return visits
 
 def page_visits_many ( story, n=10, max_steps=50, prnt=False ):
 # do n random readings, then find out how many times each page was visited.
-#  - mainly for finding out if any pages are possibly unreachable
     if prnt: print("counting visits of each page of", story.name, "for", n, "readings.")
     reading = rd.Reading("reading-0", story)
     user = us.User("user-0")
@@ -258,4 +252,28 @@ def get_unreachables ( story, prnt=False, n=100, max_steps=100 ):
         else:
             print("unreached pages in", story.name+":")
             pt.print_pages(unreachables)
-            print()
+        print()
+
+def distance_travelled ( story, store, prnt=False ):
+# total distance travelled while walking the given route of the story
+    distance = 0
+
+    # get the location of the first location-locked page
+    startidx = 0
+    curr_loc = (0, 0)
+    for i in range(len(store)):
+        if store[i].page is not None and store[i].page.getLoc(story) is not None:
+            curr_loc = store[i].page.getLoc(story)
+            startidx = i+1
+            break
+
+    # measure the distance to each page from there
+    for i in range(startidx, len(store)):
+        dest_loc = store[i].page.getLoc(story)
+        if dest_loc is None: continue
+
+        distance += lc.metres(curr_loc, dest_loc)
+        curr_loc = dest_loc
+
+    if prnt: print("travelled", distance, "metres while reading", story.name)
+    return distance

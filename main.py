@@ -29,7 +29,7 @@ names = ["A Walk In The Park",                  # 0
 
 
 
-story_name = names[11]
+story_name = names[6]
 
 max_steps = 50
 
@@ -53,4 +53,6 @@ log_path = user.path[:]
 # analyse paths
 an.path_similarity(story, sim_store, log_store, True)
 #total_visits = an.page_visits_many(story, 10, 50, True)
-an.get_unreachables(story, True)
+#an.get_unreachables(story, True)
+an.distance_travelled(story, log_store, True)
+pt.print_pages(log_path, story)

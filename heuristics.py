@@ -12,7 +12,8 @@ def distance ( page, user, story ):
 # straight line distance from user -> page.
     page_loc = page.getLoc(story)
     if page_loc is None: page_loc = user.loc
-    return l.metres(user.lat(), user.lon(), page_loc[0], page_loc[1])
+#    return l.metres(user.lat(), user.lon(), page_loc[0], page_loc[1])
+    return l.metres(user.loc, page_loc)
 
 def visits ( page, path ):
 # has the user visited this node before?

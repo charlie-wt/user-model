@@ -21,7 +21,8 @@ class User ( base.Base ):
         # update player's location (lat, lon) to that of new page, if applicable
         page_loc = self.page().getLoc(story)
         if page_loc is not None:
-            self.loc = (page_loc[0], page_loc[1])
+#            self.loc = (page_loc[0], page_loc[1])
+            self.loc = page_loc
 
         # execute new page's function
         self.page().execute_functions(story, reading, self)
