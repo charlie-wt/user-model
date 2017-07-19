@@ -8,7 +8,7 @@ def get ( ls, id ):
     return None
 
 def index ( ls, id ):
-    for i in range(0, len(ls)):
+    for i in range(len(ls)):
         if ls[i].id == id: return i
     return None
 

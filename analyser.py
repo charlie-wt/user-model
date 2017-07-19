@@ -7,6 +7,9 @@ import page as pg
 import printer as pt
 import record as rc
 import ls
+import reading as rd
+import user as us
+import traverser as tr
 
 ##### analyser ###############
 # various functions to analyse a set of readings of a story.
@@ -38,8 +41,8 @@ def get_path_distribution_discourage_loops ( page, ppr, path, prnt=False ):
 # return dictionary of page : proportion of times it was picked from given page.
 # TODO - bit of a hack to stop the analysis walk from looping around the same
 #        page forever (to see this, try 'The Titanic Criminal In Southampton',
-#        but replace the call to this function in walk with one to
-#        one to get_path_distribution).
+#        but replace the call to this function in walk() with a call to
+#        get_path_distribution).
     options = {}
 
     for r in ppr:
@@ -103,7 +106,7 @@ def walk ( story, reading, user, paths_per_reading, max_steps=15, prnt=False, st
 
     path = []
     # traverse
-    for i in range(0, max_steps-1):
+    for i in range(max_steps-1):
         # get list of pages to visit from logs, eliminate the unreachable
         if prnt: print("---")
 #        options = get_path_distribution(user.page(), paths_per_reading)
@@ -167,15 +170,15 @@ def levenshtein ( s1, s2 ):
 
     # v0: row above the current row in the matrix.
     #     initialise to top row; row where s1 = ""
-    v0 = list(range(0, len(s2)+1))
+    v0 = list(range(len(s2)+1))
     # v1: current row being calculated.
     v1 = [0] * (len(s2)+1)
 
     # fill v1, as distance from v0
-    for i in range(0, len(s1)):
+    for i in range(len(s1)):
         v1[0] = i + 1
 
-        for j in range(0, len(s2)):
+        for j in range(len(s2)):
             # substitution cost (0 if chars are the same -> no substitution)
             cost = 0 if s1[i] == s2[j] else 1
 
@@ -203,15 +206,56 @@ def levenshtein_similarity ( s1, s2, prnt=False ):
 
 def page_visits ( story, store, prnt=False ):
 # get the number of times each page in the story was visited
-    visits = []
+#    visits = []
+    visits = {}
     path = [ p.page for p in store if p.page != None ]
 
     for p in story.pages:
-        visits.append((p, ls.count(path, p.id)))
+#        visits.append((p, ls.count(path, p.id)))
+        visits[p] = ls.count(path, p.id)
 
     if prnt:
         print("number of visits per page:")
         for v in visits:
-            print(v[1], ":", v[0].name)
+#            print(v[1], ":", v[0].name)
+            print(visits[v], ":", v.name)
 
     return visits
+
+def page_visits_many ( story, n=10, max_steps=50, prnt=False ):
+# do n random readings, then find out how many times each page was visited.
+#  - mainly for finding out if any pages are possibly unreachable
+    if prnt: print("counting visits of each page of", story.name, "for", n, "readings.")
+    reading = rd.Reading("reading-0", story)
+    user = us.User("user-0")
+    total_visits = {}
+    for p in story.pages: total_visits[p] = 0
+
+    for i in range(n):
+        store = tr.traverse(story, reading, user, rk.rand, dc.rand, max_steps)
+        visits = page_visits(story, store)
+
+        for p in visits:
+            total_visits[p] += visits[p]
+
+        tr.reset(story, reading, user)
+
+    if prnt:
+        print("number of visits per page:")
+        for v in total_visits:
+            print(total_visits[v], ":", v.name)
+
+    return total_visits
+
+def get_unreachables ( story, prnt=False, n=100, max_steps=100 ):
+# do a bunch of random readings, and return the pages that were never reached.
+    visits = page_visits_many(story, n, max_steps)
+    unreachables = [ p for p in visits if visits[p] == 0 ]
+
+    if prnt:
+        if len(unreachables) == 0:
+            print("all the pages in", story.name, "can be reached!")
+        else:
+            print("unreached pages in", story.name+":")
+            pt.print_pages(unreachables)
+            print()

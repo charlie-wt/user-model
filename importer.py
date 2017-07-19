@@ -22,12 +22,13 @@ import timePassedCondition
 import timeRangeCondition
 import variable
 import logevent
+import printer as pt
 
 ##### importer ###############
 # a set of functions to import various structures from json files.
 ##############################
 
-def storyFromJSON ( filename ):
+def storyFromJSON ( filename, prnt=False ):
 # load a story in from a .json file
     # read the file, and convert to a json object
     file = open("json/"+filename+".json", 'r')
@@ -63,7 +64,12 @@ def storyFromJSON ( filename ):
         story_locations.append(locationFromJSON(location))
 
     # combine into story
-    return story.Story(story_id, story_name, story_pages, story_conditions, story_functions, story_locations)
+    sto = story.Story(story_id, story_name, story_pages, story_conditions, story_functions, story_locations)
+
+    if prnt:
+        pt.print_story(sto)
+        print()
+    return sto
 
 def pageFromJSON ( json ):
     return page.Page(
@@ -182,7 +188,7 @@ def pathEventsFromJSON ( filename, prnt=False, story=None ):
             continue
         if e.id not in epr[e.data["readingId"]]:
             epr[e.data["readingId"]].append(e)
-    
+
     if prnt:
         print("Found", len(epr), "readings", end="")
         if story is not None: print(" for", story.name+".")
@@ -194,11 +200,11 @@ def pathPagesFromJSON ( filename, story, prnt=False ):
 # instead of lists of events
     epr = pathEventsFromJSON(filename, False, story)
     ppr = {}
-    
+
     for r in epr:
         pages = page.fromLogEvents(story, epr[r])
         ppr[r] = pages
-    
+
     if prnt: print("Found", len(ppr), "readings for", story.name+".")
     return ppr
 

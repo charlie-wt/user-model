@@ -38,7 +38,7 @@ def rand ( pages, options ):
         print("choice:", choice, "->")
         pt.print_page_ranking(by_prob, probs)
 
-    for i in range(0, len(by_prob)):
+    for i in range(len(by_prob)):
         acc = acc + probs[i]
         if choice < acc:
             return pages.index(by_prob[i])

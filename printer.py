@@ -15,7 +15,6 @@ def print_story ( story, reading=None ):
         print(",", len(story.locations), "locations &", len(reading.vars), "variables.")
     else:
         print(" &", len(story.locations), "locations.")
-    print()
 
 def print_user_state ( user ):
 # print where the user is in the story
@@ -33,11 +32,9 @@ def print_visible ( vis, story, us ):
         else:
             print("\t" + p.id + " : " + p.name + ", which can be accessed from anywhere.")
 
-def print_path ( story, path ):
-# print the pages in a path
-    print("Path through "+story.name+":")
-    for p in path: print(p.name)
-    print()
+def print_pages ( pages ):
+# print a bunch of pages
+    for p in pages: print(p.name)
 
 def print_log_paths ( story, paths ):
 # print paths per reading, as output by log importer
@@ -46,7 +43,6 @@ def print_log_paths ( story, paths ):
         print("reading "+r+":")
         for e in paths[r]:
             print("\t", e.date)
-    print()
 
 def print_event_path ( story, path ):
 # print the path of events taken through a story by a real user
@@ -60,12 +56,11 @@ def print_event_path ( story, path ):
             print(page.name)
         else:
             print(pg.data["cardLabel"], "("+pg.data["cardId"]+")", "(NOT FOUND)")
-    print()
 
 def print_page_ranking ( pages, probs ):
 # print pages & their probabilities. Assumes desired ordering.
     print("Page rankings:")
-    for i in range(0, len(pages)):
+    for i in range(len(pages)):
         print(pc(probs[i]), ":", pages[i].name)
     print("---")
 
@@ -106,7 +101,7 @@ def print_sim_log_comparison ( sim_path, log_path ):
     print("-------------------------------------------------------------------")
     print("sim                               log")
     print("-------------------------------------------------------------------")
-    for i in range(0, max(len(sim_path), len(log_path))):
+    for i in range(max(len(sim_path), len(log_path))):
         s_name = sim_path[i].name if i < len(sim_path) else "---"
         l_name = log_path[i].name if i < len(log_path) else "---"
 

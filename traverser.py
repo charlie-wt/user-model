@@ -15,7 +15,7 @@ def traverse ( story, reading, user, ranker, decider, max_steps=10, prnt=False, 
     path = []
     # move to a page
     if prnt: print("traversing "+story.name+":")
-    for i in range(0, max_steps):
+    for i in range(max_steps):
         # move to a new page
         options = ranker(user, story, user.path, visible)
 

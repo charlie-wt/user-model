@@ -29,7 +29,7 @@ names = ["A Walk In The Park",                  # 0
 
 
 
-story_name = names[13]
+story_name = names[11]
 
 max_steps = 50
 
@@ -50,9 +50,7 @@ tr.reset(story, reading, user)
 log_store = an.walk(story, reading, user, paths_per_reading, max_steps)
 log_path = user.path[:]
 
-# compare paths between sim/log
-pt.print_sim_log_comparison(sim_path, log_path)
-print()
+# analyse paths
 an.path_similarity(story, sim_store, log_store, True)
-print()
-visits = an.page_visits(story, log_store, True)
+#total_visits = an.page_visits_many(story, 10, 50, True)
+an.get_unreachables(story, True)

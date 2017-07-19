@@ -21,14 +21,14 @@ def dist ( user, story, path, pages ):
     by_distance = sorted(pages, key = lambda p : distances[pages.index(p)])
     distances.sort()
     chances = []
-    for i in range(0, len(by_distance)):
+    for i in range(len(by_distance)):
         chances.append(1 / distances[i] if distances[i] != 0 else 1)
     # normalise
     factor = 1 / sum(chances)
     chances = [ c * factor for c in chances ]
     # gen dictionary
     options = {}
-    for i in range(0, len(by_distance)):
+    for i in range(len(by_distance)):
         options[by_distance[i]] = chances[i]
     return options
 
@@ -36,7 +36,7 @@ def rand ( user, story, path, pages ):
 # random
     prob = 1 / len(pages)
     options = {}
-    for i in range(0, len(pages)):
+    for i in range(len(pages)):
         options[pages[i]] = prob
     return options
 
@@ -48,12 +48,12 @@ def guess ( user, story, path, pages ):
     chances = []
 
     # closer = better
-    for i in range(0, len(by_distance)):
+    for i in range(len(by_distance)):
         chance = 1 / distances[i] if distances[i] != 0 else 1
         chances.append(chance)
 
     # visited before = worse
-    for i in range(0, len(by_distance)):
+    for i in range(len(by_distance)):
         chances[i] = chances[i] * (0.1)**hs.visits(by_distance[i].id, path)
 
     # normalise
@@ -62,6 +62,6 @@ def guess ( user, story, path, pages ):
 
     # gen dictionary
     options = {}
-    for i in range(0, len(by_distance)):
+    for i in range(len(by_distance)):
         options[by_distance[i]] = chances[i]
     return options
