@@ -204,45 +204,6 @@ def levenshtein_similarity ( s1, s2, prnt=False ):
     if prnt: print("similarity of", str(s1), "and", str(s2)+":", pt.pc(similarity))
     return similarity
 
-#def page_visits ( story, store, prnt=False ):
-## get the number of times each page in the story was visited
-#    visits = {}
-#    path = [ p.page for p in store if p.page != None ]
-#
-#    for p in story.pages:
-#        visits[p] = ls.count(path, p.id)
-#
-#    if prnt:
-#        print("number of visits per page:")
-#        for v in visits:
-#            print(visits[v], ":", v.name)
-#
-#    return visits
-
-#def page_visits_many ( story, n=10, max_steps=50, prnt=False ):
-## do n random readings, then find out how many times each page was visited.
-#    if prnt: print("counting visits of each page of", story.name, "for", n, "readings.")
-#    reading = rd.Reading("reading-0", story)
-#    user = us.User("user-0")
-#    total_visits = {}
-#    for p in story.pages: total_visits[p] = 0
-#
-#    for i in range(n):
-#        store = tr.traverse(story, reading, user, rk.rand, dc.rand, max_steps)
-#        visits = page_visits(story, store)
-#
-#        for p in visits:
-#            total_visits[p] += visits[p]
-#
-#        tr.reset(story, reading, user)
-#
-#    if prnt:
-#        print("number of visits per page:")
-#        for v in total_visits:
-#            print(total_visits[v], ":", v.name)
-#
-#    return total_visits
-
 def page_visits ( story, stores, prnt=False ):
 # find out how many times each page was visited for 1-n readings.
     if type(stores[0]) is not list: stores = [stores]
@@ -255,6 +216,7 @@ def page_visits ( story, stores, prnt=False ):
     for s in stores:
         path = [ p.page for p in s if p.page != None ]
         for p in story.pages:
+            if p not in total_visits: print("no")
             total_visits[p] += ls.count(path, p.id)
 
     if prnt:
@@ -264,9 +226,9 @@ def page_visits ( story, stores, prnt=False ):
 
     return total_visits
 
-def get_unreachables ( story, prnt=False, n=100, max_steps=100 ):
+def get_unreachables ( story, stores, prnt=False ):
 # do a bunch of random readings, and return the pages that were never reached.
-    visits = page_visits_many(story, n, max_steps)
+    visits = page_visits(story, stores)
     unreachables = [ p for p in visits if visits[p] == 0 ]
 
     if prnt:
@@ -274,7 +236,7 @@ def get_unreachables ( story, prnt=False, n=100, max_steps=100 ):
             print("all the pages in", story.name, "can be reached!")
         else:
             print("unreached pages in", story.name+":")
-            pt.print_pages(unreachables)
+            pt.print_pages(unreachables, True)
         print()
 
 def distance_travelled ( story, stores, prnt=False ):
