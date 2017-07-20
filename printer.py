@@ -75,10 +75,12 @@ def print_options ( options, page ):
         if type(p) != int: name = p.name
         print(pc(options[p]), ":", name)
 
-def pc ( num ):
+def pc ( num, dec=0 ):
 # percentify a 0-1 fraction
-    p = str(int(num*100))+"%"
-    return " "+p if num < 0.1 else p
+    if dec != 0: dec += 1
+    percent = str(num*100)
+    rounded = percent[:percent.index(".")+dec]+"%"
+    return " "+rounded if num < 0.1 else rounded
 
 def print_walk_full_options ( visible, options ):
 # print visible pages, options taken by users and their intersection (for use

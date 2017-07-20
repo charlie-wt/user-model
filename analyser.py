@@ -226,6 +226,26 @@ def page_visits ( story, stores, prnt=False ):
 
     return total_visits
 
+def most_visited ( story, stores, prnt=False ):
+# get a list of pages & the proportion of times they were visited, ordered as
+# tuples.
+    visits = page_visits(story, stores)
+    total_visits = sum([ visits[p] for p in visits ])
+    proportions = []
+
+    for p in visits:
+        proportions.append((p, visits[p]/total_visits))
+
+    proportions.sort(key = lambda p : -p[1])
+
+    if prnt:
+        print("proportions of time pages of", story.name, "were visited.")
+        for p in proportions:
+            print(pt.pc(p[1], 3), p[0].name)
+        print()
+
+    return proportions
+
 def get_unreachables ( story, stores, prnt=False ):
 # do a bunch of random readings, and return the pages that were never reached.
     visits = page_visits(story, stores)

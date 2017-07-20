@@ -8,6 +8,7 @@ import traverser as tr
 import printer as pt
 import analyser as an
 import ls
+import gui
 
 names = ["A Walk In The Park",                  # 0
          "Butterflies",                         # 1
@@ -26,7 +27,7 @@ names = ["A Walk In The Park",                  # 0
 
 
 
-story_name = names[11]
+story_name = names[9]
 
 max_steps = 50
 
@@ -50,3 +51,4 @@ an.path_similarity(story, sim_store, log_store, True)
 stores = tr.traverse_many(story, 50)
 an.distance_travelled(story, stores, True)
 an.get_unreachables(story, stores, True)
+gui.visit_proportions(an.most_visited(story, stores), 'story', story)
