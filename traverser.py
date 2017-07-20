@@ -4,12 +4,21 @@ sys.path.append(os.path.join(sys.path[0], "models"))
 import page
 import printer as pt
 import record as rc
+import reading as rd
+import user as us
+import ranker as rk
+import decider as dc
 
 ##### traverser ##############
 # for simulating a user moving through a story.
 ##############################
 
-def traverse ( story, reading, user, ranker, decider, max_steps=10, prnt=False, visible=[] ):
+def traverse ( story, ranker, decider, max_steps=50, reading=None, user=None, prnt=False ):
+# simulate a user walking through a story, making decisions. return a list of
+# records (pages taken, and probabilities of each option at each page)
+    if reading is None: reading = rd.Reading("reading-0", story)
+    if user is None: user = us.User("user-0")
+
     visible = page.update_all(story.pages, story, reading, user)
 
     path = []
@@ -36,6 +45,18 @@ def traverse ( story, reading, user, ranker, decider, max_steps=10, prnt=False, 
 
         if prnt: print()
     return path
+
+def traverse_many ( story, n=25, ranker=rk.rand, decider=dc.rand, max_steps=50 ):
+# walk through a story n times, and return a list of stores
+    reading = rd.Reading("reading-0", story)
+    user = us.User("user-0")
+    stores = []
+
+    for i in range(n):
+        stores.append(traverse(story, ranker, decider, max_steps, reading, user))
+        reset(story, reading, user)
+
+    return stores
 
 def reset ( story, reading, user ):
     user.__init__(user.id)

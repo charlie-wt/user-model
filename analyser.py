@@ -79,11 +79,13 @@ def pick_most_likely ( options ):
             best = o
     return best
 
-def walk ( story, reading, user, paths_per_reading, max_steps=15, prnt=False):
+def walk ( story, paths_per_reading, max_steps=15, reading=None, user=None, prnt=False):
 # walk through a story, based on the most popular user choices.
     if len(paths_per_reading) == 0:
         print("can't walk", story.name+"; no logged readings.")
         return
+    if reading is None: reading = rd.Reading("reading-0", story)
+    if user is None: user = us.User("user-0")
 
     # set things up, choose a starting page
     visible = pg.update_all(story.pages, story, reading, user)
@@ -202,37 +204,58 @@ def levenshtein_similarity ( s1, s2, prnt=False ):
     if prnt: print("similarity of", str(s1), "and", str(s2)+":", pt.pc(similarity))
     return similarity
 
-def page_visits ( story, store, prnt=False ):
-# get the number of times each page in the story was visited
-    visits = {}
-    path = [ p.page for p in store if p.page != None ]
+#def page_visits ( story, store, prnt=False ):
+## get the number of times each page in the story was visited
+#    visits = {}
+#    path = [ p.page for p in store if p.page != None ]
+#
+#    for p in story.pages:
+#        visits[p] = ls.count(path, p.id)
+#
+#    if prnt:
+#        print("number of visits per page:")
+#        for v in visits:
+#            print(visits[v], ":", v.name)
+#
+#    return visits
 
-    for p in story.pages:
-        visits[p] = ls.count(path, p.id)
+#def page_visits_many ( story, n=10, max_steps=50, prnt=False ):
+## do n random readings, then find out how many times each page was visited.
+#    if prnt: print("counting visits of each page of", story.name, "for", n, "readings.")
+#    reading = rd.Reading("reading-0", story)
+#    user = us.User("user-0")
+#    total_visits = {}
+#    for p in story.pages: total_visits[p] = 0
+#
+#    for i in range(n):
+#        store = tr.traverse(story, reading, user, rk.rand, dc.rand, max_steps)
+#        visits = page_visits(story, store)
+#
+#        for p in visits:
+#            total_visits[p] += visits[p]
+#
+#        tr.reset(story, reading, user)
+#
+#    if prnt:
+#        print("number of visits per page:")
+#        for v in total_visits:
+#            print(total_visits[v], ":", v.name)
+#
+#    return total_visits
 
-    if prnt:
-        print("number of visits per page:")
-        for v in visits:
-            print(visits[v], ":", v.name)
+def page_visits ( story, stores, prnt=False ):
+# find out how many times each page was visited for 1-n readings.
+    if type(stores[0]) is not list: stores = [stores]
+    if prnt: print("counting visits of each page of", story.name, "for",
+                   len(stores), "reading"+("s." if len(stores)>1 else "."))
 
-    return visits
-
-def page_visits_many ( story, n=10, max_steps=50, prnt=False ):
-# do n random readings, then find out how many times each page was visited.
-    if prnt: print("counting visits of each page of", story.name, "for", n, "readings.")
-    reading = rd.Reading("reading-0", story)
-    user = us.User("user-0")
     total_visits = {}
     for p in story.pages: total_visits[p] = 0
 
-    for i in range(n):
-        store = tr.traverse(story, reading, user, rk.rand, dc.rand, max_steps)
-        visits = page_visits(story, store)
-
-        for p in visits:
-            total_visits[p] += visits[p]
-
-        tr.reset(story, reading, user)
+    for s in stores:
+        path = [ p.page for p in s if p.page != None ]
+        for p in story.pages:
+            total_visits[p] += ls.count(path, p.id)
 
     if prnt:
         print("number of visits per page:")
@@ -254,26 +277,39 @@ def get_unreachables ( story, prnt=False, n=100, max_steps=100 ):
             pt.print_pages(unreachables)
         print()
 
-def distance_travelled ( story, store, prnt=False ):
+def distance_travelled ( story, stores, prnt=False ):
 # total distance travelled while walking the given route of the story
-    distance = 0
+    if type(stores[0]) is not list: stores = [stores]
+    distances = []
 
-    # get the location of the first location-locked page
-    startidx = 0
-    curr_loc = (0, 0)
-    for i in range(len(store)):
-        if store[i].page is not None and store[i].page.getLoc(story) is not None:
-            curr_loc = store[i].page.getLoc(story)
-            startidx = i+1
-            break
+    for store in stores:
+        distance = 0
 
-    # measure the distance to each page from there
-    for i in range(startidx, len(store)):
-        dest_loc = store[i].page.getLoc(story)
-        if dest_loc is None: continue
+        # get the location of the first location-locked page
+        startidx = 0
+        curr_loc = (0, 0)
+        for i in range(len(store)):
+            if store[i].page is not None and store[i].page.getLoc(story) is not None:
+                curr_loc = store[i].page.getLoc(story)
+                startidx = i+1
+                break
 
-        distance += lc.metres(curr_loc, dest_loc)
-        curr_loc = dest_loc
+        # measure the distance to each page from there
+        for i in range(startidx, len(store)):
+            dest_loc = store[i].page.getLoc(story)
+            if dest_loc is None: continue
 
-    if prnt: print("travelled", distance, "metres while reading", story.name)
-    return distance
+            distance += lc.metres(curr_loc, dest_loc)
+            curr_loc = dest_loc
+
+        distances.append(distance)
+
+    if prnt:
+        if len(stores) == 1:
+            print("travelled", distance, "metres while reading", story.name)
+        else:
+            print("for", len(distances), "readings:",
+                  "average travel distance:", sum(distances)/len(distances),
+                  "  total distance:", sum(distances))
+
+    return distances

@@ -29,7 +29,7 @@ names = ["A Walk In The Park",                  # 0
 
 
 
-story_name = names[6]
+story_name = names[11]
 
 max_steps = 50
 
@@ -37,22 +37,26 @@ max_steps = 50
 
 # create/load stuff
 story = imp.storyFromJSON(story_name)
-reading = rd.Reading("reading-0", story)
-user = us.User("user-0")
+#reading = rd.Reading("reading-0", story)
+#user = us.User("user-0")
 paths_per_reading = imp.pathPagesFromJSON("old-logs", story)
 
 # traverse
-sim_store = tr.traverse(story, reading, user, rk.guess, dc.best, max_steps)
-sim_path = user.path[:]
-tr.reset(story, reading, user)
+sim_store = tr.traverse(story, rk.guess, dc.best, max_steps)
+sim_path = [ r.page for r in sim_store ]
+#tr.reset(story, reading, user)
 
 # load logs
-log_store = an.walk(story, reading, user, paths_per_reading, max_steps)
-log_path = user.path[:]
+log_store = an.walk(story, paths_per_reading, max_steps)
+log_path = [ r.page for r in log_store ]
 
 # analyse paths
 an.path_similarity(story, sim_store, log_store, True)
 #total_visits = an.page_visits_many(story, 10, 50, True)
 #an.get_unreachables(story, True)
+#an.distance_travelled(story, log_store, True)
+#pt.print_pages(log_path, story)
+stores = tr.traverse_many(story)
+#an.page_visits(story, stores, True)
+an.distance_travelled(story, stores, True)
 an.distance_travelled(story, log_store, True)
-pt.print_pages(log_path, story)
