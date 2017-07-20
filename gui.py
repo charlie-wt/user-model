@@ -1,6 +1,10 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
+##### gui ####################
+# functions to display various bits of info in a gui.
+##############################
+
 def visit_proportions ( data, sort='', story=None ):
 # display a bar chart of the proportion of visits to each page
     # set up window
@@ -21,11 +25,11 @@ def visit_proportions ( data, sort='', story=None ):
                    color='blue',
                    edgecolor='none',
                    tick_label=names)
-    if story is not None:
-        ax.set_title("proportions of visits to each page for "+story.name)
-    else:
-        ax.set_title("proportions of visits to each page")
+    ax.plot(range(-1, n+1), [1]*(n+2), 'r-')
+    title = "visits to each page per reading" + \
+            (" for "+story.name if story is not None else "")
+    ax.set_title(title)
     plt.setp(ax.get_xticklabels(), rotation=90, fontsize=10)
     plt.tight_layout()
-    
+
     plt.show()

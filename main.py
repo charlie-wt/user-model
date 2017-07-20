@@ -27,7 +27,7 @@ names = ["A Walk In The Park",                  # 0
 
 
 
-story_name = names[9]
+story_name = names[11]
 
 max_steps = 50
 
@@ -49,6 +49,7 @@ log_path = [ r.page for r in log_store ]
 an.path_similarity(story, sim_store, log_store, True)
 
 stores = tr.traverse_many(story, 50)
+#stores = [log_store]
 an.distance_travelled(story, stores, True)
 an.get_unreachables(story, stores, True)
 gui.visit_proportions(an.most_visited(story, stores), 'story', story)

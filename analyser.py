@@ -233,15 +233,20 @@ def most_visited ( story, stores, prnt=False ):
     total_visits = sum([ visits[p] for p in visits ])
     proportions = []
 
+    # get proportions
+    # TODO - would it be better if these were divided by the number of readings
+    #        instead of the number of pages visited? would give a more usable
+    #        number of 'visits per reading'
     for p in visits:
-        proportions.append((p, visits[p]/total_visits))
+#        proportions.append((p, visits[p]/total_visits))
+        proportions.append((p, visits[p]/len(stores)))
 
     proportions.sort(key = lambda p : -p[1])
 
     if prnt:
-        print("proportions of time pages of", story.name, "were visited.")
+        print("proportions of visits to pages of", story.name, "per reading")
         for p in proportions:
-            print(pt.pc(p[1], 3), p[0].name)
+            print(pt.pc(p[1]), p[0].name)
         print()
 
     return proportions
@@ -290,8 +295,9 @@ def distance_travelled ( story, stores, prnt=False ):
         if len(stores) == 1:
             print("travelled", distance, "metres while reading", story.name)
         else:
-            print("for", len(distances), "readings:",
-                  "average travel distance:", sum(distances)/len(distances),
-                  "  total distance:", sum(distances))
+            total = sum(distances)
+            print("for", len(distances), "readings:")
+            print("\taverage distance:", str(int(total/len(distances)))+"m")
+            print("\t  total distance:", str(int(total))+"m")
 
     return distances
