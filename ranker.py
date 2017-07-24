@@ -32,6 +32,32 @@ def dist ( user, story, path, pages ):
         options[by_distance[i]] = chances[i]
     return options
 
+def walk_dist ( user, story, path, pages ):
+# shortest walking distance, via roads
+    if len(pages) == 1: return { pages[0] : 1 }
+    # score pages
+#    distances = [hs.gdist(p, user, story) for p in pages]
+    distances = [hs.osmdist(p, user, story) for p in pages]
+    by_distance = sorted(pages, key = lambda p : distances[pages.index(p)])
+    distances.sort()
+    chances = []
+    for i in range(len(by_distance)):
+        chances.append(1 / distances[i] if distances[i] != 0 else 1)
+
+    # optionally eliminate visited nodes
+    if True:
+        for i in range(len(chances)):
+            if hs.visits(by_distance[i], path) != 0: chances[i] = 0
+
+    # normalise
+    factor = 1 / sum(chances)
+    chances = [ c * factor for c in chances ]
+    # gen dictionary
+    options = {}
+    for i in range(len(by_distance)):
+        options[by_distance[i]] = chances[i]
+    return options
+
 def rand ( user, story, path, pages ):
 # random
     prob = 1 / len(pages)

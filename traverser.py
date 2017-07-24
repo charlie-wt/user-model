@@ -25,6 +25,18 @@ def traverse ( story, ranker, decider, max_steps=50, reading=None, user=None, pr
     # move to a page
     if prnt: print("traversing "+story.name+":")
     for i in range(max_steps):
+        # optionally start the user at a location in the middle of the start pages.
+        moved = False
+        for p in user.path:
+            if p.getLoc(story) is not None:
+                moved = True
+                break
+        if not moved:
+            locs = [ p.getLoc(story) for p in visible if p.getLoc(story) is not None ]
+            lats = [ loc[0] for loc in locs ]
+            lons = [ loc[1] for loc in locs ]
+            if len(locs) > 0: user.loc = ((sum(lats)/len(lats)), (sum(lons)/len(lons)))
+
         # move to a new page
         options = ranker(user, story, user.path, visible)
 

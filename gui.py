@@ -11,6 +11,7 @@ def visit_proportions ( data, sort='', story=None ):
     mpl.rcParams['toolbar'] = 'none'
     fig = plt.figure(figsize=(14, 10))
     ax = fig.add_subplot(111)
+    fig.canvas.set_window_title((story.name if story is not None else "visits"))
 
     # split data
     if sort == 'story' and story is not None:

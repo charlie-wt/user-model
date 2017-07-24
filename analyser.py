@@ -276,7 +276,8 @@ def distance_travelled ( story, stores, prnt=False ):
         startidx = 0
         curr_loc = (0, 0)
         for i in range(len(store)):
-            if store[i].page is not None and store[i].page.getLoc(story) is not None:
+            if store[i].page is not None and \
+               store[i].page.getLoc(story) is not None:
                 curr_loc = store[i].page.getLoc(story)
                 startidx = i+1
                 break
