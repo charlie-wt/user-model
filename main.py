@@ -38,7 +38,7 @@ story = imp.storyFromJSON(story_name)
 paths_per_reading = imp.pathPagesFromJSON("old-logs", story, True)
 
 # traverse
-sim_store = tr.traverse(story, rk.walk_dist, dc.best, max_steps, prnt=True)
+sim_store = tr.traverse(story, rk.walk_dist, dc.best, max_steps)
 sim_path = [ r.page for r in sim_store ]
 
 # load logs
@@ -46,6 +46,7 @@ log_store = an.walk(story, paths_per_reading, max_steps)
 log_path = [ r.page for r in log_store ]
 
 # analyse paths
+pt.print_sim_log_comparison(sim_path, log_path)
 an.path_similarity(story, sim_store, log_store, True)
 
 #stores = tr.traverse_many(story, 100)

@@ -78,7 +78,8 @@ def pc ( num, dec=0 ):
 # percentify a 0-1 fraction
     if dec != 0: dec += 1
     percent = str(num*100)
-    rounded = percent[:percent.index(".")+dec]+"%"
+    rounded = percent+"%"
+    if "." in percent: rounded = percent[:percent.index(".")+dec]+"%"
     return " "+rounded if num < 0.1 else rounded
 
 def print_walk_full_options ( visible, options ):
@@ -105,8 +106,12 @@ def print_sim_log_comparison ( sim_path, log_path ):
     print("sim                               log")
     print("-------------------------------------------------------------------")
     for i in range(max(len(sim_path), len(log_path))):
-        s_name = sim_path[i].name if i < len(sim_path) else "---"
-        l_name = log_path[i].name if i < len(log_path) else "---"
+        s_name = "---"
+        if i < len(sim_path) and sim_path[i] is not None:
+            s_name = sim_path[i].name
+        l_name = "---"
+        if i < len(log_path) and log_path[i] is not None:
+            l_name = log_path[i].name
 
         left_pad = 34 - len(s_name)
         print(s_name + " "*left_pad + l_name)

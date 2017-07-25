@@ -58,7 +58,7 @@ def get_path_distribution_discourage_loops ( page, ppr, path, prnt=False ):
     # discourage revisiting nodes
     for p in options:
         if type(p) == int: continue
-        options[p] = options[p] * (0.5)**ls.count(path, p.id)
+        options[p] = options[p] * (0.2)**ls.count(path, p.id)
 
     # normalise
     if sum(options.values()) != 0:
@@ -97,15 +97,23 @@ def walk ( story, paths_per_reading, max_steps=15, reading=None, user=None, prnt
             firsts[paths_per_reading[r][0]] = 1
         else:
             firsts[paths_per_reading[r][0]] += 1
+
+    # turn scores for each page into proportions and put in store
+    total = sum(firsts.values())
+    for p in firsts:
+        firsts[p] = firsts[p] / total
     first = max(firsts, key = lambda p : firsts[p])
+    path = []
+    rc.add(path, None, firsts, visible)
+
+    # move to first page
     move_to_idx = ls.index(visible, first.id)
     visible = user.move(move_to_idx, visible, story, reading)
 
     if prnt: print("\nStart on", user.page().name,
-                   "("+str(firsts[first]), "votes)",
+                   "("+pt.pc(firsts[first])+")",
                    "\n\n=== start walk ===\n")
 
-    path = []
     # traverse
     for i in range(max_steps-1):
         # get list of pages to visit from logs, eliminate the unreachable
@@ -145,7 +153,7 @@ def compare_paths ( story, store1, store2, prnt=False ):
 # TODO - don't just take into account the final path - also probabilities along
 #        the way.
     path1 = [-1] + [ ls.index(story.pages, p.page.id) for p in store1[1:] if type(p) != int ]
-    path2 = [-1] + [ ls.index(story.pages, p.page.id) for p in store2 if type(p) != int ]
+    path2 = [-1] + [ ls.index(story.pages, p.page.id) for p in store2[1:] if type(p) != int ]
 
     difference = levenshtein(path1, path2)
 
