@@ -42,8 +42,8 @@ def print_log_paths ( story, paths ):
     print("Paths through "+story.name+", per reading:")
     for r in paths.keys():
         print("reading "+r+":")
-        for e in paths[r]:
-            print("\t", e.date)
+        for p in paths[r]:
+            print("\t", p.id, ":", p.name)
 
 def print_event_path ( story, path ):
 # print the path of events taken through a story by a real user

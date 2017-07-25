@@ -35,22 +35,24 @@ max_steps = 50
 
 # create/load stuff
 story = imp.storyFromJSON(story_name)
-paths_per_reading = imp.pathPagesFromJSON("old-logs", story, True)
+paths_per_reading = imp.pathPagesFromJSON("old-logs", story, True, True)
+pt.print_log_paths(story, paths_per_reading)
 
 # traverse
-sim_store = tr.traverse(story, rk.walk_dist, dc.best, max_steps)
-sim_path = [ r.page for r in sim_store ]
+#sim_store = tr.traverse(story, rk.walk_dist, dc.best, max_steps)
+#sim_path = [ r.page for r in sim_store ]
 
 # load logs
 log_store = an.walk(story, paths_per_reading, max_steps)
 log_path = [ r.page for r in log_store ]
 
 # analyse paths
-pt.print_sim_log_comparison(sim_path, log_path)
-an.path_similarity(story, sim_store, log_store, True)
+#pt.print_sim_log_comparison(sim_path, log_path)
+#an.path_similarity(story, sim_store, log_store, True)
 
-#stores = tr.traverse_many(story, 100)
+stores = tr.traverse_many(story, 100)
 #stores = [log_store]
-#an.distance_travelled(story, stores, True)
-#an.get_unreachables(story, stores, True)
-#gui.visit_proportions(an.most_visited(story, stores), 'story', story)
+an.distance_travelled(story, stores, True)
+an.get_unreachables(story, stores, True)
+#gui.visit_proportions(an.most_visited(story, stores), 'tory', story)
+gui.visit_proportions(an.log_most_visited(story, paths_per_reading), 'story', story)

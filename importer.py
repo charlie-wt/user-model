@@ -4,6 +4,7 @@ sys.path.append(os.path.join(sys.path[0], "models/functions"))
 sys.path.append(os.path.join(sys.path[0], "models/conditions"))
 
 import json
+from datetime import timedelta
 
 import story
 import page
@@ -195,18 +196,35 @@ def pathEventsFromJSON ( filename, prnt=False, story=None ):
         else: print(".")
     return epr
 
-def pathPagesFromJSON ( filename, story, prnt=False ):
+def pathPagesFromJSON ( filename, story, discard=True, prnt=False ):
 # same as pathEventsFromJSON, but the dictionary contains lists of pages,
 # instead of lists of events
     epr = pathEventsFromJSON(filename, False, story)
+    if discard: epr=discard_demos(epr)
     ppr = {}
 
     for r in epr:
         pages = page.fromLogEvents(story, epr[r])
         ppr[r] = pages
 
-    if prnt: print("Found", len(ppr), "readings for", story.name+".")
+    if prnt: print("Found", str(len(ppr))+(" real" if discard else ""), "readings for", story.name+".")
     return ppr
+
+def discard_demos ( epr, prnt=False ):
+# take those readings that were done too fast to be real, and discard them.
+    # a minutes per page threshold, chosen arbitrarily
+    threshold = 3
+    real_epr = {}
+    for r in epr.keys():
+        start_time = epr[r][0].date
+        end_time = epr[r][-1].date
+        num_pages = len(epr[r])
+        duration_per_page = (end_time - start_time) / num_pages
+        if duration_per_page >= timedelta(minutes=threshold):
+            real_epr[r] = epr[r]
+    if prnt: print("eliminated", len(epr)-len(real_epr), "readings",
+                   "with a threshold of", threshold, "minutes per page read.")
+    return real_epr
 
 def logEventFromJSON ( json ):
     return logevent.LogEvent(

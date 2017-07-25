@@ -238,17 +238,36 @@ def most_visited ( story, stores, prnt=False ):
 # get a list of pages & the proportion of times they were visited, ordered as
 # tuples.
     visits = page_visits(story, stores)
-    total_visits = sum([ visits[p] for p in visits ])
+    total_visits = sum(visits.values())
     proportions = []
 
     # get proportions
-    # TODO - would it be better if these were divided by the number of readings
-    #        instead of the number of pages visited? would give a more usable
-    #        number of 'visits per reading'
     for p in visits:
-#        proportions.append((p, visits[p]/total_visits))
         proportions.append((p, visits[p]/len(stores)))
 
+    proportions.sort(key = lambda p : -p[1])
+
+    if prnt:
+        print("proportions of visits to pages of", story.name, "per reading")
+        for p in proportions:
+            print(pt.pc(p[1]), p[0].name)
+        print()
+
+    return proportions
+
+def log_most_visited ( story, ppr, prnt=False ):
+# similar to most_visited, but take in a 'paths per reading' list from a log.
+    # count up the number of visits per page
+    visits = {}
+    for p in story.pages: visits[p] = 0
+    for r in ppr:
+        for p in story.pages:
+            visits[p] += ls.count(ppr[r], p.id)
+    
+    # turn number of visits into proportions per reading, then sort descending.
+    proportions = []
+    for p in visits:
+        proportions.append((p, visits[p]/len(ppr)))
     proportions.sort(key = lambda p : -p[1])
 
     if prnt:
