@@ -2,6 +2,7 @@ import sys, os
 sys.path.append(os.path.join(sys.path[0], "models"))
 
 import location as lc
+import page as pg
 import ls
 
 ##### printer ################
@@ -68,11 +69,17 @@ def print_page_ranking ( pages, probs ):
 def print_options ( options, page ):
 # similar to print_page_ranking, but takes an options dictionary and deals with
 # the end case - for use by functions in analyser.py
-    print("Options from "+page.name+":")
+    pname = page.name if page is not None else "---"
+    print("Options from "+pname+":")
     for p in options:
         name = "--End--"
-        if type(p) != int: name = p.name
-        print(pc(options[p]), ":", name)
+        if type(p) == pg.Page: name = p.name
+        print("\t"+pc(options[p]), ":", name)
+
+def print_store ( store ):
+# print the path taken with choice probabilities, via a store (list of records)
+    for r in store:
+        print_options(r.options, r.page)
 
 def pc ( num, dec=0 ):
 # percentify a 0-1 fraction

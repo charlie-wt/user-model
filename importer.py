@@ -207,19 +207,16 @@ def pathPagesFromJSON ( filename, story, discard=True, prnt=False ):
         pages = page.fromLogEvents(story, epr[r])
         ppr[r] = pages
 
-    if prnt: print("Found", str(len(ppr))+(" real" if discard else ""), "readings for", story.name+".")
+    if prnt: print("Found", str(len(ppr))+(" real" if discard else ""),
+                   "readings for", story.name+".")
     return ppr
 
 def discard_demos ( epr, prnt=False ):
 # take those readings that were done too fast to be real, and discard them.
-    # a minutes per page threshold, chosen arbitrarily
-    threshold = 3
+    threshold = 3     # a minutes per page threshold, chosen arbitrarily
     real_epr = {}
     for r in epr.keys():
-        start_time = epr[r][0].date
-        end_time = epr[r][-1].date
-        num_pages = len(epr[r])
-        duration_per_page = (end_time - start_time) / num_pages
+        duration_per_page = (epr[r][-1].date - epr[r][0].date) / len(epr[r])
         if duration_per_page >= timedelta(minutes=threshold):
             real_epr[r] = epr[r]
     if prnt: print("eliminated", len(epr)-len(real_epr), "readings",

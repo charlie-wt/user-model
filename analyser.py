@@ -263,7 +263,7 @@ def log_most_visited ( story, ppr, prnt=False ):
     for r in ppr:
         for p in story.pages:
             visits[p] += ls.count(ppr[r], p.id)
-    
+
     # turn number of visits into proportions per reading, then sort descending.
     proportions = []
     for p in visits:
@@ -329,3 +329,16 @@ def distance_travelled ( story, stores, prnt=False ):
             print("\t  total distance:", str(int(total))+"m")
 
     return distances
+
+def branching_factor ( story, stores, prnt=False ):
+# get the average number of choices at any given node.
+    total = 0
+
+    for s in stores:
+        options = [ len(r.options) for r in s ]
+        num_options = sum(options)
+        total += num_options/len(s)
+    bf = total / len(stores)
+
+    if prnt: print("average branching factor for", story.name+":", bf)
+    return bf

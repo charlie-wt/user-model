@@ -79,8 +79,9 @@ def guess ( user, story, path, pages ):
         chances.append(chance)
 
     # visited before = worse
+    factor = 0.0  # multiply prob of page by this for every previous visit
     for i in range(len(by_distance)):
-        chances[i] = chances[i] * (0.1)**hs.visits(by_distance[i].id, path)
+        chances[i] = chances[i] * (factor)**hs.visits(by_distance[i], path)
 
     # normalise
     factor = 1 / sum(chances)
