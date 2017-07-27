@@ -45,17 +45,10 @@ def show_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
     # basic window stuff
     mpl.rcParams['toolbar'] = 'none'
     mpl.rcParams['font.family'] = 'serif'
-    fig = plt.figure(figsize=(8, 4))
-    ax = fig.add_subplot(111)
+    fig = plt.figure(figsize=(15, 10))
+    ax = fig.add_subplot(211)
     fig.canvas.set_window_title(story.name)
-
-    # hide axes & ticks
-    ax.spines['left'].set_color('none')
-    ax.spines['right'].set_color('none')
-    ax.spines['top'].set_color('none')
-    ax.spines['bottom'].set_color('none')
-    ax.tick_params(axis='x', colors='none')
-    ax.tick_params(axis='y', colors='none')
+    hide_graph_stuff(ax)
 
     # text
     fig.suptitle("info for "+story.name, fontsize=21)
@@ -96,10 +89,13 @@ def show_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
         else: names = 'none!'
         cells.append(['unreachable pages:', names])
 
+    # create table
     table = ax.table(cellText=cells,
                      cellLoc='center',
                      colWidths=[0.3, 0.15],
                      loc='center')
+
+    # set size, fontsize, text alignment and font colour for table cells.
     table.auto_set_font_size(False)
     table.set_fontsize(16)
     table.scale(2, 3)
@@ -113,4 +109,47 @@ def show_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
             c._loc = 'right'
             c._text.set_color('k')
 
+    # new subplot, to compare paths
+    ax2 = fig.add_subplot(224)
+    hide_graph_stuff(ax2)
+
+    # get page names for paths, put in right format for table
+    paths = []
+    for i in range(max(len(sim_store), len(log_store))):
+        sim_page = "---"
+        if i < len(sim_store) and sim_store[i].page is not None:
+            sim_page = sim_store[i].page.name
+        log_page = "---"
+        if i < len(log_store) and log_store[i].page is not None:
+            log_page = log_store[i].page.name
+        paths.append([sim_page, log_page])
+
+    # make table
+    col_names = ['sim', 'log']
+    paths_table = ax2.table(cellText=paths,
+                            cellLoc='center',
+                            colLabels=col_names,
+                            colWidths=[0.5, 0.5],
+                            loc='center')
+    paths_table.auto_set_font_size(False)
+    paths_table.set_fontsize(11)
+    paths_table.scale(1.3, 2.2)
+    for c in paths_table._cells:
+        print(c)
+    for cd in paths_table.properties()['celld']:
+        c = paths_table.properties()['celld'][cd]
+        c.set_linewidth(0)
+        print(c.xy)
+        if cd[0] == -1:
+            c._text.set_weight('bold')
+
     plt.show()
+
+def hide_graph_stuff ( ax ):
+# remove axes & ticks for a subplot
+    ax.spines['left'].set_color('none')
+    ax.spines['right'].set_color('none')
+    ax.spines['top'].set_color('none')
+    ax.spines['bottom'].set_color('none')
+    ax.tick_params(axis='x', colors='none')
+    ax.tick_params(axis='y', colors='none')
