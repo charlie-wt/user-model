@@ -60,36 +60,43 @@ def show_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
     # text
     fig.suptitle("info for "+story.name, fontsize=21)
 
-#    ax.set_facecolor((0.8, 0.8, 1))
+#    ax.set_facecolor((0.8, 1, 0.8))
+    col1 = []
+    col2 = []
     # number of readings
     if ppr is not None:
         count = str(len(ppr))
-        ax.text(0.5, 0.9, 'this story has '+count+' logged readings',
-                    fontsize=16, ha='center')
+        txt = 'this story has '+count+' logged readings'
+        col1.append('number of readings:')
+        col2.append(count)
 
     # sim/log path similarity
     if sim_store is not None and log_store is not None:
-        ax.text(0.5, 0.8, 'similarity of simulated path to log path: '+
-                    pt.pc(an.path_similarity(story, sim_store, log_store)),
-                    fontsize=16, ha='center')
+        txt = 'similarity of simulated path to log path: '+ \
+              pt.pc(an.path_similarity(story, sim_store, log_store))
+        col1.append('similarity of simulated path to log path:')
+        col2.append(pt.pc(an.path_similarity(story, sim_store, log_store)))
 
     # step ahead prediction error
     if step_ahead_err is not None:
         err = pt.pc(step_ahead_err, 2)
-        ax.text(0.5, 0.7, 'step ahead prediction error: '+err,
-                    fontsize=16, ha='center')
+        txt = 'step ahead prediction error: '+err
+        col1.append('step ahead prediction error:')
+        col2.append(err)
 
     if stores is not None:
         # average distance travelled
         dists = an.distance_travelled(story, stores)
-        ax.text(0.5, 0.6, 'average distance travelled: '+
-                    pt.fmt(str(int(sum(dists)/len(dists))),suf='m'),
-                    fontsize=16, ha='center')
+        txt = 'average distance travelled: '+ \
+              pt.fmt(str(int(sum(dists)/len(dists))),suf='m')
+        col1.append('average distance travelled:')
+        col2.append(pt.fmt(str(int(sum(dists)/len(dists))),suf='m'))
 
         # branching factor
         bf = an.branching_factor(story, stores)
-        ax.text(0.5, 0.5, 'average branching factor: '+pt.fmt(bf, 2),
-                    fontsize=16, ha='center')
+        txt = 'average branching factor: '+pt.fmt(bf, 2)
+        col1.append('average branching factor:')
+        col2.append(pt.fmt(bf, 2))
 
         # unreachable pages
         names = ''
@@ -98,7 +105,26 @@ def show_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
             for p in unreachables:
                 names += p.name + '\n '
         else: names = 'none!'
-        ax.text(0.5, 0.45, 'unreachable pages:\n'+names,
-                    fontsize=16, ha='center', va='top')
+        txt = 'unreachable pages:\n'+names
+        col1.append('unreachable pages:')
+        col2.append(names)
+
+    cells = []
+    for i in range(len(col1)):
+        cells.append([col1[i], col2[i]])
+    table = ax.table(cellText=cells, cellLoc='center', colWidths=[0.3, 0.15],
+                     loc='center')
+    table.auto_set_font_size(False)
+    table.set_fontsize(16)
+    table.scale(2, 3)
+    for cd in table.properties()['celld']:
+        c = table.properties()['celld'][cd]
+        c.set_linewidth(0)
+        if cd[1] == 1:
+            c._loc = 'left'
+            c._text.set_color('r')
+        else:
+            c._loc = 'right'
+            c._text.set_color('k')
 
     plt.show()
