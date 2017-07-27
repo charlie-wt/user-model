@@ -141,6 +141,27 @@ def show_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
             c._text.set_weight('semibold')
             c._text.set_fontsize(16)
 
+    # new subplot, to show visit proportion graph
+    ax3 = fig.add_subplot(223)
+
+    # split data
+    sort = 'story'
+    if sort == 'story':
+        data.sort(key = lambda p : story.pages.index(p[0]))
+    names = [ p[0].name for p in data ]
+    props = [ p[1] for p in data ]
+
+    # chart params
+    n = len(data)
+    width = 0.75
+    rects = ax3.bar(range(n), props, width,
+                    color='blue',
+                    edgecolor='none',
+                    tick_label=names)
+    ax3.plot(range(-1, n+1), [1]*(n+2), 'r-')
+    ax3.set_title("visits to each page per reading")
+    plt.setp(ax3.get_xticklabels(), rotation=90, fontsize=10)
+
     plt.show()
 
 def hide_graph_stuff ( ax ):
