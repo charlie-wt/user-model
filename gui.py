@@ -99,10 +99,10 @@ def show_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
     table.auto_set_font_size(False)
     table.set_fontsize(16)
     table.scale(2, 3)
-    for cd in table.properties()['celld']:
-        c = table.properties()['celld'][cd]
+    for loc in table._cells:
+        c = table._cells[loc]
         c.set_linewidth(0)
-        if cd[1] == 1:
+        if loc[1] == 1:
             c._loc = 'left'
             c._text.set_color('r')
         else:
@@ -134,14 +134,12 @@ def show_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
     paths_table.auto_set_font_size(False)
     paths_table.set_fontsize(11)
     paths_table.scale(1.3, 2.2)
-    for c in paths_table._cells:
-        print(c)
-    for cd in paths_table.properties()['celld']:
-        c = paths_table.properties()['celld'][cd]
+    for loc in paths_table._cells:
+        c = paths_table._cells[loc]
         c.set_linewidth(0)
-        print(c.xy)
-        if cd[0] == -1:
-            c._text.set_weight('bold')
+        if loc[0] == 0:
+            c._text.set_weight('semibold')
+            c._text.set_fontsize(16)
 
     plt.show()
 
