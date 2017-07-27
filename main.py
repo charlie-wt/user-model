@@ -27,7 +27,7 @@ names = ["A Walk In The Park",                  #  0
 
 
 
-story_name = names[13]
+story_name = names[7]
 
 max_steps = 50
 

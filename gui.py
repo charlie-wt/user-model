@@ -46,8 +46,11 @@ def show_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
     mpl.rcParams['toolbar'] = 'none'
     mpl.rcParams['font.family'] = 'serif'
     fig = plt.figure(figsize=(15, 10))
-    ax = fig.add_subplot(211)
     fig.canvas.set_window_title(story.name)
+
+    # PART 1 - BASIC INFO
+    # set up subplot
+    ax = fig.add_subplot(211)
     hide_graph_stuff(ax)
 
     # text
@@ -61,9 +64,9 @@ def show_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
         cells.append(['number of readings:', count])
 
     # sim/log path similarity
-    if sim_store is not None and log_store is not None:
-        cells.append(['similarity of simulated path to log path:',
-                      pt.pc(an.path_similarity(story, sim_store, log_store))])
+#    if sim_store is not None and log_store is not None:
+#        cells.append(['similarity of simulated path to log path:',
+#                      pt.pc(an.path_similarity(story, sim_store, log_store))])
 
     # step ahead prediction error
     if step_ahead_err is not None:
@@ -109,6 +112,7 @@ def show_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
             c._loc = 'right'
             c._text.set_color('k')
 
+    # PART 2 - PATH COMPARISON
     # new subplot, to compare paths
     ax2 = fig.add_subplot(224)
     hide_graph_stuff(ax2)
@@ -130,10 +134,10 @@ def show_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
                             cellLoc='center',
                             colLabels=col_names,
                             colWidths=[0.5, 0.5],
-                            loc='center')
+                            loc='upper center')
     paths_table.auto_set_font_size(False)
     paths_table.set_fontsize(11)
-    paths_table.scale(1.3, 2.2)
+    paths_table.scale(1.3, 1.5)
     for loc in paths_table._cells:
         c = paths_table._cells[loc]
         c.set_linewidth(0)
@@ -141,10 +145,17 @@ def show_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
             c._text.set_weight('semibold')
             c._text.set_fontsize(16)
 
+    # path similarity label
+    ax2.text(0.5, 1.1, "path similarity: "+ \
+             pt.pc(an.path_similarity(story, sim_store, log_store)),
+             ha='center', fontsize=16)
+
+    # PART 3 - PAGE VISIT PROPORTION GRAPH
     # new subplot, to show visit proportion graph
     ax3 = fig.add_subplot(223)
 
     # split data
+    data = an.most_visited(story, stores)
     sort = 'story'
     if sort == 'story':
         data.sort(key = lambda p : story.pages.index(p[0]))
@@ -160,7 +171,7 @@ def show_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
                     tick_label=names)
     ax3.plot(range(-1, n+1), [1]*(n+2), 'r-')
     ax3.set_title("visits to each page per reading")
-    plt.setp(ax3.get_xticklabels(), rotation=90, fontsize=10)
+    plt.setp(ax3.get_xticklabels(), rotation=70, fontsize=8)
 
     plt.show()
 
