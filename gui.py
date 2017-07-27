@@ -63,12 +63,14 @@ def show_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
 #    ax.set_facecolor((0.8, 1, 0.8))
     col1 = []
     col2 = []
+    cells = []
     # number of readings
     if ppr is not None:
         count = str(len(ppr))
         txt = 'this story has '+count+' logged readings'
         col1.append('number of readings:')
         col2.append(count)
+        cells.append(['number of readings:', count])
 
     # sim/log path similarity
     if sim_store is not None and log_store is not None:
@@ -76,6 +78,8 @@ def show_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
               pt.pc(an.path_similarity(story, sim_store, log_store))
         col1.append('similarity of simulated path to log path:')
         col2.append(pt.pc(an.path_similarity(story, sim_store, log_store)))
+        cells.append(['similarity of simulated path to log path:',
+                      pt.pc(an.path_similarity(story, sim_store, log_store))])
 
     # step ahead prediction error
     if step_ahead_err is not None:
@@ -83,6 +87,7 @@ def show_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
         txt = 'step ahead prediction error: '+err
         col1.append('step ahead prediction error:')
         col2.append(err)
+        cells.append(['step ahead prediction error:', err])
 
     if stores is not None:
         # average distance travelled
@@ -91,12 +96,15 @@ def show_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
               pt.fmt(str(int(sum(dists)/len(dists))),suf='m')
         col1.append('average distance travelled:')
         col2.append(pt.fmt(str(int(sum(dists)/len(dists))),suf='m'))
+        cells.append(['average distance travelled:', 
+                     pt.fmt(str(int(sum(dists)/len(dists))),suf='m')])
 
         # branching factor
         bf = an.branching_factor(story, stores)
         txt = 'average branching factor: '+pt.fmt(bf, 2)
         col1.append('average branching factor:')
         col2.append(pt.fmt(bf, 2))
+        cells.append(['average branching factor:', pt.fmt(bf, 2)])
 
         # unreachable pages
         names = ''
@@ -108,11 +116,14 @@ def show_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
         txt = 'unreachable pages:\n'+names
         col1.append('unreachable pages:')
         col2.append(names)
+        cells.append(['unreachable pages:', names])
 
-    cells = []
-    for i in range(len(col1)):
-        cells.append([col1[i], col2[i]])
-    table = ax.table(cellText=cells, cellLoc='center', colWidths=[0.3, 0.15],
+#    cells = []
+#    for i in range(len(col1)):
+#        cells.append([col1[i], col2[i]])
+    table = ax.table(cellText=cells,
+                     cellLoc='center',
+                     colWidths=[0.3, 0.15],
                      loc='center')
     table.auto_set_font_size(False)
     table.set_fontsize(16)
