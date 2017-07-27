@@ -291,6 +291,8 @@ def get_unreachables ( story, stores, prnt=False ):
             pt.print_pages(unreachables, True)
         print()
 
+    return unreachables
+
 def distance_travelled ( story, stores, prnt=False ):
 # total distance travelled while walking the given route of the story
     if type(stores[0]) is not list: stores = [stores]
@@ -331,7 +333,7 @@ def distance_travelled ( story, stores, prnt=False ):
     return distances
 
 def branching_factor ( story, stores, prnt=False ):
-# get the average number of choices at any given node.
+# get the average number of choices from any given page.
     total = 0
 
     for s in stores:

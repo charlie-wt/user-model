@@ -83,11 +83,20 @@ def print_store ( store ):
 
 def pc ( num, dec=0 ):
 # percentify a 0-1 fraction
-    if dec != 0: dec += 1
+    if dec > 0: dec += 1
     percent = str(num*100)
     rounded = percent+"%"
-    if "." in percent: rounded = percent[:percent.index(".")+dec]+"%"
+    if "." in percent and dec != -1:
+        rounded = percent[:percent.index(".")+dec]+"%"
     return " "+rounded if num < 0.1 else rounded
+
+def fmt ( num, dec=0, suf=''):
+# round a number to dec decimal places, return string with suf suffix.
+    if dec > 0: dec += 1
+    stnum = str(num)
+    rounded = stnum + suf
+    if '.' in stnum and dec != -1: rounded = stnum[:stnum.index('.')+dec] + suf
+    return rounded
 
 def print_walk_full_options ( visible, options ):
 # print visible pages, options taken by users and their intersection (for use

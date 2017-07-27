@@ -48,11 +48,12 @@ log_path = [ r.page for r in log_store ]
 # analyse paths
 pt.print_sim_log_comparison(sim_path, log_path)
 an.path_similarity(story, sim_store, log_store, True)
-tr.step_predict(story, log_store, rk.guess, True)
+err = tr.step_predict(story, log_store, rk.guess, True)
 
 stores = tr.traverse_many(story, 100)
 an.branching_factor(story, stores, True)
 an.distance_travelled(story, stores, True)
 an.get_unreachables(story, stores, True)
 #gui.visit_proportions(an.most_visited(story, stores), 'tory', story)
-gui.visit_proportions(an.log_most_visited(story, paths_per_reading), 'story', story)
+#gui.visit_proportions(an.log_most_visited(story, paths_per_reading), 'story', story)
+gui.show_info(story, paths_per_reading, stores, sim_store, log_store, err)
