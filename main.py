@@ -9,6 +9,7 @@ import printer as pt
 import analyser as an
 import ls
 import gui
+import mapping as mp
 
 names = ["A Walk In The Park",                  #  0
          "Butterflies",                         #  1
@@ -27,7 +28,7 @@ names = ["A Walk In The Park",                  #  0
 
 
 
-story_name = names[7]
+story_name = names[13]
 
 max_steps = 50
 
@@ -50,6 +51,9 @@ pt.print_sim_log_comparison(sim_path, log_path)
 an.path_similarity(story, sim_store, log_store, True)
 err = tr.step_predict(story, log_store, rk.guess, True)
 
+mp.gdist((50.9250390, -1.3951910), (50.919660, -1.397373), True)
+mp.galt((50.919660, -1.397373), True)
+mp.dstkalt((50.919660, -1.397373), True)
 stores = tr.traverse_many(story, 100)
 an.branching_factor(story, stores, True)
 an.distance_travelled(story, stores, True)

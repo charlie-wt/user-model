@@ -9,7 +9,7 @@ import ls
 # functions to display various bits of info in a gui.
 ##############################
 
-def show_visit_proportions ( sim_data, ppr=None, sort='', story=None ):
+def visit_proportions ( sim_data, ppr=None, sort='', story=None ):
 # display a window witha bar chart of the proportion of visits to each page
     # set up window
     mpl.rcParams['toolbar'] = 'none'
@@ -18,7 +18,7 @@ def show_visit_proportions ( sim_data, ppr=None, sort='', story=None ):
     fig.canvas.set_window_title((story.name if story is not None else "visits"))
 
     ax = fig.add_subplot(111)
-    visit_proportions(ax, sim_data, ppr, sort, story)
+    visit_proportions_plot(ax, sim_data, ppr, sort, story)
     title = "visits to each page per reading" + \
             (" for "+story.name if story is not None else "")
     ax.set_title(title)
@@ -26,7 +26,7 @@ def show_visit_proportions ( sim_data, ppr=None, sort='', story=None ):
     plt.tight_layout()
     plt.show()
 
-def visit_proportions ( ax, sim_data=None, ppr=None, sort='', story=None ):
+def visit_proportions_plot ( ax, sim_data=None, ppr=None, sort='', story=None ):
 # a bar chart of the proportion of visits to each page
     if sim_data is None and ppr is None: return
 
@@ -81,7 +81,7 @@ def visit_proportions ( ax, sim_data=None, ppr=None, sort='', story=None ):
 
     return ax
 
-def text_info ( ax, story, ppr=None, stores=None, sim_store=None, log_store=None,
+def text_info_plot ( ax, story, ppr=None, stores=None, sim_store=None, log_store=None,
                 step_ahead_err=None ):
 # some basic stats on a story, shown via text
     hide_graph_stuff(ax)
@@ -143,7 +143,7 @@ def text_info ( ax, story, ppr=None, stores=None, sim_store=None, log_store=None
             c._loc = 'right'
             c._text.set_color('k')
 
-def show_text_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
+def text_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
                      step_ahead_err=None ):
     # basic window stuff
     mpl.rcParams['toolbar'] = 'none'
@@ -152,13 +152,13 @@ def show_text_info ( story, ppr=None, stores=None, sim_store=None, log_store=Non
     fig.canvas.set_window_title(story.name)
 
     ax = fig.add_subplot(111)
-    text_info(ax, story, ppr, stores, sim_store, log_store)
+    text_info_plot(ax, story, ppr, stores, sim_store, log_store)
     ax.set_title("basic info for "+story.name)
 
     plt.tight_layout()
     plt.show()
 
-def path_comparison ( ax, story, sim_store, log_store ):
+def path_comparison_plot ( ax, story, sim_store, log_store ):
 # show paths taken by simulation & average log, & edit distance between them.
     hide_graph_stuff(ax)
 
@@ -180,6 +180,7 @@ def path_comparison ( ax, story, sim_store, log_store ):
                            cellColours=[['none']*len(paths[0])]*len(paths),
                            colLabels=col_names,
                            colWidths=[0.5, 0.5],
+                           colColours=['none']*len(col_names),
                            loc='center')
     paths_table.auto_set_font_size(False)
     paths_table.set_fontsize(11)
@@ -196,7 +197,7 @@ def path_comparison ( ax, story, sim_store, log_store ):
             pt.pc(an.path_similarity(story, sim_store, log_store)),
             ha='center', fontsize=16)
 
-def show_path_comparison ( story, sim_store, log_store ):
+def path_comparison ( story, sim_store, log_store ):
     # basic window stuff
     mpl.rcParams['toolbar'] = 'none'
     mpl.rcParams['font.family'] = 'serif'
@@ -205,7 +206,7 @@ def show_path_comparison ( story, sim_store, log_store ):
 
     # new subplot, to compare paths
     ax = fig.add_subplot(111)
-    path_comparison(ax, story, sim_store, log_store)
+    path_comparison_plot(ax, story, sim_store, log_store)
     ax.set_title("simulated vs. log-based path through "+story.name)
 
     plt.tight_layout()
@@ -222,15 +223,15 @@ def show_all ( story, ppr=None, stores=None, sim_store=None, log_store=None,
 
     # 1 - text info
     ax1 = fig.add_subplot(211)
-    text_info(ax1, story, ppr, stores, sim_store, log_store)
+    text_info_plot(ax1, story, ppr, stores, sim_store, log_store)
 
     # 2 - visit proportions
     ax2 = fig.add_subplot(223)
-    visit_proportions(ax2, an.most_visited(story, stores), ppr, 'story', story)
+    visit_proportions_plot(ax2, an.most_visited(story, stores), ppr, 'story', story)
 
     # 3 - path comparison
     ax3 = fig.add_subplot(224)
-    path_comparison(ax3, story, sim_store, log_store)
+    path_comparison_plot(ax3, story, sim_store, log_store)
 
     plt.tight_layout()
     plt.show()
