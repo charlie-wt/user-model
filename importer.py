@@ -161,7 +161,7 @@ def locationFromJSON ( json ):
             float(json["lon"]),
             float(json["radius"]))
 
-def pathEventsFromJSON ( filename, prnt=False, story=None ):
+def pathEventsFromJSON ( filename, story=None, prnt=False):
 # read a log file and return a dictionary containing the paths taken through the
 # specified story, per reading.
     # load file
@@ -194,13 +194,13 @@ def pathEventsFromJSON ( filename, prnt=False, story=None ):
         print("Found", len(epr), "readings", end="")
         if story is not None: print(" for", story.name+".")
         else: print(".")
+
     return epr
 
-def pathPagesFromJSON ( filename, story, discard=True, prnt=False ):
+def pathPagesFromJSON ( filename, story, prnt=False ):
 # same as pathEventsFromJSON, but the dictionary contains lists of pages,
 # instead of lists of events
-    epr = pathEventsFromJSON(filename, False, story)
-    if discard: epr=discard_demos(epr)
+    epr = pathEventsFromJSON(filename, story, False)
     ppr = {}
 
     for r in epr:
@@ -210,18 +210,6 @@ def pathPagesFromJSON ( filename, story, discard=True, prnt=False ):
     if prnt: print("Found", str(len(ppr))+(" real" if discard else ""),
                    "readings for", story.name+".")
     return ppr
-
-def discard_demos ( epr, prnt=False ):
-# take those readings that were done too fast to be real, and discard them.
-    threshold = 3     # a minutes per page threshold, chosen arbitrarily
-    real_epr = {}
-    for r in epr.keys():
-        duration_per_page = (epr[r][-1].date - epr[r][0].date) / len(epr[r])
-        if duration_per_page >= timedelta(minutes=threshold):
-            real_epr[r] = epr[r]
-    if prnt: print("eliminated", len(epr)-len(real_epr), "readings",
-                   "with a threshold of", threshold, "minutes per page read.")
-    return real_epr
 
 def logEventFromJSON ( json ):
     return logevent.LogEvent(

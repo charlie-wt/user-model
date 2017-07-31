@@ -1,6 +1,8 @@
 import sys, os
 sys.path.append(os.path.join(sys.path[0], "models"))
 
+from datetime import timedelta
+
 import ranker as rk
 import decider as dc
 import page as pg
@@ -11,6 +13,7 @@ import reading as rd
 import user as us
 import traverser as tr
 import location as lc
+import heuristics as hs
 
 ##### analyser ###############
 # various functions to analyse a set of readings of a story.
@@ -344,3 +347,68 @@ def branching_factor ( story, stores, prnt=False ):
 
     if prnt: print("average branching factor for", story.name+":", bf)
     return bf
+
+def filter_readings ( story, epr, max_metres_per_second=5, prnt=False ):
+# take an events per reading dictionary, and filter out illegitimate ones
+
+    filtered = {}
+    reading = rd.Reading("reading-0", story)
+    user = us.User("user-0")
+    dev_ids = [
+        "5757f7c29000c74f10000003",
+        "575acfcc376d4e2f4200000a",
+        "576c37ced601c536700000cc",
+        "576e5acbd601c53670000386",
+        "575e8c8f61c930d542000022",
+        "5764008ea0672b6e5b000003",
+        "576afdaed601c5367000005d",
+        "576fdc04d601c53670000804"
+    ]
+
+    for reading_id in epr:
+        removed = False
+
+        # 1 : known dev user ids
+        if reading_id in dev_ids:
+            removed = True
+            if prnt: print("removing", reading_id+": has dev id")
+
+        if removed: continue
+
+        # 2 : if the reading is empty
+        pages = pg.fromLogEvents(story, epr[reading_id])
+        if len(pages) == 0:
+            removed = True
+            if prnt: print("removing", reading_id+": empty reading")
+
+        if removed: continue
+
+        # 3 : if the path taken was impossible
+        visible = pg.update_all(story.pages, story, reading, user)
+
+        dist = 0
+        for p in pages:
+            if p not in visible:
+                removed = True
+                if prnt: print("removing", reading_id+": impossible reading")
+                break
+            visible = user.move(visible.index(p), visible, story, reading)
+        tr.reset(story, reading, user)
+
+        if removed: continue
+
+        # 4 : if user travelled at a speed greater than max_metres_per_second
+        av_dist = dist / len(pages)
+        av_duration = (epr[reading_id][-1].date - epr[reading_id][0].date) / len(pages)
+        if av_duration.total_seconds() < av_dist * max_metres_per_second:
+            removed = True
+            if prnt: print("removing", reading_id+": moved too fast")
+            continue
+
+        if removed: continue
+
+        # if we've made it this far, the reading's (probably) valid
+        filtered[reading_id] = pages
+
+    if prnt: print("found", len(filtered), "real readings for", story.name)
+    return filtered

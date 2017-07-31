@@ -28,7 +28,7 @@ names = ["A Walk In The Park",                  #  0
 
 
 
-story_name = names[13]
+story_name = names[6]
 
 max_steps = 50
 
@@ -36,7 +36,14 @@ max_steps = 50
 
 # create/load stuff
 story = imp.storyFromJSON(story_name)
-paths_per_reading = imp.pathPagesFromJSON("old-logs", story, True, True)
+epr = imp.pathEventsFromJSON("old-logs", story, True)
+ppr = imp.pathPagesFromJSON("old-logs", story)
+print("unfiltered:")
+pt.print_log_paths(story, ppr)
+print("---\nremoval:")
+paths_per_reading = an.filter_readings(story, epr, prnt=True)
+print("---\nfiltered:")
+pt.print_log_paths(story, paths_per_reading)
 
 # traverse
 sim_store = tr.traverse(story, rk.guess, dc.best, max_steps)
