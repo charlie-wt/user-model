@@ -19,6 +19,7 @@ def traverse ( story, ranker, decider, max_steps=50, reading=None, user=None, pr
 # records (pages taken, and probabilities of each option at each page)
     if reading is None: reading = rd.Reading("reading-0", story)
     if user is None: user = us.User("user-0")
+    cache = ls.nested_dict()
 
     visible = page.update_all(story.pages, story, reading, user)
 
@@ -39,7 +40,7 @@ def traverse ( story, ranker, decider, max_steps=50, reading=None, user=None, pr
             if len(locs) > 0: user.loc = ((sum(lats)/len(lats)), (sum(lons)/len(lons)))
 
         # move to a new page
-        options = ranker(user, story, user.path, visible)
+        options = ranker(user, story, user.path, visible, cache)
 
         rc.add(path, (user.page() if path else None), options, visible)
 
@@ -64,9 +65,39 @@ def traverse_many ( story, n=25, ranker=rk.rand, decider=dc.rand, max_steps=50 )
     reading = rd.Reading("reading-0", story)
     user = us.User("user-0")
     stores = []
+    cache = ls.nested_dict()
 
     for i in range(n):
-        stores.append(traverse(story, ranker, decider, max_steps, reading, user))
+        visible = page.update_all(story.pages, story, reading, user)
+
+        path = []
+        # move to a page
+        for i in range(max_steps):
+            # optionally start the user at a location in the middle of the start pages.
+            moved = False
+            for p in user.path:
+                if p.getLoc(story) is not None:
+                    moved = True
+                    break
+            if not moved:
+                locs = [ p.getLoc(story) for p in visible if p.getLoc(story) is not None ]
+                lats = [ loc[0] for loc in locs ]
+                lons = [ loc[1] for loc in locs ]
+                if len(locs) > 0: user.loc = ((sum(lats)/len(lats)), (sum(lons)/len(lons)))
+
+            # move to a new page
+            options = ranker(user, story, user.path, visible, cache)
+
+            rc.add(path, (user.page() if path else None), options, visible)
+
+            move_to_idx = decider(visible, options)
+            visible = user.move(move_to_idx, visible, story, reading)
+
+            # stop if you can't go anywhere
+            if page.last(user.page(), visible):
+                rc.add(path, user.page(), {})
+                break
+        stores.append(path)
         reset(story, reading, user)
 
     return stores

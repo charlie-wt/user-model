@@ -14,10 +14,10 @@ import random
 # function.
 ##############################
 
-def dist ( user, story, path, pages ):
+def dist ( user, story, path, pages, cache=None ):
 # shortest straight line distance
     # score pages
-    distances = [hs.distance(p, user, story) for p in pages]
+    distances = [hs.distance(p, user, story, cache) for p in pages]
     by_distance = sorted(pages, key = lambda p : distances[pages.index(p)])
     distances.sort()
     chances = []
@@ -32,11 +32,11 @@ def dist ( user, story, path, pages ):
         options[by_distance[i]] = chances[i]
     return options
 
-def walk_dist ( user, story, path, pages ):
+def walk_dist ( user, story, path, pages, cache=None ):
 # shortest walking distance, via roads
     if len(pages) == 1: return { pages[0] : 1 }
     # score pages
-    distances = [hs.osrmdist(p, user, story) for p in pages]
+    distances = [hs.walk_dist(p, user, story, cache) for p in pages]
     by_distance = sorted(pages, key = lambda p : distances[pages.index(p)])
     distances.sort()
     chances = []
@@ -44,9 +44,8 @@ def walk_dist ( user, story, path, pages ):
         chances.append(1 / distances[i] if distances[i] != 0 else 1)
 
     # optionally eliminate visited nodes
-    if True:
-        for i in range(len(chances)):
-            if hs.visits(by_distance[i], path) != 0: chances[i] = 0
+    for i in range(len(chances)):
+        if hs.visits(by_distance[i], path) != 0: chances[i] = 0
 
     # normalise
     factor = 1 / sum(chances)
@@ -57,7 +56,7 @@ def walk_dist ( user, story, path, pages ):
         options[by_distance[i]] = chances[i]
     return options
 
-def rand ( user, story, path, pages ):
+def rand ( user, story, path, pages, cache=None ):
 # random
     prob = 1 / len(pages)
     options = {}
@@ -65,7 +64,7 @@ def rand ( user, story, path, pages ):
         options[pages[i]] = prob
     return options
 
-def guess ( user, story, path, pages ):
+def guess ( user, story, path, pages, cache=None ):
 # fairly arbitrary guess based on heuristics
     distances = [hs.distance(p, user, story) for p in pages]
     by_distance = sorted(pages, key = lambda p : distances[pages.index(p)])
