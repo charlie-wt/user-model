@@ -5,10 +5,13 @@ sys.path.append(os.path.join(sys.path[0], "models"))
 import json
 from urllib.parse import urlencode
 from urllib.request import urlopen
+import osrm
 import route as rt
 import location as lc
 
 num_requests = 0
+client = None
+
 def gdist ( loc1, loc2, prnt=False ):
 # google maps api - get walking distance between pages
     origin = str(loc1[0]) + ", " + str(loc1[1])
@@ -59,6 +62,21 @@ def osmdist ( loc1, loc2, prnt=False ):
         return dist
     else:
         print("routing failure:", result)
+
+def osrmdist ( loc1, loc2, prnt=False ):
+# osrm - get walking distance between pages
+# note: must be running osrm http backend for this @ localhost:5000 to work
+    global client
+    if not client: client = osrm.Client(host="http://localhost:5000")
+
+    response = client.route(
+        coordinates = [[loc1[1], loc1[0]], [loc2[1], loc2[0]]],
+        overview = osrm.overview.simplified
+    )
+    dist = response['routes'][0]['distance']
+
+    if prnt: print('distance from', loc1, 'to', loc2, '=', str(dist)+'m.')
+    return dist
 
 def galt ( loc, prnt=False ):
 # google maps api - get altitude of a lat/lon

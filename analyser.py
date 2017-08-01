@@ -350,7 +350,6 @@ def branching_factor ( story, stores, prnt=False ):
 
 def filter_readings ( story, epr, max_metres_per_second=5, prnt=False ):
 # take an events per reading dictionary, and filter out illegitimate ones
-
     filtered = {}
     reading = rd.Reading("reading-0", story)
     user = us.User("user-0")
@@ -362,13 +361,15 @@ def filter_readings ( story, epr, max_metres_per_second=5, prnt=False ):
         "575e8c8f61c930d542000022",
         "5764008ea0672b6e5b000003",
         "576afdaed601c5367000005d",
-        "576fdc04d601c53670000804"
+        "576fdc04d601c53670000804",
+        "57f50d9fc7dde2221000031a",
+        "5757f7c29000c74f10000003"
     ]
 
     for reading_id in epr:
         removed = False
 
-        # 1 : known dev user ids
+        # 1 : if reading was done by a dev
         if reading_id in dev_ids:
             removed = True
             if prnt: print("removing", reading_id+": has dev id")
@@ -385,7 +386,6 @@ def filter_readings ( story, epr, max_metres_per_second=5, prnt=False ):
 
         # 3 : if the path taken was impossible
         visible = pg.update_all(story.pages, story, reading, user)
-
         dist = 0
         for p in pages:
             if p not in visible:

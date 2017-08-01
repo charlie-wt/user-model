@@ -37,16 +37,10 @@ max_steps = 50
 # create/load stuff
 story = imp.storyFromJSON(story_name)
 epr = imp.pathEventsFromJSON("old-logs", story, True)
-ppr = imp.pathPagesFromJSON("old-logs", story)
-print("unfiltered:")
-pt.print_log_paths(story, ppr)
-print("---\nremoval:")
-paths_per_reading = an.filter_readings(story, epr, prnt=True)
-print("---\nfiltered:")
-pt.print_log_paths(story, paths_per_reading)
+paths_per_reading = an.filter_readings(story, epr)
 
 # traverse
-sim_store = tr.traverse(story, rk.guess, dc.best, max_steps)
+sim_store = tr.traverse(story, rk.walk_dist, dc.best, max_steps)
 sim_path = [ r.page for r in sim_store ]
 
 # load logs
@@ -58,9 +52,6 @@ pt.print_sim_log_comparison(sim_path, log_path)
 an.path_similarity(story, sim_store, log_store, True)
 err = tr.step_predict(story, log_store, rk.guess, True)
 
-mp.gdist((50.9250390, -1.3951910), (50.919660, -1.397373), True)
-mp.galt((50.919660, -1.397373), True)
-mp.dstkalt((50.919660, -1.397373), True)
 stores = tr.traverse_many(story, 100)
 an.branching_factor(story, stores, True)
 an.distance_travelled(story, stores, True)

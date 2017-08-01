@@ -36,8 +36,7 @@ def walk_dist ( user, story, path, pages ):
 # shortest walking distance, via roads
     if len(pages) == 1: return { pages[0] : 1 }
     # score pages
-#    distances = [hs.gdist(p, user, story) for p in pages]
-    distances = [hs.osmdist(p, user, story) for p in pages]
+    distances = [hs.osrmdist(p, user, story) for p in pages]
     by_distance = sorted(pages, key = lambda p : distances[pages.index(p)])
     distances.sort()
     chances = []

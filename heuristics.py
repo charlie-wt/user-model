@@ -30,3 +30,9 @@ def osmdist ( page, user, story):
     page_loc = page.getLoc(story)
     if page_loc is None: page_loc = user.loc
     return mp.osmdist(user.loc, page_loc)
+
+def osrmdist ( page, user, story):
+# walking distance, via roads (osrm).
+    page_loc = page.getLoc(story)
+    if page_loc is None: page_loc = user.loc
+    return mp.osrmdist(user.loc, page_loc)
