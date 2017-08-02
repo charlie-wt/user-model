@@ -64,3 +64,21 @@ def walk_dist ( page, user, story, cache=None ):
     dist = mp.dist(us_page.getLoc(story), page_loc)
     if cache is not None: cache['walk_dist'][us_page.id][page.id] = dist
     return dist
+
+def altitude ( page, user, story, cache=None ):
+# altitude of page
+    prnt=False
+    page_loc = page.getLoc(story)
+    if page_loc is None:
+        if prnt: print(page.name, "can be accessed from anywhere.")
+        return mp.srtmalt(user.loc)
+    if cache is not None and page.id in cache['altitude']:
+        if prnt: print("altitude of", page.name, "is cached (" \
+                       +str(cache['altitude'][page.id])+").")
+#        return mp.srtmalt(user.loc) - cache['altitude'][page.id]
+        return cache['altitude'][page.id]
+#    alt = mp.srtmalt(user.loc()) - mp.srtmalt(page_loc)
+    alt = mp.srtmalt(page_loc)
+    if cache is not None: cache['altitude'][page.id] = alt
+    if prnt: print("altitude of", page.name, "is", alt)
+    return alt

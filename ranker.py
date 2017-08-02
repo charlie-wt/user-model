@@ -66,7 +66,7 @@ def rand ( user, story, path, pages, cache=None ):
 
 def guess ( user, story, path, pages, cache=None ):
 # fairly arbitrary guess based on heuristics
-    distances = [hs.distance(p, user, story) for p in pages]
+    distances = [hs.distance(p, user, story, cache) for p in pages]
     by_distance = sorted(pages, key = lambda p : distances[pages.index(p)])
     distances.sort()
     chances = []
@@ -89,4 +89,28 @@ def guess ( user, story, path, pages, cache=None ):
     options = {}
     for i in range(len(by_distance)):
         options[by_distance[i]] = chances[i]
+    return options
+
+def alt ( user, story, path, pages, cache=None ):
+# prefer to go downhill (not a very useful ranker on its own)
+    alts = [ hs.altitude(p, user, story, cache) for p in pages ]
+    by_alt = sorted(pages, key = lambda p : alts[pages.index(p)])
+    alts.sort()
+    chances = []
+    highest = alts[-1]
+    lowest = alts[0]
+
+    # lower = better
+    for i in range(len(by_alt)):
+        chance = (highest - alts[i]) + abs(lowest)
+        chances.append(chance)
+
+    # normalise
+    factor = 1 / sum(chances) if sum(chances) != 0 else 1
+    chances = [ c * factor for c in chances ]
+
+    # gen dictionary
+    options = {}
+    for i in range(len(by_alt)):
+        options[by_alt[i]] = chances[i]
     return options
