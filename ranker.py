@@ -21,10 +21,12 @@ def dist ( user, story, path, pages, cache=None ):
     by_distance = sorted(pages, key = lambda p : distances[pages.index(p)])
     distances.sort()
     chances = []
+    furthest = distances[-1]
+    closest = distances[0]
     for i in range(len(by_distance)):
-        chances.append(1 / distances[i] if distances[i] != 0 else 1)
+        chances.append((furthest - distances[i]) + abs(closest))
     # normalise
-    factor = 1 / sum(chances)
+    factor = 1 / sum(chances) if sum(chances) != 0 else 1
     chances = [ c * factor for c in chances ]
     # gen dictionary
     options = {}
@@ -40,15 +42,17 @@ def walk_dist ( user, story, path, pages, cache=None ):
     by_distance = sorted(pages, key = lambda p : distances[pages.index(p)])
     distances.sort()
     chances = []
+    furthest = distances[-1]
+    closest = distances[0]
     for i in range(len(by_distance)):
-        chances.append(1 / distances[i] if distances[i] != 0 else 1)
+        chances.append((furthest - distances[i]) + abs(closest))
 
     # optionally eliminate visited nodes
     for i in range(len(chances)):
         if hs.visits(by_distance[i], path) != 0: chances[i] = 0
 
     # normalise
-    factor = 1 / sum(chances)
+    factor = 1 / sum(chances) if sum(chances) != 0 else 1
     chances = [ c * factor for c in chances ]
     # gen dictionary
     options = {}
@@ -70,10 +74,12 @@ def guess ( user, story, path, pages, cache=None ):
     by_distance = sorted(pages, key = lambda p : distances[pages.index(p)])
     distances.sort()
     chances = []
+    furthest = distances[-1]
+    closest = distances[0]
 
     # closer = better
     for i in range(len(by_distance)):
-        chance = 1 / distances[i] if distances[i] != 0 else 1
+        chance = (furthest - distances[i]) + abs(closest)
         chances.append(chance)
 
     # visited before = worse
@@ -82,7 +88,7 @@ def guess ( user, story, path, pages, cache=None ):
         chances[i] = chances[i] * (factor)**hs.visits(by_distance[i], path)
 
     # normalise
-    factor = 1 / sum(chances)
+    factor = 1 / sum(chances) if sum(chances) != 0 else 1
     chances = [ c * factor for c in chances ]
 
     # gen dictionary
