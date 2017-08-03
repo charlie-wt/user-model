@@ -80,3 +80,18 @@ def altitude ( page, user, story, cache=None ):
     if cache is not None: cache['altitude'][page.id] = alt
     if prnt: print("altitude of", page.name, "is", alt)
     return alt
+
+def points_of_interest ( page, user, story, cache=None ):
+# get the number of points of interest near a page
+    prnt=False
+    page_loc = page.getLoc(story)
+    if page_loc is None: page_loc = user.loc
+
+    if cache is not None and page.id in cache['poi']:
+        if prnt: print(page.name, "is cached with", cache['poi'][page.id], "pois.")
+        return cache['poi'][page.id]
+
+    poi = mp.poi(page_loc)
+    if cache is not None: cache['poi'][page.id] = poi
+    if prnt: print(page.name, "is near", poi, "points of interest.")
+    return poi

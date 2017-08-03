@@ -29,7 +29,7 @@ def print_visible ( vis, story, us ):
         page_loc = p.getLoc(story)
         if page_loc is not None:
             dist = lc.metres(us.loc, page_loc)
-            print("\t" + p.id + " : " + p.name + " -> " + str(dist) + " metres away.")
+            print("\t" + p.id + " : " + p.name + " -> " + str(int(dist)) + " metres away.")
         else:
             print("\t" + p.id + " : " + p.name + ", which can be accessed from anywhere.")
 

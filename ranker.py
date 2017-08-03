@@ -120,3 +120,21 @@ def alt ( user, story, path, pages, cache=None ):
     for i in range(len(by_alt)):
         options[by_alt[i]] = chances[i]
     return options
+
+def poi ( user, story, path, pages, cache=None ):
+# prefer pages with more nearby points of interest
+    # get sorted (low -> high) list of pages by poi count.
+    pois = [ hs.points_of_interest(p, user, story, cache) for p in pages ]
+    by_poi = sorted(pages, key = lambda p : pois[pages.index(p)])
+    pois.sort()
+    chances = []
+
+    # normalise
+    factor = 1 / sum(pois) if sum(pois) != 0 else 1
+    chances = [ c * factor for c in pois ]
+
+    # gen dictionary
+    options = {}
+    for i in range(len(by_poi)):
+        options[by_poi[i]] = chances[i]
+    return options

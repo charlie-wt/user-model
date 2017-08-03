@@ -14,12 +14,12 @@ import ls
 # for simulating a user moving through a story.
 ##############################
 
-def traverse ( story, ranker, decider, max_steps=50, reading=None, user=None, prnt=False ):
+def traverse ( story, ranker, decider, max_steps=50, reading=None, user=None, cache=None, prnt=False ):
 # simulate a user walking through a story, making decisions. return a list of
 # records (pages taken, and probabilities of each option at each page)
     if reading is None: reading = rd.Reading("reading-0", story)
     if user is None: user = us.User("user-0")
-    cache = ls.nested_dict()
+    if cache is None: cache = ls.nested_dict()
 
     visible = page.update_all(story.pages, story, reading, user)
 
@@ -60,12 +60,12 @@ def traverse ( story, ranker, decider, max_steps=50, reading=None, user=None, pr
         if prnt: print()
     return path
 
-def traverse_many ( story, n=25, ranker=rk.rand, decider=dc.rand, max_steps=50 ):
+def traverse_many ( story, n=25, ranker=rk.rand, decider=dc.rand, cache=None, max_steps=50 ):
 # walk through a story n times, and return a list of stores
     reading = rd.Reading("reading-0", story)
     user = us.User("user-0")
     stores = []
-    cache = ls.nested_dict()
+    if cache is None: cache = ls.nested_dict()
 
     for i in range(n):
         visible = page.update_all(story.pages, story, reading, user)
