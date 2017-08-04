@@ -1,15 +1,18 @@
 import sys, os
 sys.path.append(os.path.join(sys.path[0], ".."))
 
+import re
+
 import base
 import ls
 
 class Page (base.Base):
-    def __init__ ( self, id, name, functions, conditions ):
+    def __init__ ( self, id, name, functions, conditions, text=None ):
         self.id = id
         self.name = name
         self.functions = functions
         self.conditions = conditions
+        self.text = _removeHTML(text)
         self.visible = False
 
     def update ( self, story, reading, user ):
@@ -34,6 +37,10 @@ class Page (base.Base):
                 loc = (page_loc.lat, page_loc.lon)
                 return loc
         return None
+
+def _removeHTML ( text ):
+# remove anthing in <html tags> from a string
+    return re.sub('<[^>]+?>', ' ', text)
 
 def update_all ( pages, story, reading, user ):
 # update a bunch of pages at once

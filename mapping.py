@@ -13,7 +13,8 @@ poi_client = None
 
 features = {
     'amenity': [
-        'bar', 'cafe', 'pub', 'college', 'university',
+        'bar', 'cafe', 'pub',
+#        'college', 'university',
 #        'parking',
         'fountain',
         'clock', 'marketplace', 'place_of_worship'
@@ -23,16 +24,23 @@ features = {
 #        'parking'
     ],
     'geological': [
-        'outcrop', 'palaeontological_site'
+        'outcrop',
+#        'palaeontological_site'
     ],
     'historic': [
         'aircraft', 'aqueduct', 'archaeological_site', 'battlefield',
-        'boundary_stone', 'cannon', 'castle', 'city_gate', 'citywalls', 'fort',
-        'locomotive', 'manor', 'memorial', 'monastery', 'ruins', 'rune_stone',
-        'ship', 'tomb', 'tower', 'wreck'
+        'boundary_stone', 'cannon', 'castle', 'city_gate',
+#        'citywalls',
+        'fort',
+        'locomotive', 'manor', 'memorial', 'monastery', 'ruins',
+#        'rune_stone',
+        'ship', 'tomb', 'tower',
+#        'wreck'
     ],
     'leisure': [
-        'bandstand', 'garden', 'marina', 'park'
+        'bandstand', 'garden',
+#        'marina',
+        'park'
     ],
 #    'public_transport': [
 #        'stop_position'
@@ -90,7 +98,7 @@ def poi ( loc, radius=100, prnt=False ):
         feature += values + '\"];'
         query += 'node'+around+feature
         query += 'way'+around+feature
-        query += 'rel'+around+feature
+#        query += 'rel'+around+feature
     query += ');out;'
     result = poi_client.query(query)
 

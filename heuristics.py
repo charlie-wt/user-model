@@ -1,8 +1,12 @@
 import sys, os
 sys.path.append(os.path.join(sys.path[0], "models"))
+
+import re
+
 import location as l
 import ls
 import mapping as mp
+import printer as pt
 
 ##### heuristics #############
 # a set of functions by which to judge a page's appealingness. To be used in
@@ -63,6 +67,7 @@ def walk_dist ( page, user, story, cache=None ):
     # make a new entry
     dist = mp.dist(us_page.getLoc(story), page_loc)
     if cache is not None: cache['walk_dist'][us_page.id][page.id] = dist
+    if prnt: print(us_page.name, "->", page.name, "=", dist)
     return dist
 
 def altitude ( page, user, story, cache=None ):
@@ -83,7 +88,7 @@ def altitude ( page, user, story, cache=None ):
 
 def points_of_interest ( page, user, story, cache=None ):
 # get the number of points of interest near a page
-    prnt=False
+    prnt=True
     page_loc = page.getLoc(story)
     if page_loc is None: page_loc = user.loc
 
@@ -91,7 +96,49 @@ def points_of_interest ( page, user, story, cache=None ):
         if prnt: print(page.name, "is cached with", cache['poi'][page.id], "pois.")
         return cache['poi'][page.id]
 
-    poi = mp.poi(page_loc)
+    try:
+        poi = mp.poi(page_loc)
+    except overpy.exception.OverpassTooManyRequests:
+        # TODO - something better than this.
+        print("overpass - too many requests. waiting 15 seconds to continue.")
+        poi = 0
+        sleep(15)
     if cache is not None: cache['poi'][page.id] = poi
     if prnt: print(page.name, "is near", poi, "points of interest.")
     return poi
+
+def mentioned ( page, user, story, cache=None ):
+# how much the title of 'page' is mentioned by the text of the previous page.
+    # use tf-idf (term frequency, inverse document frequency) for this.
+    us_page = user.page()
+    prnt=False
+
+    if us_page is None:
+        return 0
+    elif cache is not None and page.id in cache['mentioned'][us_page.id]:
+        if prnt: print(us_page.name, "->", page.name, "is cached.")
+        return cache['mentioned'][us_page.id][page.id]
+
+    title = page.name.lower().split()
+    title = [ re.sub('[\W_]+', '', w) for w in title ]
+    current = us_page.name.lower().split() + us_page.text.lower().split()
+    current = [ re.sub('[\W_]+', '', w) for w in current ]
+
+    tf = { w: 0 for w in title }
+    for w in current:
+        if w in title:
+            tf[w] += 1
+
+    tfidf = {}
+    for t in tf:
+        tfidf[t] = tf[t] * story.idf(t)
+    score = sum(tfidf.values())
+
+    if prnt:
+        print(score, 'matches for', page.name+':')
+        for t in tfidf:
+            print(tf[t], "->", pt.fmt(tfidf[t],1), ':', t)
+
+    if cache is not None:
+        cache['mentioned'][us_page.id][page.id] = score
+    return score

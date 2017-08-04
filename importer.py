@@ -77,7 +77,8 @@ def pageFromJSON ( json ):
             json["id"],
             json["name"],
             json["functions"],
-            json["conditions"])
+            json["conditions"],
+            json["content"])
 
 def functionFromJSON ( json ):
     type = json["type"]

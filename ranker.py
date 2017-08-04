@@ -138,3 +138,21 @@ def poi ( user, story, path, pages, cache=None ):
     for i in range(len(by_poi)):
         options[by_poi[i]] = chances[i]
     return options
+
+def mentioned ( user, story, path, pages, cache=None ):
+# prefer pages with names mentioned more by the current page's text.
+    # get sorted (low -> high) list of pages by mentions.
+    mentions = [ hs.mentioned(p, user, story, cache) for p in pages ]
+    by_mentions = sorted(pages, key = lambda p : mentions[pages.index(p)])
+    mentions.sort()
+    chances = []
+
+    # normalise
+    factor = 1 / sum(mentions) if sum(mentions) != 0 else 1
+    chances = [ c * factor for c in mentions ]
+
+    # gen dictionary
+    options = {}
+    for i in range(len(by_mentions)):
+        options[by_mentions[i]] = chances[i]
+    return options
