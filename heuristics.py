@@ -103,9 +103,10 @@ def points_of_interest ( page, user, story, cache=None ):
         poi = mp.poi(page_loc)
     except overpy.exception.OverpassTooManyRequests:
         # TODO - something better than this.
-        print("overpass - too many requests. waiting 15 seconds to continue.")
+        print(page.name, "- too many overpass requests. waiting 15 seconds to continue.")
         poi = 0
         time.sleep(15)
+        return poi
     if cache is not None: cache['poi'][page.id] = poi
     if prnt: print(page.name, "is near", poi, "points of interest.")
     return poi
