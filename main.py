@@ -42,7 +42,7 @@ print("found", len(paths_per_reading), "real readings for", story.name)
 
 # traverse
 cache = ls.nested_dict()
-sim_store = tr.traverse(story, rk.mentioned, dc.best, max_steps, cache=cache)
+sim_store = tr.traverse(story, rk.poi, dc.best, max_steps, cache=cache)
 sim_path = [ r.page for r in sim_store ]
 
 # load logs

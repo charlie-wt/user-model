@@ -2,6 +2,9 @@ import sys, os
 sys.path.append(os.path.join(sys.path[0], "models"))
 
 import re
+import time
+
+import overpy
 
 import location as l
 import ls
@@ -102,7 +105,7 @@ def points_of_interest ( page, user, story, cache=None ):
         # TODO - something better than this.
         print("overpass - too many requests. waiting 15 seconds to continue.")
         poi = 0
-        sleep(15)
+        time.sleep(15)
     if cache is not None: cache['poi'][page.id] = poi
     if prnt: print(page.name, "is near", poi, "points of interest.")
     return poi
