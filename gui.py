@@ -100,8 +100,8 @@ def text_info_plot ( ax, story, ppr=None, stores=None, sim_store=None, log_store
 
     # step ahead prediction error
     if step_ahead_err is not None:
-        err = pt.pc(step_ahead_err, 2)
-        cells.append(['step ahead prediction error:', err])
+        err = pt.pc(1 - step_ahead_err, 2)
+        cells.append(['step ahead prediction accuracy:', err])
 
     if stores is not None:
         # average distance travelled
@@ -223,7 +223,7 @@ def show_all ( story, ppr=None, stores=None, sim_store=None, log_store=None,
 
     # 1 - text info
     ax1 = fig.add_subplot(211)
-    text_info_plot(ax1, story, ppr, stores, sim_store, log_store)
+    text_info_plot(ax1, story, ppr, stores, sim_store, log_store, step_ahead_err)
 
     # 2 - visit proportions
     ax2 = fig.add_subplot(223)

@@ -102,17 +102,18 @@ def traverse_many ( story, n=25, ranker=rk.rand, decider=dc.rand, cache=None, ma
 
     return stores
 
-def step_predict ( story, log_store, ranker, prnt=False ):
+def step_predict ( story, log_store, ranker, cache=None, prnt=False ):
 # compare the proportions of user visits from a log-based reading with the
 # proportional probabilities spat out by the ranker, for n steps ahead.
     reading = rd.Reading("reading-0", story)
     user = us.User("user-0")
+    if cache is None: cache = ls.nested_dict()
     visible = page.update_all(story.pages, story, reading, user)
     error = 0
     num_options = 0
 
     # perform first step
-    options = ranker(user, story, user.path, visible)
+    options = ranker(user, story, user.path, visible, cache)
     for o in options:
         error += abs(log_store[0].options[o] - options[o])#**2
     num_options += len(options)
@@ -122,7 +123,7 @@ def step_predict ( story, log_store, ranker, prnt=False ):
     # perform remaining steps in reading
     for i in range(1, len(log_store)-1):
         # perform movement
-        options = ranker(user, story, user.path, visible)
+        options = ranker(user, story, user.path, visible, cache)
 
         log_options = {}
         for p in log_store[i].options:

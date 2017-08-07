@@ -55,10 +55,13 @@ features = {
 
 def dist ( loc1, loc2, prnt=False ):
 # get walking distance between pages
-# note: must be running osrm http backend for this @ localhost:5000 to work
+# note: must be running osrm http backend @ localhost:5000 for this to work
     global routing_client
     if not routing_client:
-        routing_client = osrm.Client(host="http://localhost:5000")
+        routing_client = osrm.Client(
+            host="http://localhost:5000",
+            profile='walking'
+        )
 
     response = routing_client.route(
         coordinates = [[loc1[1], loc1[0]], [loc2[1], loc2[0]]],

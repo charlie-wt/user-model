@@ -4,6 +4,11 @@ sys.path.append(os.path.join(sys.path[0], "models"))
 import re
 import time
 
+from urllib.parse import urlencode
+from urllib.request import urlopen
+from urllib.error import HTTPError
+import json
+
 import overpy
 
 import location as l
@@ -107,6 +112,52 @@ def points_of_interest ( page, user, story, cache=None ):
         poi = 0
         time.sleep(15)
         return poi
+    if cache is not None: cache['poi'][page.id] = poi
+    if prnt: print(page.name, "is near", poi, "points of interest.")
+    return poi
+
+def points_of_interest_alt ( page, user, story, cache=None ):
+# get the number of points of interest near a page
+    # alternate: doesn't use overpy library -> more flexibility
+    prnt=True
+    page_loc = page.getLoc(story)
+    if page_loc is None: page_loc = user.loc
+
+    if cache is not None and page.id in cache['poi']:
+        if prnt: print(page.name, "is cached with", cache['poi'][page.id], "pois.")
+        return cache['poi'][page.id]
+
+    url = "http://overpass-api.de/api/interpreter"
+    query = 'data=[out:json];('
+    around = '(around:'+str(100)+','+str(page_loc[0])+','+str(page_loc[1])+')'
+    for f in mp.features:
+        feature = '['+f+'~\"'
+        values = ''
+        for v in mp.features[f]:
+            values += v+'|'
+        values = values[:-1]
+        feature += values + '\"];'
+        query += 'node'+around+feature
+        query += 'way'+around+feature
+#        query += 'rel'+around+feature
+    query += ');out count;'
+
+    # TODO - NOT SURE THAT THIS BIT WORKS WITH TIMEOUTS AND STUFF
+    try:
+        f = urlopen(url, query.encode('utf-8'))
+    except HTTPError as e:
+        f = e
+    response = None
+    while(True):
+        response = f.read(4096)
+        if f.code == 200: break
+        print('overpass too many queries - retrying in 15 seconds.')
+        time.sleep(15)
+    f.close()
+
+    json_data = json.loads(response.decode('utf-8'))
+    poi = int(json_data['elements'][0]['tags']['total'])
+
     if cache is not None: cache['poi'][page.id] = poi
     if prnt: print(page.name, "is near", poi, "points of interest.")
     return poi
