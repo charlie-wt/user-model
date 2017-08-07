@@ -124,8 +124,7 @@ def alt ( user, story, path, pages, cache=None ):
 def poi ( user, story, path, pages, cache=None ):
 # prefer pages with more nearby points of interest
     # get sorted (low -> high) list of pages by poi count.
-#    pois = [ hs.points_of_interest(p, user, story, cache) for p in pages ]
-    pois = [ hs.points_of_interest_alt(p, user, story, cache) for p in pages ]
+    pois = [ hs.points_of_interest(p, user, story, cache) for p in pages ]
     by_poi = sorted(pages, key = lambda p : pois[pages.index(p)])
     pois.sort()
     chances = []

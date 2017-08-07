@@ -1,11 +1,10 @@
 import osrm
 import srtm
-import overpy
 
-from urllib.parse import urlencode
 from urllib.request import urlopen
 from urllib.error import HTTPError
 import json
+import time
 
 ##### mapping ################
 # functions to work out mapping-related stuff, like walk routes & altitude.
@@ -14,7 +13,6 @@ import json
 num_requests = 0
 routing_client = None
 elevation_client = None
-poi_client = None
 
 features = {
     'amenity': [
@@ -90,35 +88,7 @@ def alt ( loc, prnt=False ):
     return ele
 
 def poi ( loc, radius=100, prnt=False ):
-# get number of points of interest within some radius of loc.
-    global poi_client
-    if not poi_client:
-        poi_client = overpy.Overpass()
-
-    query = '('
-    around = '(around:'+str(radius)+','+str(loc[0])+','+str(loc[1])+')'
-    for f in features:
-        feature = '['+f+'~\"'
-        values = ''
-        for v in features[f]:
-            values += v+'|'
-        values = values[:-1]
-        feature += values + '\"];'
-        query += 'node'+around+feature
-        query += 'way'+around+feature
-#        query += 'rel'+around+feature
-    query += ');out;'
-    result = poi_client.query(query)
-
-    total = len(result.nodes)+len(result.ways)+len(result.relations)
-    if prnt: print(loc, "->", total, "("+ \
-                   str(len(result.nodes)), "nodes,",
-                   len(result.ways), "ways,",
-                   len(result.relations), "relations)")
-    return total
-
-def poi_alt ( loc, radius=100, prnt=False ):
-# no library version of poi - slightly more efficient, more flexible.
+# find the number of points of interest from within [radius] of [loc]
     url = "http://overpass-api.de/api/interpreter"
     query = 'data=[out:json];('
     around = '(around:'+str(radius)+','+str(loc[0])+','+str(loc[1])+')'
@@ -139,10 +109,9 @@ def poi_alt ( loc, radius=100, prnt=False ):
         try:
             f = urlopen(url, query.encode('utf-8'))
             response = f.read(4096)
-            if f.code == 200:
-                break
+            if f.code == 200: break
         except HTTPError:
-            print(page.name, '- overpass error - retrying in 15 seconds.')
+            print(loc, '- overpass error - retrying in 15 seconds.')
             time.sleep(15)
     f.close()
 

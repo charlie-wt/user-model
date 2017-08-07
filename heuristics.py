@@ -4,13 +4,6 @@ sys.path.append(os.path.join(sys.path[0], "models"))
 import re
 import time
 
-from urllib.parse import urlencode
-from urllib.request import urlopen
-from urllib.error import HTTPError
-import json
-
-import overpy
-
 import location as l
 import ls
 import mapping as mp
@@ -104,29 +97,7 @@ def points_of_interest ( page, user, story, cache=None ):
         if prnt: print(page.name, "is cached with", cache['poi'][page.id], "pois.")
         return cache['poi'][page.id]
 
-    while True:
-        try:
-            poi = mp.poi(page_loc)
-            break
-        except overpy.exception.OverpassTooManyRequests:
-            # TODO - something better than this.
-            print(page.name, "- too many overpass requests. waiting 15 seconds to continue.")
-            time.sleep(15)
-    if cache is not None: cache['poi'][page.id] = poi
-    if prnt: print(page.name, "is near", poi, "points of interest.")
-    return poi
-
-def points_of_interest_alt ( page, user, story, cache=None ):
-# get the number of points of interest near a page
-    prnt=True
-    page_loc = page.getLoc(story)
-    if page_loc is None: page_loc = user.loc
-
-    if cache is not None and page.id in cache['poi']:
-        if prnt: print(page.name, "is cached with", cache['poi'][page.id], "pois.")
-        return cache['poi'][page.id]
-
-    poi = mp.poi_alt(page_loc)
+    poi = mp.poi(page_loc)
     if cache is not None: cache['poi'][page.id] = poi
     if prnt: print(page.name, "is near", poi, "points of interest.")
     return poi
