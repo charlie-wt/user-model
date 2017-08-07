@@ -104,21 +104,20 @@ def points_of_interest ( page, user, story, cache=None ):
         if prnt: print(page.name, "is cached with", cache['poi'][page.id], "pois.")
         return cache['poi'][page.id]
 
-    try:
-        poi = mp.poi(page_loc)
-    except overpy.exception.OverpassTooManyRequests:
-        # TODO - something better than this.
-        print(page.name, "- too many overpass requests. waiting 15 seconds to continue.")
-        poi = 0
-        time.sleep(15)
-        return poi
+    while True:
+        try:
+            poi = mp.poi(page_loc)
+            break
+        except overpy.exception.OverpassTooManyRequests:
+            # TODO - something better than this.
+            print(page.name, "- too many overpass requests. waiting 15 seconds to continue.")
+            time.sleep(15)
     if cache is not None: cache['poi'][page.id] = poi
     if prnt: print(page.name, "is near", poi, "points of interest.")
     return poi
 
 def points_of_interest_alt ( page, user, story, cache=None ):
 # get the number of points of interest near a page
-    # alternate: doesn't use overpy library -> more flexibility
     prnt=True
     page_loc = page.getLoc(story)
     if page_loc is None: page_loc = user.loc
@@ -127,43 +126,13 @@ def points_of_interest_alt ( page, user, story, cache=None ):
         if prnt: print(page.name, "is cached with", cache['poi'][page.id], "pois.")
         return cache['poi'][page.id]
 
-    url = "http://overpass-api.de/api/interpreter"
-    query = 'data=[out:json];('
-    around = '(around:'+str(100)+','+str(page_loc[0])+','+str(page_loc[1])+')'
-    for f in mp.features:
-        feature = '['+f+'~\"'
-        values = ''
-        for v in mp.features[f]:
-            values += v+'|'
-        values = values[:-1]
-        feature += values + '\"];'
-        query += 'node'+around+feature
-        query += 'way'+around+feature
-#        query += 'rel'+around+feature
-    query += ');out count;'
-
-    # TODO - NOT SURE THAT THIS BIT WORKS WITH TIMEOUTS AND STUFF
-    try:
-        f = urlopen(url, query.encode('utf-8'))
-    except HTTPError as e:
-        f = e
-    response = None
-    while(True):
-        response = f.read(4096)
-        if f.code == 200: break
-        print('overpass too many queries - retrying in 15 seconds.')
-        time.sleep(15)
-    f.close()
-
-    json_data = json.loads(response.decode('utf-8'))
-    poi = int(json_data['elements'][0]['tags']['total'])
-
+    poi = mp.poi_alt(page_loc)
     if cache is not None: cache['poi'][page.id] = poi
     if prnt: print(page.name, "is near", poi, "points of interest.")
     return poi
 
 def mentioned ( page, user, story, cache=None ):
-# how much the title of 'page' is mentioned by the text of the previous page.
+# how much the title of 'page' is mentioned by the previous page.
     # use tf-idf (term frequency, inverse document frequency) for this.
     us_page = user.page()
     prnt=False

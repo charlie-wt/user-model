@@ -46,11 +46,11 @@ log_store = an.walk(story, paths_per_reading, max_steps)
 log_path = [ r.page for r in log_store ]
 
 # predict
-sim_store = tr.traverse(story, rk.walk_dist, dc.best, max_steps, cache=cache)
+sim_store = tr.traverse(story, rk.poi, dc.best, max_steps, cache=cache)
 sim_path = [ r.page for r in sim_store ]
 
-err = tr.step_predict(story, log_store, rk.walk_dist, cache)
-stores = tr.traverse_many(story, 100, rk.walk_dist, cache=cache)
+err = tr.step_predict(story, log_store, rk.poi, cache)
+stores = tr.traverse_many(story, 100, rk.poi, cache=cache)
 
 # analyse paths
 #pt.print_sim_log_comparison(sim_path, log_path)
