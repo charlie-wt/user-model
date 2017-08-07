@@ -25,9 +25,11 @@ def dist ( user, story, path, pages, cache=None ):
     closest = distances[0]
     for i in range(len(by_distance)):
         chances.append((furthest - distances[i]) + abs(closest))
+
     # normalise
     factor = 1 / sum(chances) if sum(chances) != 0 else 1
     chances = [ c * factor for c in chances ]
+
     # gen dictionary
     options = {}
     for i in range(len(by_distance)):
@@ -47,13 +49,14 @@ def walk_dist ( user, story, path, pages, cache=None ):
     for i in range(len(by_distance)):
         chances.append((furthest - distances[i]) + abs(closest))
 
-    # optionally eliminate visited nodes
+    # eliminate visited nodes [ TODO - bit of a hack ]
     for i in range(len(chances)):
         if hs.visits(by_distance[i], path) != 0: chances[i] = 0
 
     # normalise
     factor = 1 / sum(chances) if sum(chances) != 0 else 1
     chances = [ c * factor for c in chances ]
+
     # gen dictionary
     options = {}
     for i in range(len(by_distance)):
@@ -83,7 +86,7 @@ def guess ( user, story, path, pages, cache=None ):
         chances.append(chance)
 
     # visited before = worse
-    factor = 0.0  # multiply prob of page by this for every previous visit
+    factor = 0.0
     for i in range(len(by_distance)):
         chances[i] = chances[i] * (factor)**hs.visits(by_distance[i], path)
 

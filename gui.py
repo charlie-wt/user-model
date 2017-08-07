@@ -10,13 +10,14 @@ import ls
 ##############################
 
 def visit_proportions ( sim_data, ppr=None, sort='', story=None ):
-# display a window witha bar chart of the proportion of visits to each page
+# display a window with a bar chart of the proportion of visits to each page
     # set up window
     mpl.rcParams['toolbar'] = 'none'
     mpl.rcParams['font.family'] = 'serif'
     fig = plt.figure(figsize=(14, 10))
     fig.canvas.set_window_title((story.name if story is not None else "visits"))
 
+    # add bar chart
     ax = fig.add_subplot(111)
     visit_proportions_plot(ax, sim_data, ppr, sort, story)
     title = "visits to each page per reading" + \
@@ -75,28 +76,23 @@ def visit_proportions_plot ( ax, sim_data=None, ppr=None, sort='', story=None ):
     if sim_rects is not None and log_rects is not None:
         ax.legend((sim_rects[0], log_rects[0]), ('sim', 'log'))
 
+    # add a red line at y=1.0, and rotate the x labels (page names)
     n = len(sim_data) if sim_data is not None else len(log_data)
     ax.plot(range(-1, n+1), [1]*(n+2), 'r-')
     plt.setp(ax.get_xticklabels(), rotation=90, fontsize=10)
 
     return ax
 
-def text_info_plot ( ax, story, ppr=None, stores=None, sim_store=None, log_store=None,
-                step_ahead_err=None ):
+def text_info_plot ( ax, story, ppr=None, stores=None, sim_store=None,
+                     log_store=None, step_ahead_err=None ):
 # some basic stats on a story, shown via text
     hide_graph_stuff(ax)
-
-#    ax.set_facecolor((0.8, 1, 0.8))
     cells = []
+
     # number of readings
     if ppr is not None:
         count = str(len(ppr))
         cells.append(['number of readings:', count])
-
-    # sim/log path similarity
-#    if sim_store is not None and log_store is not None:
-#        cells.append(['similarity of simulated path to log path:',
-#                      pt.pc(an.path_similarity(story, sim_store, log_store))])
 
     # step ahead prediction error
     if step_ahead_err is not None:
@@ -144,13 +140,14 @@ def text_info_plot ( ax, story, ppr=None, stores=None, sim_store=None, log_store
             c._text.set_color('k')
 
 def text_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
-                     step_ahead_err=None ):
+                step_ahead_err=None ):
     # basic window stuff
     mpl.rcParams['toolbar'] = 'none'
     mpl.rcParams['font.family'] = 'serif'
     fig = plt.figure(figsize=(8, 3))
     fig.canvas.set_window_title(story.name)
 
+    # add text info plot
     ax = fig.add_subplot(111)
     text_info_plot(ax, story, ppr, stores, sim_store, log_store)
     ax.set_title("basic info for "+story.name)
@@ -204,7 +201,7 @@ def path_comparison ( story, sim_store, log_store ):
     fig = plt.figure(figsize=(10, 10))
     fig.canvas.set_window_title(story.name)
 
-    # new subplot, to compare paths
+    # add path comparison plot
     ax = fig.add_subplot(111)
     path_comparison_plot(ax, story, sim_store, log_store)
     ax.set_title("simulated vs. log-based path through "+story.name)

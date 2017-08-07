@@ -33,10 +33,11 @@ def print_visible ( vis, story, us ):
         else:
             print("\t" + p.id + " : " + p.name + ", which can be accessed from anywhere.")
 
-def print_pages ( pages, print_id=False, story=None ):
+def print_pages ( pages, story=None, print_id=False ):
 # print a bunch of pages
     if story is not None: print("path through", story.name+":")
-    for p in pages: print((p.id+" : " if print_id else "") + p.name)
+    for p in pages: print((p.id+" : " if print_id else "") + \
+                          (p.name if type(p) is pg.Page else "---"))
 
 def print_log_paths ( story, paths ):
 # print paths per reading, as output by log importer

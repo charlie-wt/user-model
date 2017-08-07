@@ -23,10 +23,12 @@ def get_path_distribution ( page, ppr, prnt=False ):
 # return dictionary of page : proportion of times it was picked from given page.
     options = {}
 
+    # count up visits to each page from [page] for each reading.
     for r in ppr:
         if page not in ppr[r]: continue
         idx = ppr[r].index(page)
         if idx == len(ppr[r]) - 1:
+            # the option of quitting the story
             options[0] = options[0] + 1 if 0 in options else 1
         else:
             next_page = ppr[r][idx+1]
@@ -49,19 +51,22 @@ def get_path_distribution_discourage_loops ( page, ppr, path, prnt=False ):
 #        get_path_distribution).
     options = {}
 
+    # count up visits to each page from [page] for each reading.
     for r in ppr:
         if page not in ppr[r]: continue
         idx = ppr[r].index(page)
         if idx == len(ppr[r]) - 1:
+            # the option of quitting the story
             options[0] = options[0] + 1 if 0 in options else 1
         else:
             next_page = ppr[r][idx+1]
             options[next_page] = options[next_page] + 1 if next_page in options else 1
 
     # discourage revisiting nodes
+    factor = 0.2
     for p in options:
         if type(p) == int: continue
-        options[p] = options[p] * (0.2)**ls.count(path, p.id)
+        options[p] = options[p] * factor**ls.count(path, p.id)
 
     # normalise
     if sum(options.values()) != 0:
@@ -75,14 +80,9 @@ def get_path_distribution_discourage_loops ( page, ppr, path, prnt=False ):
 def pick_most_likely ( options ):
 # for a dictionary of page : likelihood, return the page with the highest.
     if len(options) == 0: return None
+    return max(options, key = lambda o : options[o])
 
-    best = None
-    for o in options:
-        if best is None or options[o] > options[best]:
-            best = o
-    return best
-
-def walk ( story, paths_per_reading, max_steps=15, reading=None, user=None, prnt=False):
+def walk ( story, paths_per_reading, max_steps=50, reading=None, user=None, prnt=False):
 # walk through a story, based on the most popular user choices.
     if len(paths_per_reading) == 0:
         print("can't walk", story.name+"; no logged readings.")
@@ -90,7 +90,7 @@ def walk ( story, paths_per_reading, max_steps=15, reading=None, user=None, prnt
     if reading is None: reading = rd.Reading("reading-0", story)
     if user is None: user = us.User("user-0")
 
-    # set things up, choose a starting page
+    # setup
     visible = pg.update_all(story.pages, story, reading, user)
     # choose most popular starting page
     firsts = {}
@@ -101,7 +101,7 @@ def walk ( story, paths_per_reading, max_steps=15, reading=None, user=None, prnt
         else:
             firsts[paths_per_reading[r][0]] += 1
 
-    # turn scores for each page into proportions and put in store
+    # turn scores for each page into proportions (probability) and put in store
     total = sum(firsts.values())
     for p in firsts:
         firsts[p] = firsts[p] / total
@@ -122,7 +122,8 @@ def walk ( story, paths_per_reading, max_steps=15, reading=None, user=None, prnt
         # get list of pages to visit from logs, eliminate the unreachable
         if prnt: print("---")
 #        options = get_path_distribution(user.page(), paths_per_reading)
-        options = get_path_distribution_discourage_loops(user.page(), paths_per_reading, user.path)
+        options = get_path_distribution_discourage_loops(
+                user.page(), paths_per_reading, user.path)
         quit = options[0] if 0 in options else 0
         if prnt: pt.print_walk_full_options(visible, options)
 
@@ -155,8 +156,9 @@ def compare_paths ( story, store1, store2, prnt=False ):
 # compare two paths taken through a story.
 # TODO - don't just take into account the final path - also probabilities along
 #        the way.
-    path1 = [-1] + [ ls.index(story.pages, p.page.id) for p in store1[1:] if type(p) != int ]
-    path2 = [-1] + [ ls.index(story.pages, p.page.id) for p in store2[1:] if type(p) != int ]
+    # convert paths to lists
+    path1 = [-1] + [ p.page for p in store1[1:] if type(p) != int ]
+    path2 = [-1] + [ p.page for p in store2[1:] if type(p) != int ]
 
     difference = levenshtein(path1, path2)
 
@@ -188,7 +190,6 @@ def levenshtein ( s1, s2 ):
     # fill v1, as distance from v0
     for i in range(len(s1)):
         v1[0] = i + 1
-
         for j in range(len(s2)):
             # substitution cost (0 if chars are the same -> no substitution)
             cost = 0 if s1[i] == s2[j] else 1
@@ -196,10 +197,8 @@ def levenshtein ( s1, s2 ):
             v1[j+1] = min(v1[j] + 1,    # deletion
                           v0[j+1] + 1,  # insertion
                           v0[j] + cost) # substitution
-
         # current row -> previous row for next iteration
         v0 = v1[:]
-
     # bottom right of matrix = total dist
     return v0[-1]
 
@@ -218,12 +217,8 @@ def levenshtein_similarity ( s1, s2, prnt=False ):
 def page_visits ( story, stores, prnt=False ):
 # find out how many times each page was visited for 1-n readings.
     if type(stores[0]) is not list: stores = [stores]
-    if prnt: print("counting visits of each page of", story.name, "for",
-                   len(stores), "reading"+("s." if len(stores)>1 else "."))
-
     total_visits = {}
     for p in story.pages: total_visits[p] = 0
-
     for s in stores:
         path = [ p.page for p in s if p.page != None ]
         for p in story.pages:
@@ -231,7 +226,8 @@ def page_visits ( story, stores, prnt=False ):
             total_visits[p] += ls.count(path, p.id)
 
     if prnt:
-        print("number of visits per page:")
+        print("number of visits per page of", story.name, "("+ \
+              str(len(stores)), "reading"+("s.)" if len(stores)>1 else ".)"))
         for v in total_visits:
             print(total_visits[v], ":", v.name)
 
@@ -241,13 +237,11 @@ def most_visited ( story, stores, prnt=False ):
 # get a list of pages & the proportion of times they were visited, ordered as
 # tuples.
     visits = page_visits(story, stores)
-    total_visits = sum(visits.values())
-    proportions = []
 
     # get proportions
+    proportions = []
     for p in visits:
         proportions.append((p, visits[p]/len(stores)))
-
     proportions.sort(key = lambda p : -p[1])
 
     if prnt:
@@ -281,8 +275,9 @@ def log_most_visited ( story, ppr, prnt=False ):
 
     return proportions
 
-def get_unreachables ( story, stores, prnt=False ):
-# do a bunch of random readings, and return the pages that were never reached.
+def get_unreachables ( story, stores=None, prnt=False ):
+# for a bunch of readings, return the pages that were never reached.
+    if stores is None: stores = tr.traverse_many(story)
     visits = page_visits(story, stores)
     unreachables = [ p for p in visits if visits[p] == 0 ]
 
@@ -291,8 +286,7 @@ def get_unreachables ( story, stores, prnt=False ):
             print("all the pages in", story.name, "can be reached!")
         else:
             print("unreached pages in", story.name+":")
-            pt.print_pages(unreachables, True)
-        print()
+            pt.print_pages(unreachables, print_id=True)
 
     return unreachables
 
@@ -313,7 +307,6 @@ def distance_travelled ( story, stores, prnt=False ):
                 curr_loc = store[i].page.getLoc(story)
                 startidx = i+1
                 break
-
         # measure the distance to each page from there
         for i in range(startidx, len(store)):
             dest_loc = store[i].page.getLoc(story)
@@ -328,10 +321,8 @@ def distance_travelled ( story, stores, prnt=False ):
         if len(stores) == 1:
             print("travelled", distance, "metres while reading", story.name)
         else:
-            total = sum(distances)
-            print("for", len(distances), "readings:")
-            print("\taverage distance:", str(int(total/len(distances)))+"m")
-            print("\t  total distance:", str(int(total))+"m")
+            print("average distance for", len(distances), "readings:",
+                  str(int(sum(distances)/len(distances)))+"m")
 
     return distances
 
@@ -341,8 +332,7 @@ def branching_factor ( story, stores, prnt=False ):
 
     for s in stores:
         options = [ len(r.options) for r in s ]
-        num_options = sum(options)
-        total += num_options/len(s)
+        total += sum(options)/len(s)
     bf = total / len(stores)
 
     if prnt: print("average branching factor for", story.name+":", bf)

@@ -28,14 +28,15 @@ def distance ( page, user, story, cache=None ):
         if us_page is None or us_page.getLoc(story) is None:
             return l.metres(user.loc, page_loc)
         elif cache is not None:
-            # use the cache
+            # get from cache if possible
             if page.id in cache['distance'][us_page.id]:
                 if prnt: print(us_page.name, "->", page.name, "is cached.")
                 return cache['distance'][us_page.id][page.id]
             elif us_page.id in cache['distance'][page.id]:
                 if prnt: print(us_page.name, "->", page.name, "is cached.")
                 return cache['distance'][page.id][us_page.id]
-    # make a new entry
+
+    # get straight line distance, add to cache
     dist = l.metres(us_page.getLoc(story), page_loc)
     if cache is not None: cache['distance'][us_page.id][page.id] = dist
     return dist
@@ -58,14 +59,15 @@ def walk_dist ( page, user, story, cache=None ):
         if us_page is None or us_page.getLoc(story) is None:
             return mp.dist(user.loc, page_loc)
         elif cache is not None:
-            # use the cache
+            # get from cache if possible
             if page.id in cache['walk_dist'][us_page.id]:
                 if prnt: print(us_page.name, "->", page.name, "is cached.")
                 return cache['walk_dist'][us_page.id][page.id]
             elif us_page.id in cache['walk_dist'][page.id]:
                 if prnt: print(us_page.name, "->", page.name, "is cached.")
                 return cache['walk_dist'][page.id][us_page.id]
-    # make a new entry
+
+    # get walking distance, add to cache
     dist = mp.dist(us_page.getLoc(story), page_loc)
     if cache is not None: cache['walk_dist'][us_page.id][page.id] = dist
     if prnt: print(us_page.name, "->", page.name, "=", dist)
@@ -78,10 +80,14 @@ def altitude ( page, user, story, cache=None ):
     if page_loc is None:
         if prnt: print(page.name, "can be accessed from anywhere.")
         return mp.alt(user.loc)
+
+    # get from cache if possible
     if cache is not None and page.id in cache['altitude']:
         if prnt: print("altitude of", page.name, "is cached (" \
                        +str(cache['altitude'][page.id])+").")
         return cache['altitude'][page.id]
+
+    # get altitude, add to cache
     alt = mp.alt(page_loc)
     if cache is not None: cache['altitude'][page.id] = alt
     if prnt: print("altitude of", page.name, "is", alt)
@@ -93,10 +99,12 @@ def points_of_interest ( page, user, story, cache=None ):
     page_loc = page.getLoc(story)
     if page_loc is None: page_loc = user.loc
 
+    # get from cache if possible
     if cache is not None and page.id in cache['poi']:
         if prnt: print(page.name, "is cached with", cache['poi'][page.id], "pois.")
         return cache['poi'][page.id]
 
+    # get points of interest, add to cache
     poi = mp.poi(page_loc)
     if cache is not None: cache['poi'][page.id] = poi
     if prnt: print(page.name, "is near", poi, "points of interest.")
@@ -108,25 +116,28 @@ def mentioned ( page, user, story, cache=None ):
     us_page = user.page()
     prnt=False
 
+    # get from cache if possible
     if us_page is None:
         return 0
     elif cache is not None and page.id in cache['mentioned'][us_page.id]:
         if prnt: print(us_page.name, "->", page.name, "is cached.")
         return cache['mentioned'][us_page.id][page.id]
 
+    # get terms & eliminate punctuation
     title = page.name.lower().split()
     title = [ re.sub('[\W_]+', '', w) for w in title ]
     current = us_page.name.lower().split() + us_page.text.lower().split()
     current = [ re.sub('[\W_]+', '', w) for w in current ]
-
+    # tf
     tf = { w: 0 for w in title }
     for w in current:
         if w in title:
             tf[w] += 1
-
+    # idf
     tfidf = {}
     for t in tf:
         tfidf[t] = tf[t] * story.idf(t)
+    # final score
     score = sum(tfidf.values())
 
     if prnt:
@@ -134,6 +145,7 @@ def mentioned ( page, user, story, cache=None ):
         for t in tfidf:
             print(tf[t], "->", pt.fmt(tfidf[t],1), ':', t)
 
+    # add to cache
     if cache is not None:
         cache['mentioned'][us_page.id][page.id] = score
     return score

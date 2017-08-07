@@ -9,7 +9,6 @@ import printer as pt
 import analyser as an
 import ls
 import gui
-import mapping as mp
 
 names = ["A Walk In The Park",                  #  0
          "Butterflies",                         #  1
@@ -30,28 +29,24 @@ names = ["A Walk In The Park",                  #  0
 
 story_name = names[6]
 
-max_steps = 50
-
 
 
 # create/load stuff
 story = imp.storyFromJSON(story_name)
 epr = imp.pathEventsFromJSON("old-logs", story)
 paths_per_reading = an.filter_readings(story, epr)
-cache = ls.nested_dict()
-print("found", len(paths_per_reading), "real readings for", story.name)
+cache = ls.auto_dict()
 
 # load logs
-log_store = an.walk(story, paths_per_reading, max_steps)
+log_store = an.walk(story, paths_per_reading)
 log_path = [ r.page for r in log_store ]
 
 # predict
-sim_store = tr.traverse(story, rk.poi, dc.best, max_steps, cache=cache)
+sim_store = tr.traverse(story, rk.walk_dist, dc.best, cache=cache)
 sim_path = [ r.page for r in sim_store ]
 
-err = tr.step_predict(story, log_store, rk.poi, cache)
-stores = tr.traverse_many(story, 100, rk.poi, cache=cache)
+err = tr.step_predict(story, log_store, rk.walk_dist, cache)
+stores = tr.traverse_many(story, ranker=rk.walk_dist, cache=cache)
 
 # analyse paths
-#pt.print_sim_log_comparison(sim_path, log_path)
 gui.show_all(story, paths_per_reading, stores, sim_store, log_store, err)

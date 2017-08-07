@@ -65,11 +65,14 @@ def storyFromJSON ( filename, prnt=False ):
         story_locations.append(locationFromJSON(location))
 
     # combine into story
-    sto = story.Story(story_id, story_name, story_pages, story_conditions, story_functions, story_locations)
+    sto = story.Story(story_id,
+                      story_name,
+                      story_pages,
+                      story_conditions,
+                      story_functions,
+                      story_locations)
 
-    if prnt:
-        pt.print_story(sto)
-        print()
+    if prnt: pt.print_story(sto)
     return sto
 
 def pageFromJSON ( json ):

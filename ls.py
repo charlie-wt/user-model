@@ -28,4 +28,4 @@ def count ( ls, id ):
     return count
 
 # a dictionary that automatically creates keys if they don't exist, deeply
-nested_dict = lambda: defaultdict(nested_dict)
+auto_dict = lambda: defaultdict(auto_dict)

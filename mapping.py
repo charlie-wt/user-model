@@ -10,7 +10,6 @@ import time
 # functions to work out mapping-related stuff, like walk routes & altitude.
 ##############################
 
-num_requests = 0
 routing_client = None
 elevation_client = None
 
@@ -88,7 +87,8 @@ def alt ( loc, prnt=False ):
     return ele
 
 def poi ( loc, radius=100, prnt=False ):
-# find the number of points of interest from within [radius] of [loc]
+# find the number of points of interest from within [radius]m of [loc]
+    # form query
     url = "http://overpass-api.de/api/interpreter"
     query = 'data=[out:json];('
     around = '(around:'+str(radius)+','+str(loc[0])+','+str(loc[1])+')'
@@ -104,6 +104,8 @@ def poi ( loc, radius=100, prnt=False ):
         query += 'rel'+around+feature
     query += ');out count;'
 
+    # query api server. if fails (prob due to false 'too many requests'), simply
+    # wait then try again.
     response = None
     while True:
         try:
@@ -115,6 +117,7 @@ def poi ( loc, radius=100, prnt=False ):
             time.sleep(15)
     f.close()
 
+    # extract info
     json_data = json.loads(response.decode('utf-8'))
     poi = int(json_data['elements'][0]['tags']['total'])
 
