@@ -16,15 +16,22 @@ import random
 
 def dist ( user, story, path, pages, cache=None ):
 # shortest straight line distance
+    choices = [ p for p in pages if hs.visits(p, path) == 0 ]
+    if len(choices) == 1: return { choices[0] : 1 }
+
     # score pages
-    distances = [hs.distance(p, user, story, cache) for p in pages]
-    by_distance = sorted(pages, key = lambda p : distances[pages.index(p)])
+    distances = [hs.distance(p, user, story, cache) for p in choices]
+    by_distance = sorted(choices, key = lambda p : distances[choices.index(p)])
     distances.sort()
     chances = []
     furthest = distances[-1]
     closest = distances[0]
     for i in range(len(by_distance)):
         chances.append((furthest - distances[i]) + abs(closest))
+
+    # if all dists = 0, just give an equal chance to everything
+    if distances == [ 0 ] * len(distances):
+        return rand(user, story, path, choices, cache)
 
     # normalise
     factor = 1 / sum(chances) if sum(chances) != 0 else 1
@@ -38,10 +45,12 @@ def dist ( user, story, path, pages, cache=None ):
 
 def walk_dist ( user, story, path, pages, cache=None ):
 # shortest walking distance, via roads
-    if len(pages) == 1: return { pages[0] : 1 }
+    choices = [ p for p in pages if hs.visits(p, path) == 0 ]
+    if len(choices) == 1: return { choices[0] : 1 }
+
     # score pages
-    distances = [hs.walk_dist(p, user, story, cache) for p in pages]
-    by_distance = sorted(pages, key = lambda p : distances[pages.index(p)])
+    distances = [hs.walk_dist(p, user, story, cache) for p in choices]
+    by_distance = sorted(choices, key = lambda p : distances[choices.index(p)])
     distances.sort()
     chances = []
     furthest = distances[-1]
@@ -49,9 +58,9 @@ def walk_dist ( user, story, path, pages, cache=None ):
     for i in range(len(by_distance)):
         chances.append((furthest - distances[i]) + abs(closest))
 
-    # eliminate visited nodes [ TODO - bit of a hack ]
-    for i in range(len(chances)):
-        if hs.visits(by_distance[i], path) != 0: chances[i] = 0
+    # if all dists = 0, just give an equal chance to everything
+    if distances == [ 0 ] * len(distances):
+        return rand(user, story, path, choices, cache)
 
     # normalise
     factor = 1 / sum(chances) if sum(chances) != 0 else 1

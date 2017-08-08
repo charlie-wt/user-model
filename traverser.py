@@ -28,19 +28,6 @@ def traverse ( story, ranker, decider, max_steps=50, reading=None, user=None,
     # move to a page
     if prnt: print("traversing "+story.name+":")
     for i in range(max_steps):
-        # optionally start the user at a location in the middle of the start pages.
-        moved = False
-        for p in user.path:
-            if p.getLoc(story) is not None:
-                moved = True
-                break
-        if not moved:
-            locs = [ p.getLoc(story) for p in visible if p.getLoc(story) is not None ]
-            lats = [ loc[0] for loc in locs ]
-            lons = [ loc[1] for loc in locs ]
-            if len(locs) > 0:
-                user.loc = ((sum(lats)/len(lats)), (sum(lons)/len(lons)))
-
         # record options, move to new page
         options = ranker(user, story, user.path, visible, cache)
         rc.add(path, (user.page() if path else None), options, visible)
@@ -73,19 +60,6 @@ def traverse_many ( story, n=100, ranker=rk.rand, decider=dc.rand, cache=None,
         path = []
         # move to a page
         for i in range(max_steps):
-            # optionally start the user at a location in the middle of the start pages.
-            moved = False
-            for p in user.path:
-                if p.getLoc(story) is not None:
-                    moved = True
-                    break
-            if not moved:
-                locs = [ p.getLoc(story) for p in visible if p.getLoc(story) is not None ]
-                lats = [ loc[0] for loc in locs ]
-                lons = [ loc[1] for loc in locs ]
-                if len(locs) > 0:
-                    user.loc = ((sum(lats)/len(lats)), (sum(lons)/len(lons)))
-
             # record options, move to a new page
             options = ranker(user, story, user.path, visible, cache)
             rc.add(path, (user.page() if path else None), options, visible)
