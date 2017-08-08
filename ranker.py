@@ -17,7 +17,10 @@ import random
 def dist ( user, story, path, pages, cache=None ):
 # shortest straight line distance
     choices = [ p for p in pages if hs.visits(p, path) == 0 ]
-    if len(choices) == 1: return { choices[0] : 1 }
+    if len(choices) == 1:
+        options = { p: 0 for p in pages }
+        options[choices[0]] = 1
+        return options
 
     # score pages
     distances = [hs.distance(p, user, story, cache) for p in choices]
@@ -31,7 +34,7 @@ def dist ( user, story, path, pages, cache=None ):
 
     # if all dists = 0, just give an equal chance to everything
     if distances == [ 0 ] * len(distances):
-        return rand(user, story, path, choices, cache)
+        return rand(user, story, path, pages, cache)
 
     # normalise
     factor = 1 / sum(chances) if sum(chances) != 0 else 1
@@ -41,12 +44,17 @@ def dist ( user, story, path, pages, cache=None ):
     options = {}
     for i in range(len(by_distance)):
         options[by_distance[i]] = chances[i]
+    for p in [ p for p in pages if p not in options ]:
+        options[p] = 0
     return options
 
 def walk_dist ( user, story, path, pages, cache=None ):
 # shortest walking distance, via roads
     choices = [ p for p in pages if hs.visits(p, path) == 0 ]
-    if len(choices) == 1: return { choices[0] : 1 }
+    if len(choices) == 1:
+        options = { p: 0 for p in pages }
+        options[choices[0]] = 1
+        return options
 
     # score pages
     distances = [hs.walk_dist(p, user, story, cache) for p in choices]
@@ -60,7 +68,7 @@ def walk_dist ( user, story, path, pages, cache=None ):
 
     # if all dists = 0, just give an equal chance to everything
     if distances == [ 0 ] * len(distances):
-        return rand(user, story, path, choices, cache)
+        return rand(user, story, path, pages, cache)
 
     # normalise
     factor = 1 / sum(chances) if sum(chances) != 0 else 1
@@ -70,6 +78,8 @@ def walk_dist ( user, story, path, pages, cache=None ):
     options = {}
     for i in range(len(by_distance)):
         options[by_distance[i]] = chances[i]
+    for p in [ p for p in pages if p not in options ]:
+        options[p] = 0
     return options
 
 def rand ( user, story, path, pages, cache=None ):
@@ -81,6 +91,7 @@ def rand ( user, story, path, pages, cache=None ):
     return options
 
 def guess ( user, story, path, pages, cache=None ):
+# TODO - fairly incomplete, needs to be updated/improved.
 # fairly arbitrary guess based on heuristics
     distances = [hs.distance(p, user, story, cache) for p in pages]
     by_distance = sorted(pages, key = lambda p : distances[pages.index(p)])

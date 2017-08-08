@@ -233,6 +233,36 @@ def show_all ( story, ppr=None, stores=None, sim_store=None, log_store=None,
     plt.tight_layout()
     plt.show()
 
+def measure_ranker_plot ( ax, story, ppr, ranker, cache=None ):
+# plot the frequency of choices in relation to how the ranker ranked them.
+    counts = an.measure_ranker(story, ppr, ranker, cache)
+
+    # chart params
+    width = 1
+    xs = range(len(counts))
+    rects = ax.bar(xs, counts, width,
+                       color='blue',
+                       edgecolor='none')
+    plt.xticks(xs)
+    return ax
+
+def measure_ranker ( story, ppr, ranker, cache=None ):
+# display a window with a bar chart showing a comparison of log choice & ranker
+    # set up window
+    mpl.rcParams['toolbar'] = 'none'
+    mpl.rcParams['font.family'] = 'serif'
+    fig = plt.figure(figsize=(14, 10))
+    fig.canvas.set_window_title(story.name)
+
+    # add bar chart
+    ax = fig.add_subplot(111)
+    measure_ranker_plot(ax, story, ppr, ranker, cache)
+    title = 'comparison of log choices and ranker preference for ' + story.name
+    ax.set_title(title)
+
+    plt.tight_layout()
+    plt.show()
+
 def hide_graph_stuff ( ax ):
 # remove axes & ticks for a subplot
     ax.spines['left'].set_color('none')

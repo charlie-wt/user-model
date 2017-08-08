@@ -27,7 +27,7 @@ names = ["A Walk In The Park",                  #  0
 
 
 
-story_name = names[6]
+story_name = names[0]
 
 
 
@@ -42,11 +42,13 @@ log_store = an.walk(story, paths_per_reading)
 log_path = [ r.page for r in log_store ]
 
 # predict
-sim_store = tr.traverse(story, rk.walk_dist, dc.best, cache=cache)
+sim_store = tr.traverse(story, rk.rand, dc.best, cache=cache)
 sim_path = [ r.page for r in sim_store ]
 
-err = tr.step_predict(story, log_store, rk.walk_dist, cache)
-stores = tr.traverse_many(story, ranker=rk.walk_dist, cache=cache)
+gui.measure_ranker(story, paths_per_reading, rk.walk_dist, cache)
+
+#err = tr.step_predict(story, log_store, rk.walk_dist, cache)
+#stores = tr.traverse_many(story, ranker=rk.walk_dist, cache=cache)
 
 # analyse paths
-gui.show_all(story, paths_per_reading, stores, sim_store, log_store, err)
+#gui.show_all(story, paths_per_reading, stores, sim_store, log_store, err)

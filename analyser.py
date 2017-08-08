@@ -402,3 +402,41 @@ def filter_readings ( story, epr, max_metres_per_second=5, prnt=False ):
 
     if prnt: print("found", len(filtered), "real readings for", story.name)
     return filtered
+
+def measure_ranker ( story, ppr, ranker, cache=None, prnt=False ):
+# see how the ordering of a ranker measures up against the choices made in logs.
+    # simple list to store the index of each choice, in chronological order.
+    options_taken = []
+
+    for r in ppr.values():
+        # create stuff
+        reading = rd.Reading("reading-0", story)
+        user = us.User("user-0")
+        if cache is None: cache = ls.auto_dict()
+        visible = pg.update_all(story.pages, story, reading, user)
+
+        # perform remaining steps in reading
+        for i in range(0, len(r)-1):
+            # get ranker's preference (best -> worst)
+            options = ranker(user, story, user.path, visible, cache)
+            ranking = sorted(options.keys(), key = lambda p : -options[p])
+
+            # record which of the ranker's options was chosen
+            options_taken.append(ranking.index(r[i]))
+
+            # move to next page
+            move_to_idx = ls.index(visible, r[i].id)
+            visible = user.move(move_to_idx, visible, story, reading)
+        tr.reset(story, reading, user)
+
+    # create list that instead has index : count
+    counts = [0] * (max(options_taken)+1)
+    for o in options_taken:
+        counts[o] += 1
+
+    if prnt:
+        print('log choices compared to ranker preference:')
+        for i in range(len(counts)):
+            print((' '+str(i) if i < 10 else i), ':', counts[i])
+
+    return counts
