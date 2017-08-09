@@ -41,9 +41,9 @@ def distance ( page, user, story, cache=None ):
     if cache is not None: cache['distance'][us_page.id][page.id] = dist
     return dist
 
-def visits ( page, path ):
+def visits ( page, user ):
 # has the user visited this node before?
-    return ls.count(path, page.id)
+    return ls.count(user.path, page.id)
 
 def walk_dist ( page, user, story, cache=None ):
 # walking distance, via roads (osrm).
@@ -95,7 +95,7 @@ def altitude ( page, user, story, cache=None ):
 
 def points_of_interest ( page, user, story, cache=None ):
 # get the number of points of interest near a page
-    prnt=True
+    prnt=False
     page_loc = page.getLoc(story)
     if page_loc is None: page_loc = user.loc
 

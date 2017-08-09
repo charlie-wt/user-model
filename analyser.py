@@ -85,8 +85,7 @@ def pick_most_likely ( options ):
 def walk ( story, paths_per_reading, max_steps=50, reading=None, user=None, prnt=False):
 # walk through a story, based on the most popular user choices.
     if len(paths_per_reading) == 0:
-        print("can't walk", story.name+"; no logged readings.")
-        return
+        raise ValueError("can't walk "+story.name+"; no logged readings.")
     if reading is None: reading = rd.Reading("reading-0", story)
     if user is None: user = us.User("user-0")
 
@@ -415,19 +414,24 @@ def measure_ranker ( story, ppr, ranker, cache=None, prnt=False ):
         if cache is None: cache = ls.auto_dict()
         visible = pg.update_all(story.pages, story, reading, user)
 
-        # perform remaining steps in reading
+        # perform reading
         for i in range(0, len(r)-1):
             # get ranker's preference (best -> worst)
-            options = ranker(user, story, user.path, visible, cache)
+            options = ranker(user, story, visible, cache)
             ranking = sorted(options.keys(), key = lambda p : -options[p])
 
             # record which of the ranker's options was chosen
-            options_taken.append(ranking.index(r[i]))
+            if len(ranking) > 1:
+                options_taken.append(ranking.index(r[i]))
 
             # move to next page
             move_to_idx = ls.index(visible, r[i].id)
             visible = user.move(move_to_idx, visible, story, reading)
         tr.reset(story, reading, user)
+
+    if len(options_taken) == 0:
+        raise ValueError('Story supplied to measure_ranker contains no choices.')
+#        return []
 
     # create list that instead has index : count
     counts = [0] * (max(options_taken)+1)

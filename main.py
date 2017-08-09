@@ -9,6 +9,7 @@ import printer as pt
 import analyser as an
 import ls
 import gui
+import ml
 
 names = ["A Walk In The Park",                  #  0
          "Butterflies",                         #  1
@@ -27,7 +28,7 @@ names = ["A Walk In The Park",                  #  0
 
 
 
-story_name = names[0]
+story_name = names[6]
 
 
 
@@ -45,7 +46,8 @@ log_path = [ r.page for r in log_store ]
 sim_store = tr.traverse(story, rk.rand, dc.best, cache=cache)
 sim_path = [ r.page for r in sim_store ]
 
-gui.measure_ranker(story, paths_per_reading, rk.walk_dist, cache)
+ml.formalise(story, list(paths_per_reading.values())[0], cache, True, False)
+#gui.measure_ranker(story, paths_per_reading, rk.walk_dist, cache)
 
 #err = tr.step_predict(story, log_store, rk.walk_dist, cache)
 #stores = tr.traverse_many(story, ranker=rk.walk_dist, cache=cache)

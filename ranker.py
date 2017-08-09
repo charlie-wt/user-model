@@ -14,9 +14,9 @@ import random
 # function.
 ##############################
 
-def dist ( user, story, path, pages, cache=None ):
+def dist ( user, story, pages, cache=None ):
 # shortest straight line distance
-    choices = [ p for p in pages if hs.visits(p, path) == 0 ]
+    choices = [ p for p in pages if hs.visits(p, user) == 0 ]
     if len(choices) == 1:
         options = { p: 0 for p in pages }
         options[choices[0]] = 1
@@ -34,7 +34,7 @@ def dist ( user, story, path, pages, cache=None ):
 
     # if all dists = 0, just give an equal chance to everything
     if distances == [ 0 ] * len(distances):
-        return rand(user, story, path, pages, cache)
+        return rand(user, story, pages, cache)
 
     # normalise
     factor = 1 / sum(chances) if sum(chances) != 0 else 1
@@ -48,9 +48,9 @@ def dist ( user, story, path, pages, cache=None ):
         options[p] = 0
     return options
 
-def walk_dist ( user, story, path, pages, cache=None ):
+def walk_dist ( user, story, pages, cache=None ):
 # shortest walking distance, via roads
-    choices = [ p for p in pages if hs.visits(p, path) == 0 ]
+    choices = [ p for p in pages if hs.visits(p, user) == 0 ]
     if len(choices) == 1:
         options = { p: 0 for p in pages }
         options[choices[0]] = 1
@@ -68,7 +68,7 @@ def walk_dist ( user, story, path, pages, cache=None ):
 
     # if all dists = 0, just give an equal chance to everything
     if distances == [ 0 ] * len(distances):
-        return rand(user, story, path, pages, cache)
+        return rand(user, story, pages, cache)
 
     # normalise
     factor = 1 / sum(chances) if sum(chances) != 0 else 1
@@ -82,7 +82,7 @@ def walk_dist ( user, story, path, pages, cache=None ):
         options[p] = 0
     return options
 
-def rand ( user, story, path, pages, cache=None ):
+def rand ( user, story, pages, cache=None ):
 # random
     prob = 1 / len(pages)
     options = {}
@@ -90,7 +90,7 @@ def rand ( user, story, path, pages, cache=None ):
         options[pages[i]] = prob
     return options
 
-def guess ( user, story, path, pages, cache=None ):
+def guess ( user, story, pages, cache=None ):
 # TODO - fairly incomplete, needs to be updated/improved.
 # fairly arbitrary guess based on heuristics
     distances = [hs.distance(p, user, story, cache) for p in pages]
@@ -108,7 +108,7 @@ def guess ( user, story, path, pages, cache=None ):
     # visited before = worse
     factor = 0.0
     for i in range(len(by_distance)):
-        chances[i] = chances[i] * (factor)**hs.visits(by_distance[i], path)
+        chances[i] = chances[i] * (factor)**hs.visits(by_distance[i], user)
 
     # normalise
     factor = 1 / sum(chances) if sum(chances) != 0 else 1
@@ -120,7 +120,7 @@ def guess ( user, story, path, pages, cache=None ):
         options[by_distance[i]] = chances[i]
     return options
 
-def alt ( user, story, path, pages, cache=None ):
+def alt ( user, story, pages, cache=None ):
 # prefer to go downhill (not a very useful ranker on its own)
     alts = [ hs.altitude(p, user, story, cache) for p in pages ]
     by_alt = sorted(pages, key = lambda p : alts[pages.index(p)])
@@ -144,7 +144,7 @@ def alt ( user, story, path, pages, cache=None ):
         options[by_alt[i]] = chances[i]
     return options
 
-def poi ( user, story, path, pages, cache=None ):
+def poi ( user, story, pages, cache=None ):
 # prefer pages with more nearby points of interest
     # get sorted (low -> high) list of pages by poi count.
     pois = [ hs.points_of_interest(p, user, story, cache) for p in pages ]
@@ -162,7 +162,7 @@ def poi ( user, story, path, pages, cache=None ):
         options[by_poi[i]] = chances[i]
     return options
 
-def mentioned ( user, story, path, pages, cache=None ):
+def mentioned ( user, story, pages, cache=None ):
 # prefer pages with names mentioned more by the current page's text.
     # get sorted (low -> high) list of pages by mentions.
     mentions = [ hs.mentioned(p, user, story, cache) for p in pages ]

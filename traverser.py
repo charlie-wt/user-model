@@ -29,7 +29,7 @@ def traverse ( story, ranker, decider, max_steps=50, reading=None, user=None,
     if prnt: print("traversing "+story.name+":")
     for i in range(max_steps):
         # record options, move to new page
-        options = ranker(user, story, user.path, visible, cache)
+        options = ranker(user, story, visible, cache)
         rc.add(path, (user.page() if path else None), options, visible)
         visible = user.move(decider(visible, options), visible, story, reading)
 
@@ -61,7 +61,7 @@ def traverse_many ( story, n=100, ranker=rk.rand, decider=dc.rand, cache=None,
         # move to a page
         for i in range(max_steps):
             # record options, move to a new page
-            options = ranker(user, story, user.path, visible, cache)
+            options = ranker(user, story, visible, cache)
             rc.add(path, (user.page() if path else None), options, visible)
             visible = user.move(decider(visible, options), visible, story, reading)
 
@@ -85,7 +85,7 @@ def step_predict ( story, log_store, ranker, cache=None, prnt=False ):
     num_options = 0
 
     # perform first step
-    options = ranker(user, story, user.path, visible, cache)
+    options = ranker(user, story, visible, cache)
     for o in options:
         error += abs(log_store[0].options[o] - options[o])#**2
     num_options += len(options)
@@ -95,7 +95,7 @@ def step_predict ( story, log_store, ranker, cache=None, prnt=False ):
     # perform remaining steps in reading
     for i in range(1, len(log_store)-1):
         # perform movement
-        options = ranker(user, story, user.path, visible, cache)
+        options = ranker(user, story, visible, cache)
 
         log_options = {}
         for p in log_store[i].options:
