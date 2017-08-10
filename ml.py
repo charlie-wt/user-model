@@ -22,6 +22,7 @@ def formalise ( story, ppr, cache=None, prnt=False, exclude_poi=False ):
 #             people might just quit.
 #               - to that end, could supply *both* the absolute values and
 #                 rankings based on those values. Would make things slower.
+    if prnt: print('formalised path data:')
     xs = []
     ys = []
 
@@ -31,6 +32,7 @@ def formalise ( story, ppr, cache=None, prnt=False, exclude_poi=False ):
     if cache is None: cache = ls.auto_dict()
 
     # perform reading
+    count = 1
     for r in ppr:
         path = ppr[r]
         visible = pg.update_all(story.pages, story, reading, user)
@@ -71,6 +73,9 @@ def formalise ( story, ppr, cache=None, prnt=False, exclude_poi=False ):
                     # add result (whether the page was chosen) to output vector
                     ys.append((1 if p == path[i] else 0))
 
+                    if prnt: print(count, ':', ys[-1], '<-', xs[-1])
+                    count += 1
+
             # move to next page
             move_to_idx = ls.index(visible, path[i].id)
             visible = user.move(move_to_idx, visible, story, reading)
@@ -79,10 +84,10 @@ def formalise ( story, ppr, cache=None, prnt=False, exclude_poi=False ):
     if len(ys) == 0:
         raise ValueError('Story supplied to formalise contains no choices.')
 
-    if prnt:
-        print('formalised path data:')
-        for (x, y) in zip(xs, ys):
-            print(y, "<-", x)
+#    if prnt:
+#        print('formalised path data:')
+#        for (x, y) in zip(xs, ys):
+#            print(y, "<-", x)
 
     return (xs, ys)
 
