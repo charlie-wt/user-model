@@ -113,7 +113,7 @@ def poi ( loc, radius=100, prnt=False ):
             response = f.read(4096)
             if f.code == 200: break
         except HTTPError:
-            print(loc, '- overpass error - retrying in 15 seconds.')
+            if prnt: print(loc, '- overpass error - retrying in 15 seconds.')
             time.sleep(15)
     f.close()
 

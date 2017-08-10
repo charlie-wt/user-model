@@ -46,7 +46,7 @@ log_path = [ r.page for r in log_store ]
 sim_store = tr.traverse(story, rk.rand, dc.best, cache=cache)
 sim_path = [ r.page for r in sim_store ]
 
-ml.formalise(story, list(paths_per_reading.values())[0], cache, True, False)
+ml.formalise(story, paths_per_reading, cache, True)
 #gui.measure_ranker(story, paths_per_reading, rk.walk_dist, cache)
 
 #err = tr.step_predict(story, log_store, rk.walk_dist, cache)
