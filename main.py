@@ -43,7 +43,7 @@ log_store = an.walk(story, paths_per_reading)
 log_path = [ r.page for r in log_store ]
 
 # predict
-sim_store = tr.traverse(story, rk.rand, dc.best, cache=cache)
+sim_store = tr.traverse(story, rk.rb_wd, dc.best, cache=cache)
 sim_path = [ r.page for r in sim_store ]
 
 ml.formalise(story, paths_per_reading, cache, True)

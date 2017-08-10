@@ -41,7 +41,7 @@ def distance ( page, user, story, cache=None ):
     if cache is not None: cache['distance'][us_page.id][page.id] = dist
     return dist
 
-def visits ( page, user ):
+def visits ( page, user, story=None, cache=None ):
 # has the user visited this node before?
     return ls.count(user.path, page.id)
 

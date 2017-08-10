@@ -6,6 +6,7 @@ import page as pg
 import user as us
 import reading as rd
 import heuristics as hs
+import ranker as rk
 import ls
 
 ##### ml #####################
@@ -34,30 +35,44 @@ def formalise ( story, ppr, cache=None, prnt=False, exclude_poi=False ):
         path = ppr[r]
         visible = pg.update_all(story.pages, story, reading, user)
         for i in range(0, len(path)-1):
-            # calculate heuristics for each option, and add to the list
+            # calculate heuristics (and rankings) for each option, and store
             if len(visible) > 1:
+                # get rankings
+                walk_dist_ranking = rk.walk_dist(user, story, visible, cache)
+                visits_ranking = rk.visits(user, story, visible, cache)
+                alt_ranking = rk.alt(user, story, visible, cache)
+                poi_ranking = rk.poi(user, story, visible, cache)
+                mention_ranking = rk.mentioned(user, story, visible, cache)
+
                 for p in visible:
+                    # get heuristic values for this page
                     walk_dist = hs.walk_dist(p, user, story, cache)
                     visits = hs.visits(p, user)
                     alt = hs.altitude(p, user, story, cache)
-                    if not exclude_poi: poi = hs.points_of_interest(p, user, story, cache)
+                    if not exclude_poi:
+                        poi = hs.points_of_interest(p, user, story, cache)
                     mention = hs.mentioned(p, user, story, cache)
 
+                    # get ranking for this page
+                    r_dst = walk_dist_ranking[p]
+                    r_vis = visits_ranking[p]
+                    r_alt = alt_ranking[p]
                     if not exclude_poi:
-                        xs.append((walk_dist, visits, alt, poi, mention))
+                        r_poi = poi_ranking[p]
+                    r_men = mention_ranking[p]
+
+                    # add heuristics/values to input vector
+                    if not exclude_poi:
+                        xs.append((walk_dist, visits, alt, poi, mention,
+                                   r_dst, r_vis, r_alt, r_poi, r_men))
                     else:
-                        xs.append((walk_dist, visits, alt, mention))
+                        xs.append((walk_dist, visits, alt, mention,
+                                   r_dst, r_vis, r_alt, r_men))
+                    # add result (whether the page was chosen) to output vector
                     ys.append((1 if p == path[i] else 0))
 
             # move to next page
             move_to_idx = ls.index(visible, path[i].id)
-
-            what = move_to_idx is None
-            if what:
-                print('trying to find', path[i].name, 'in:')
-                for p in visible:
-                    print('\t'+p.name)
-
             visible = user.move(move_to_idx, visible, story, reading)
         tr.reset(story, reading, user)
 
