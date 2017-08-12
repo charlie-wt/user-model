@@ -47,7 +47,7 @@ cache = ls.auto_dict()
 #sim_path = [ r.page for r in sim_store ]
 
 #ml.formalise(story, paths_per_reading, cache, True)
-ml.logreg(story, paths_per_reading, cache, batch_size=1, prnt=True)
+ml.logreg(story, paths_per_reading, cache, epochs=50, batch_size=1, prnt=True)
 #gui.measure_ranker(story, paths_per_reading, rk.walk_dist, cache)
 
 #err = tr.step_predict(story, log_store, rk.walk_dist, cache)

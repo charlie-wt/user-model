@@ -12,6 +12,7 @@ import reading as rd
 import heuristics as hs
 import ranker as rk
 import ls
+import printer as pt
 
 ##### ml #####################
 # machine learning stuff.
@@ -133,11 +134,11 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
             print('samples:', num_samples,
                   'training:', len(Xtr),
                   'testing:', len(Xts))
+        num_batches = math.ceil(num_training / batch_size)
+        bxs = batches(Xtr, batch_size)
+        bys = batches(Ytr, batch_size)
         for epoch in range(epochs):
             avg_cost = 0
-            num_batches = math.ceil(num_training / batch_size)
-            bxs = batches(Xtr, batch_size)
-            bys = batches(Ytr, batch_size)
 
             for i in range(num_batches):
                 _, c = sess.run(
@@ -157,7 +158,7 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
             print('done, final results:')
             print('w =', sess.run(w))
             print('b =', sess.run(b))
-            print('accuracy:', acc.eval({ x: Xts, y_: Yts }))
+            print('accuracy:', pt.pc(acc.eval({ x: Xts, y_: Yts }), dec=2))
 
     # TODO - does this work, since w & b are tf.Variables? -need actual lists.
     return (w, b)
