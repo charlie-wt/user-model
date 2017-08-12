@@ -1,6 +1,10 @@
 import sys, os
 sys.path.append(os.path.join(sys.path[0], "models"))
 
+import tensorflow as tf
+import numpy as np
+import math
+
 import traverser as tr
 import page as pg
 import user as us
@@ -15,13 +19,6 @@ import ls
 
 def formalise ( story, ppr, cache=None, prnt=False, exclude_poi=False ):
 # put list of pages (forming a path) into a form that can be interpreted by ml.
-# TODO - in some way normalise data -> the same page could be either chosen or
-#        not chosen based on what the other options at the time are.
-#           - probably just lerp between min & max values with each option set?
-#           - but also would want to know if all pages are far away, since then
-#             people might just quit.
-#               - to that end, could supply *both* the absolute values and
-#                 rankings based on those values. Would make things slower.
     if prnt: print('formalised path data:')
     xs = []
     ys = []
@@ -43,7 +40,8 @@ def formalise ( story, ppr, cache=None, prnt=False, exclude_poi=False ):
                 walk_dist_ranking = rk.walk_dist(user, story, visible, cache)
                 visits_ranking = rk.visits(user, story, visible, cache)
                 alt_ranking = rk.alt(user, story, visible, cache)
-                poi_ranking = rk.poi(user, story, visible, cache)
+                if not exclude_poi:
+                    poi_ranking = rk.poi(user, story, visible, cache)
                 mention_ranking = rk.mentioned(user, story, visible, cache)
 
                 for p in visible:
@@ -84,15 +82,104 @@ def formalise ( story, ppr, cache=None, prnt=False, exclude_poi=False ):
     if len(ys) == 0:
         raise ValueError('Story supplied to formalise contains no choices.')
 
-#    if prnt:
-#        print('formalised path data:')
-#        for (x, y) in zip(xs, ys):
-#            print(y, "<-", x)
-
     return (xs, ys)
 
-def logreg ( story, path, cache=None, prnt=False ):
-    raise NotImplementedError('lol')
+def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
+             batch_size=None, train_prop=0.9, prnt=False ):
+    # get data in correct format
+    data = formalise(story, ppr, cache)
+
+    # get info about data
+    if batch_size is None: batch_size=len(data[0])
+    num_features = len(data[0][0])  # the heuristics and rankings describing a page.
+    num_classes = max(data[1])+1    # to choose, or not to choose a page.
+    num_samples = len(data[0])      # number of movements between pages.
+
+    # split data into training & testing
+    # Xs & Ys: total inputs and true labels, for all samples.
+    Xs = data[0]
+    Ys = one_hot(data[1], num_classes)
+    num_training = int(train_prop*num_samples)
+    # Xtr & Ytr: training set; first (train_prop*100)% of Xs & Ys.
+    Xtr = Xs[0:num_training]
+    Ytr = Ys[0:num_training]
+    # Xts & Yts: testing set; remainder of Xs & Ys after Xtr & Ytr.
+    # Note - Yts is still true labels; is used to test accuracy.
+    Xts = Xs[num_training:num_samples]
+    Yts = Ys[num_training:num_samples]
+
+    # define tensorflow graph
+    x  = tf.placeholder(tf.float32, [None, num_features])
+    y_ = tf.placeholder(tf.float32, [None, num_classes])
+
+    # model weights
+    w = tf.Variable(tf.zeros([num_features, num_classes]))
+    b = tf.Variable(tf.zeros([num_classes]))
+
+    # construct model
+    # model calculates y, to test against y_ for cost. Is essentially y=mx+c.
+    model = tf.matmul(x, w) + b
+    # our cost function, to see how far from the truth we are:
+    cost = tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=model)
+    # our gradient descent optimizer (to minimize cost via. changing w & b):
+    gd = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)
+
+    init = tf.global_variables_initializer()
+    with tf.Session() as sess:
+        sess.run(init)
+
+        # training cycle
+        if prnt:
+            print('samples:', num_samples,
+                  'training:', len(Xtr),
+                  'testing:', len(Xts))
+        for epoch in range(epochs):
+            avg_cost = 0
+            num_batches = math.ceil(num_training / batch_size)
+            bxs = batches(Xtr, batch_size)
+            bys = batches(Ytr, batch_size)
+
+            for i in range(num_batches):
+                _, c = sess.run(
+                    [gd, cost],
+                    feed_dict = { x: bxs[i], y_: bys[i] }
+                )
+
+                # TODO - given output of cross_entropy, I think this should be ignored?
+                avg_cost = c / num_batches
+
+            if prnt:
+                print('epoch', (epoch+1), 'cost =', avg_cost)
+
+        correct_prediction = tf.equal(tf.argmax(model, 1), tf.argmax(y_, 1))
+        acc = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+        if prnt:
+            print('done, final results:')
+            print('w =', sess.run(w))
+            print('b =', sess.run(b))
+            print('accuracy:', acc.eval({ x: Xts, y_: Yts }))
+
+    # TODO - does this work, since w & b are tf.Variables? -need actual lists.
+    return (w, b)
+
+def one_hot ( data, num_classes=None ):
+# convert a list of class labels (0, 1, 2 etc.) into a list of probability
+# distributions where all probabilities are 0, except the true value which is 1.
+    oh = []
+    if num_classes is None: num_classes = max(data) + 1
+
+    for i in range(len(data)):
+        prob_dist = [0] * num_classes
+        prob_dist[data[i]] = 1
+        oh.append(prob_dist)
+
+    return oh
+
+def batches ( data, batch_size ):
+# turn big list of data into a bunch of batches
+    bs = batch_size
+    nb = math.ceil(len(data)/batch_size)
+    return [ data[i*bs:(i+1)*bs] for i in range(nb) ]
 
 def nn ( story, path, cache=None, prnt=False ):
     raise NotImplementedError('lol')

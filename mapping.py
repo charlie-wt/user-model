@@ -83,7 +83,6 @@ def alt ( loc, prnt=False ):
     ele = elevation_client.get_elevation(loc[0], loc[1])
 
     if prnt: print("elevation of " + str(loc) + ":", ele)
-
     return ele
 
 def poi ( loc, radius=100, prnt=False ):
