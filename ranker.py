@@ -3,8 +3,8 @@ sys.path.append(os.path.join(sys.path[0], "models"))
 import location as l
 import page
 import heuristics as hs
-
 import ls
+
 import math
 import random
 
@@ -13,6 +13,31 @@ import random
 # page to choose via one of the functions. output to be given to some decider
 # function.
 ##############################
+
+reg = {
+    'w': [[ 29.25730515, -29.25730515],
+          [  0.,           0.        ],
+          [-22.56334496,  22.56334496],
+          [-21.10176659,  21.10176849],
+          [  1.42525840,  -1.42525840],
+          [ -1.38244212,   1.38244212],
+          [ -0.98336744,   0.9833675 ],
+          [ -1.03950977,   1.03950977],
+          [ -0.86692393,   0.86692399],
+          [ -1.24961233,   1.24961233]],
+    'b': [-2.63376451,  2.63376451]
+}
+reg_no_poi = {
+    'w': [[  5.54028082,  -5.54027319],
+          [  0.,           0.        ],
+          [-15.39587307,  15.39587307],
+          [  0.51478320,  -0.51478308],
+          [ -3.04297018,   3.04297018],
+          [ -2.10439253,   2.10439229],
+          [ -1.71184516,   1.71184516],
+          [ -6.63762236,   6.63762283]],
+    'b': [-0.4354198,   0.43541986]
+}
 
 def rand ( user, story, pages, cache=None ):
 # random
@@ -91,32 +116,28 @@ def mentioned ( user, story, pages, cache=None ):
     fn = rank_by(hs.mentioned, False, True)
     return fn(user, story, pages, cache)
 
-def guess ( user, story, pages, cache=None ):
-# TODO - fairly incomplete, needs to be updated/improved.
-# fairly arbitrary guess based on heuristics
-    distances = [hs.distance(p, user, story, cache) for p in pages]
-    by_distance = sorted(pages, key = lambda p : distances[pages.index(p)])
-    distances.sort()
-    chances = []
-    furthest = distances[-1]
-    closest = distances[0]
+def logreg ( user, story, pages, cache=None ):
+# use logistic regression model to predict the page to choose.
+    import ml
+    if reg is None: raise ValueError('Please initialise regression parameters.')
 
-    # closer = better
-    for i in range(len(by_distance)):
-        chance = (furthest - distances[i]) + abs(closest)
-        chances.append(chance)
+    inputs = ml.make_input(story, user, pages, cache, True)
 
-    # visited before = worse
-    factor = 0.0
-    for i in range(len(by_distance)):
-        chances[i] = chances[i] * (factor)**hs.visits(by_distance[i], user)
+    # apply regression
+    results = []
+    idx = 1
+    for p in inputs:
+        # y = w*x + b
+        output = sum([ p[i]*reg_no_poi['w'][i][idx] for i in range(len(p)) ])
+        output += reg_no_poi['b'][idx]
+        results.append(output)
 
     # normalise
-    factor = 1 / sum(chances) if sum(chances) != 0 else 1
-    chances = [ c * factor for c in chances ]
+    factor = 1 / sum(results) if sum(results) != 0 else 1
+    chances = [ r * factor for r in results ]
 
     # gen dictionary
     options = {}
-    for i in range(len(by_distance)):
-        options[by_distance[i]] = chances[i]
+    for i in range(len(pages)):
+        options[pages[i]] = chances[i]
     return options

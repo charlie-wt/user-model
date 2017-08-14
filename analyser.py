@@ -431,7 +431,6 @@ def measure_ranker ( story, ppr, ranker, cache=None, prnt=False ):
 
     if len(options_taken) == 0:
         raise ValueError('Story supplied to measure_ranker contains no choices.')
-#        return []
 
     # create list that instead has index : count
     counts = [0] * (max(options_taken)+1)

@@ -37,38 +37,9 @@ def formalise ( story, ppr, cache=None, prnt=False, exclude_poi=False ):
         for i in range(0, len(path)-1):
             # calculate heuristics (and rankings) for each option, and store
             if len(visible) > 1:
-                # get rankings
-                walk_dist_ranking = rk.walk_dist(user, story, visible, cache)
-                visits_ranking = rk.visits(user, story, visible, cache)
-                alt_ranking = rk.alt(user, story, visible, cache)
-                if not exclude_poi:
-                    poi_ranking = rk.poi(user, story, visible, cache)
-                mention_ranking = rk.mentioned(user, story, visible, cache)
-
+                # add heuristic/ranking information to input vector
+                xs += make_input(story, user, visible, cache, exclude_poi)
                 for p in visible:
-                    # get heuristic values for this page
-                    walk_dist = hs.walk_dist(p, user, story, cache)
-                    visits = hs.visits(p, user)
-                    alt = hs.altitude(p, user, story, cache)
-                    if not exclude_poi:
-                        poi = hs.points_of_interest(p, user, story, cache)
-                    mention = hs.mentioned(p, user, story, cache)
-
-                    # get ranking for this page
-                    r_dst = walk_dist_ranking[p]
-                    r_vis = visits_ranking[p]
-                    r_alt = alt_ranking[p]
-                    if not exclude_poi:
-                        r_poi = poi_ranking[p]
-                    r_men = mention_ranking[p]
-
-                    # add heuristics/values to input vector
-                    if not exclude_poi:
-                        xs.append((walk_dist, visits, alt, poi, mention,
-                                   r_dst, r_vis, r_alt, r_poi, r_men))
-                    else:
-                        xs.append((walk_dist, visits, alt, mention,
-                                   r_dst, r_vis, r_alt, r_men))
                     # add result (whether the page was chosen) to output vector
                     ys.append((1 if p == path[i] else 0))
 
@@ -85,10 +56,53 @@ def formalise ( story, ppr, cache=None, prnt=False, exclude_poi=False ):
 
     return (xs, ys)
 
+def make_input ( story, user, pages, cache=None, exclude_poi=False ):
+# get a tuple of heuristics + rankings for each page.
+    if type(pages) != list: pages = [pages]
+
+    xs = []
+
+    # get rankings
+    walk_dist_ranking = rk.walk_dist(user, story, pages, cache)
+    visits_ranking = rk.visits(user, story, pages, cache)
+    alt_ranking = rk.alt(user, story, pages, cache)
+    if not exclude_poi:
+        poi_ranking = rk.poi(user, story, pages, cache)
+    mention_ranking = rk.mentioned(user, story, pages, cache)
+
+    for p in pages:
+        # get heuristic values for this page
+        walk_dist = hs.walk_dist(p, user, story, cache)
+        visits = hs.visits(p, user)
+        alt = hs.altitude(p, user, story, cache)
+        if not exclude_poi:
+            poi = hs.points_of_interest(p, user, story, cache)
+        mention = hs.mentioned(p, user, story, cache)
+
+        # get ranking for this page
+        r_dst = walk_dist_ranking[p]
+        r_vis = visits_ranking[p]
+        r_alt = alt_ranking[p]
+        if not exclude_poi:
+            r_poi = poi_ranking[p]
+        r_men = mention_ranking[p]
+
+        # add heuristics/values to input vector
+        if not exclude_poi:
+            xs.append((walk_dist, visits, alt, poi, mention,
+                       r_dst, r_vis, r_alt, r_poi, r_men))
+#             xs.append((r_dst, r_vis, r_alt, r_poi, r_men))
+        else:
+            xs.append((walk_dist, visits, alt, mention,
+                       r_dst, r_vis, r_alt, r_men))
+#             xs.append((r_dst, r_vis, r_alt, r_men))
+
+    return xs
+
 def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
-             batch_size=None, train_prop=0.9, prnt=False ):
+             batch_size=None, train_prop=0.9, prnt=False, exclude_poi=False ):
     # get data in correct format
-    data = formalise(story, ppr, cache)
+    data = formalise(story, ppr, cache, exclude_poi=exclude_poi)
 
     # get info about data
     if batch_size is None: batch_size=len(data[0])
@@ -146,7 +160,6 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
                     feed_dict = { x: bxs[i], y_: bys[i] }
                 )
 
-                # TODO - given output of cross_entropy, I think this should be ignored?
                 avg_cost = c / num_batches
 
             if prnt:
@@ -160,8 +173,7 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
             print('b =', sess.run(b))
             print('accuracy:', pt.pc(acc.eval({ x: Xts, y_: Yts }), dec=2))
 
-    # TODO - does this work, since w & b are tf.Variables? -need actual lists.
-    return (w, b)
+        return { 'w': sess.run(w), 'b': sess.run(b) }
 
 def one_hot ( data, num_classes=None ):
 # convert a list of class labels (0, 1, 2 etc.) into a list of probability
