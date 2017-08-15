@@ -3,6 +3,7 @@ sys.path.append(os.path.join(sys.path[0], "models"))
 
 import location as lc
 import page as pg
+import record as rc
 import ls
 
 ##### printer ################
@@ -33,8 +34,16 @@ def print_visible ( vis, story, us ):
         else:
             print("\t" + p.id + " : " + p.name + ", which can be accessed from anywhere.")
 
+def print_all_paths ( stores, story=None, print_id=False ):
+# print all the paths taken through a story
+    if story is not None: print('all', len(stores), 'paths through', story.name+':')
+    for path in stores:
+        print('---------------------------------------------------')
+        print_pages(path, print_id=print_id)
+
 def print_pages ( pages, story=None, print_id=False ):
 # print a bunch of pages
+    if type(pages[0]) == rc.Record: pages = [ r.page for r in pages ]
     if story is not None: print("path through", story.name+":")
     for p in pages: print((p.id+" : " if print_id else "") + \
                           (p.name if type(p) is pg.Page else "---"))

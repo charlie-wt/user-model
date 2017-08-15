@@ -102,9 +102,10 @@ def make_input ( story, user, pages, cache=None, exclude_poi=False ):
 
 def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
                    batch_size=None, num_folds = 1, train_prop=0.9, prnt=False, exclude_poi=False ):
-    # get data in correct format
+    # setup
     data = formalise(story, ppr, cache, exclude_poi=exclude_poi)
     models = []
+    cross_validate = num_folds > 1
 
     # get info about data
     if batch_size is None: batch_size=len(data[0])
@@ -116,8 +117,8 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     Xs = data[0]
     Ys = one_hot(data[1], num_classes)
 
-    # size of training/testing set; do for cross validation if num_folds > 1.
-    if num_folds > 1:
+    # size of training/testing set; do for cross validation if cross_validate.
+    if cross_validate:
         num_testing = int(num_samples / num_folds)
         num_training = num_samples - num_testing
     else:
@@ -140,7 +141,6 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     # our gradient descent optimizer (to minimize cost via. changing w & b):
     gd = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)
 
-    init = tf.global_variables_initializer()
     for i in range(num_folds):
         # split data into training & testing
         # Xtr & Ytr: training set
@@ -151,7 +151,7 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
         Yts = Ys[i*num_testing:(i+1)*num_testing]
 
         with tf.Session() as sess:
-            sess.run(init)
+            sess.run(tf.global_variables_initializer())
 
             # training cycle
             num_batches = math.ceil(num_training / batch_size)
@@ -161,20 +161,22 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
                 av_cost = 0
 
                 for j in range(num_batches):
+                    # perform gradient descent optimisation on model.
                     _, c = sess.run(
                         [gd, cost],
                         feed_dict = { x: bxs[j], y_: bys[j] }
                     )
                     av_cost = c / num_batches
 
-                if prnt and num_folds <= 1:
+                if prnt and not cross_validate:
                     print('epoch', (epoch+1), 'cost =', av_cost)
 
+            # testing
             correct_prediction = tf.equal(tf.argmax(model, 1), tf.argmax(y_, 1))
             acc = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
             if prnt:
                 print('results', end='')
-                print((' for model '+str(i+1)+':') if num_folds > 1 else ':')
+                print((' for model '+str(i+1)+':') if cross_validate else ':')
                 print('w =', sess.run(w))
                 print('b =', sess.run(b))
                 if train_prop < 1:
@@ -186,28 +188,32 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
                 'acc': acc.eval({ x: Xts, y_: Yts })
             })
 
-    av_w = [ [0, 0] for i in range(num_features) ]
-    av_b = [0, 0]
-    for i in range(len(models)):
-        for j in range(num_features):
-            av_w[j][0] += models[i]['w'][j][0]
-            av_w[j][1] += models[i]['w'][j][1]
-        av_b[0] += models[i]['b'][0]
-        av_b[1] += models[i]['b'][1]
-    for i in range(num_features):
-        av_w[i][0] /= len(models)
-        av_w[i][1] /= len(models)
-    av_b[0] /= len(models)
-    av_b[1] /= len(models)
+    # get average model from cross-validated set of models.
+    if cross_validate:
+        av_w = [ [0, 0] for i in range(num_features) ]
+        av_b = [0, 0]
+        for i in range(len(models)):
+            for j in range(num_features):
+                av_w[j][0] += models[i]['w'][j][0]
+                av_w[j][1] += models[i]['w'][j][1]
+            av_b[0] += models[i]['b'][0]
+            av_b[1] += models[i]['b'][1]
+        for i in range(num_features):
+            av_w[i][0] /= len(models)
+            av_w[i][1] /= len(models)
+        av_b[0] /= len(models)
+        av_b[1] /= len(models)
+        average = {
+            'w': av_w,
+            'b': av_b,
+        }
+        if prnt:
+            print('average model:')
+            print('w =', average['w'])
+            print('b =', average['b'])
+    else:
+        average = models[0]
 
-    average = {
-        'w': av_w,
-        'b': av_b,
-    }
-    if prnt and num_folds > 1:
-        print('average model:')
-        print('w =', average['w'])
-        print('b =', average['b'])
     return average
 
 def one_hot ( data, num_classes=None ):
