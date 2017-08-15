@@ -4,6 +4,7 @@ sys.path.append(os.path.join(sys.path[0], "models"))
 import tensorflow as tf
 import numpy as np
 import math
+import statistics as st
 
 import traverser as tr
 import page as pg
@@ -89,20 +90,21 @@ def make_input ( story, user, pages, cache=None, exclude_poi=False ):
 
         # add heuristics/values to input vector
         if not exclude_poi:
-            xs.append((walk_dist, visits, alt, poi, mention,
-                       r_dst, r_vis, r_alt, r_poi, r_men))
-#             xs.append((r_dst, r_vis, r_alt, r_poi, r_men))
+#            xs.append((walk_dist, visits, alt, poi, mention,
+#                       r_dst, r_vis, r_alt, r_poi, r_men))
+             xs.append((r_dst, r_vis, r_alt, r_poi, r_men))
         else:
-            xs.append((walk_dist, visits, alt, mention,
-                       r_dst, r_vis, r_alt, r_men))
-#             xs.append((r_dst, r_vis, r_alt, r_men))
+#            xs.append((walk_dist, visits, alt, mention,
+#                       r_dst, r_vis, r_alt, r_men))
+             xs.append((r_dst, r_vis, r_alt, r_men))
 
     return xs
 
 def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
-             batch_size=None, train_prop=0.9, prnt=False, exclude_poi=False ):
+                   batch_size=None, num_folds = 1, train_prop=0.9, prnt=False, exclude_poi=False ):
     # get data in correct format
     data = formalise(story, ppr, cache, exclude_poi=exclude_poi)
+    models = []
 
     # get info about data
     if batch_size is None: batch_size=len(data[0])
@@ -110,18 +112,17 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     num_classes = max(data[1])+1    # to choose, or not to choose a page.
     num_samples = len(data[0])      # number of movements between pages.
 
-    # split data into training & testing
     # Xs & Ys: total inputs and true labels, for all samples.
     Xs = data[0]
     Ys = one_hot(data[1], num_classes)
-    num_training = int(train_prop*num_samples)
-    # Xtr & Ytr: training set; first (train_prop*100)% of Xs & Ys.
-    Xtr = Xs[0:num_training]
-    Ytr = Ys[0:num_training]
-    # Xts & Yts: testing set; remainder of Xs & Ys after Xtr & Ytr.
-    # Note - Yts is still true labels; is used to test accuracy.
-    Xts = Xs[num_training:num_samples]
-    Yts = Ys[num_training:num_samples]
+
+    # size of training/testing set; do for cross validation if num_folds > 1.
+    if num_folds > 1:
+        num_testing = int(num_samples / num_folds)
+        num_training = num_samples - num_testing
+    else:
+        num_training = int(train_prop * num_samples)
+        num_testing = num_samples - num_training
 
     # define tensorflow graph
     x  = tf.placeholder(tf.float32, [None, num_features])
@@ -140,40 +141,74 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     gd = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)
 
     init = tf.global_variables_initializer()
-    with tf.Session() as sess:
-        sess.run(init)
+    for i in range(num_folds):
+        # split data into training & testing
+        # Xtr & Ytr: training set
+        Xtr = Xs[:i*num_testing] + Xs[(i+1)*num_testing:]
+        Ytr = Ys[:i*num_testing] + Ys[(i+1)*num_testing:]
+        # Xts & Yts: testing set
+        Xts = Xs[i*num_testing:(i+1)*num_testing]
+        Yts = Ys[i*num_testing:(i+1)*num_testing]
 
-        # training cycle
-        if prnt:
-            print('samples:', num_samples,
-                  'training:', len(Xtr),
-                  'testing:', len(Xts))
-        num_batches = math.ceil(num_training / batch_size)
-        bxs = batches(Xtr, batch_size)
-        bys = batches(Ytr, batch_size)
-        for epoch in range(epochs):
-            avg_cost = 0
+        with tf.Session() as sess:
+            sess.run(init)
 
-            for i in range(num_batches):
-                _, c = sess.run(
-                    [gd, cost],
-                    feed_dict = { x: bxs[i], y_: bys[i] }
-                )
+            # training cycle
+            num_batches = math.ceil(num_training / batch_size)
+            bxs = batches(Xtr, batch_size)
+            bys = batches(Ytr, batch_size)
+            for epoch in range(epochs):
+                av_cost = 0
 
-                avg_cost = c / num_batches
+                for j in range(num_batches):
+                    _, c = sess.run(
+                        [gd, cost],
+                        feed_dict = { x: bxs[j], y_: bys[j] }
+                    )
+                    av_cost = c / num_batches
 
+                if prnt and num_folds <= 1:
+                    print('epoch', (epoch+1), 'cost =', av_cost)
+
+            correct_prediction = tf.equal(tf.argmax(model, 1), tf.argmax(y_, 1))
+            acc = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
             if prnt:
-                print('epoch', (epoch+1), 'cost =', avg_cost)
+                print('results', end='')
+                print((' for model '+str(i+1)+':') if num_folds > 1 else ':')
+                print('w =', sess.run(w))
+                print('b =', sess.run(b))
+                if train_prop < 1:
+                    print('accuracy:', pt.pc(acc.eval({ x: Xts, y_: Yts }), dec=2))
 
-        correct_prediction = tf.equal(tf.argmax(model, 1), tf.argmax(y_, 1))
-        acc = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-        if prnt:
-            print('done, final results:')
-            print('w =', sess.run(w))
-            print('b =', sess.run(b))
-            print('accuracy:', pt.pc(acc.eval({ x: Xts, y_: Yts }), dec=2))
+            models.append({
+                'w': sess.run(w),
+                'b': sess.run(b),
+                'acc': acc.eval({ x: Xts, y_: Yts })
+            })
 
-        return { 'w': sess.run(w), 'b': sess.run(b) }
+    av_w = [ [0, 0] for i in range(num_features) ]
+    av_b = [0, 0]
+    for i in range(len(models)):
+        for j in range(num_features):
+            av_w[j][0] += models[i]['w'][j][0]
+            av_w[j][1] += models[i]['w'][j][1]
+        av_b[0] += models[i]['b'][0]
+        av_b[1] += models[i]['b'][1]
+    for i in range(num_features):
+        av_w[i][0] /= len(models)
+        av_w[i][1] /= len(models)
+    av_b[0] /= len(models)
+    av_b[1] /= len(models)
+
+    average = {
+        'w': av_w,
+        'b': av_b,
+    }
+    if prnt and num_folds > 1:
+        print('average model:')
+        print('w =', average['w'])
+        print('b =', average['b'])
+    return average
 
 def one_hot ( data, num_classes=None ):
 # convert a list of class labels (0, 1, 2 etc.) into a list of probability

@@ -44,7 +44,7 @@ log_store = an.walk(story, paths_per_reading)
 log_path = [ r.page for r in log_store ]
 
 # construct model
-rk.reg_no_poi = ml.logreg(story, paths_per_reading, cache, epochs=100, batch_size=1, exclude_poi=True, prnt=True)
+rk.reg_no_poi = ml.logreg(story, paths_per_reading, cache, epochs=50, num_folds=10, batch_size=1, exclude_poi=True, prnt=True)
 
 # predict
 sim_store = tr.traverse(story, rker, dc.best, cache=cache)
