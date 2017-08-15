@@ -34,7 +34,23 @@ story_name = names[6]
 
 # create/load stuff
 story = imp.storyFromJSON(story_name)
+epr = imp.pathEventsFromJSON("old-logs", story)
+paths_per_reading = an.filter_readings(story, epr)
+cache = ls.auto_dict()
+rker = rk.logreg
 
-# traverse story
-stores = tr.traverse_many(story)
-pt.print_all_paths(stores, story)
+# load logs
+log_store = an.walk(story, paths_per_reading)
+
+# construct model
+if rker == rk.logreg:
+    rk.reg_no_poi = ml.logreg(story, paths_per_reading, cache, epochs=100, num_folds=10, batch_size=1, exclude_poi=False, prnt=True)
+
+# predict
+sim_store = tr.traverse(story, rker, dc.best, cache=cache)
+gui.measure_ranker(story, paths_per_reading, rker, cache)
+err = tr.step_predict(story, log_store, rker, cache)
+stores = tr.traverse_many(story, cache=cache)
+
+# analyse paths
+gui.show_all(story, paths_per_reading, stores, sim_store, log_store, err)

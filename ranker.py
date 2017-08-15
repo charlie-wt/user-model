@@ -1,9 +1,9 @@
-import sys, os
-sys.path.append(os.path.join(sys.path[0], "models"))
-import location as l
-import page
+#import sys, os
+#sys.path.append(os.path.join(sys.path[0], "models"))
+
 import heuristics as hs
 import ls
+import printer as pt
 
 import math
 import random
@@ -13,6 +13,8 @@ import random
 # page to choose via one of the functions. output to be given to some decider
 # function.
 ##############################
+
+prnt=True
 
 reg = {
     'w': [[ 29.25730515, -29.25730515],
@@ -57,7 +59,7 @@ def rank_by ( heuristic, inverse=False, no_loops=False ):
 
         # score pages by value output by heuristic (by default low -> high)
         h_values = [ heuristic(p, user, story, cache) for p in choices ]
-        by_h_val = sorted(choices, key = lambda p : h_values[pages.index(p)])
+        by_h_val = sorted(choices, key = lambda p : h_values[choices.index(p)])
         h_values.sort()
         chances = []
         if inverse:
@@ -120,8 +122,13 @@ def logreg ( user, story, pages, cache=None ):
 # use logistic regression model to predict the page to choose.
     import ml
     if reg is None: raise ValueError('Please initialise regression parameters.')
+    name = user.page().name if user.page() else '--start--'
+    if prnt: print('options from', name+':')
 
-    inputs = ml.make_input(story, user, pages, cache, True)
+    choices = pages
+#    choices = [ p for p in pages if hs.visits(p, user) == 0 ]
+
+    inputs = ml.make_input(story, user, choices, cache, True)
 
     # apply regression
     results = []
@@ -132,12 +139,23 @@ def logreg ( user, story, pages, cache=None ):
         output += reg_no_poi['b'][idx]
         results.append(output)
 
+    # get rid of negative values - we're just taking the max anyway, and they mess things up :(
+    for i in range(len(results)):
+        results[i] += abs(min(results))
+
     # normalise
     factor = 1 / sum(results) if sum(results) != 0 else 1
     chances = [ r * factor for r in results ]
 
+    if prnt:
+        for i in range(len(choices)):
+            name = choices[i].name if choices[i] else '---'
+            print('\t', pt.fmt(results[i], dec=2), '->', pt.pc(chances[i]), ':', name)
+
     # gen dictionary
     options = {}
-    for i in range(len(pages)):
-        options[pages[i]] = chances[i]
+    for i in range(len(choices)):
+        options[choices[i]] = chances[i]
+    for p in [ p for p in pages if p not in options ]:
+        options[p] = 0
     return options

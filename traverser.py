@@ -102,10 +102,11 @@ def step_predict ( story, log_store, ranker, cache=None, prnt=False ):
             if p != 0: log_options[p] = log_store[i].options[p]
 
         # compare options presented by ranker with popularity of options in logs
-        for o in options:
-            if type(o) is not page.Page: continue
-            error += abs(log_options[o] - options[o])#**2
-        num_options += len(options)
+        if len(options) > 1:
+            for o in options:
+                if type(o) is not page.Page: continue
+                error += abs(log_options[o] - options[o])#**2
+            num_options += len(options)
 
         # move to next page
         move_to_idx = ls.index(visible, log_store[i+1].page.id)

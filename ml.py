@@ -19,8 +19,11 @@ import printer as pt
 # machine learning stuff.
 ##############################
 
-def formalise ( story, ppr, cache=None, prnt=False, exclude_poi=False ):
+def formalise ( story, ppr, cache=None, prnt=False, normalise=True, exclude_poi=False ):
 # put list of pages (forming a path) into a form that can be interpreted by ml.
+    if len(ppr) == 0:
+        raise ValueError('no logged readings to formalise.')
+
     if prnt: print('formalised path data:')
     xs = []
     ys = []
@@ -42,7 +45,7 @@ def formalise ( story, ppr, cache=None, prnt=False, exclude_poi=False ):
                 xs += make_input(story, user, visible, cache, exclude_poi)
                 for p in visible:
                     # add result (whether the page was chosen) to output vector
-                    ys.append((1 if p == path[i] else 0))
+                    ys.append(1 if p == path[i] else 0)
 
                     if prnt: print(count, ':', ys[-1], '<-', xs[-1])
                     count += 1
@@ -54,6 +57,16 @@ def formalise ( story, ppr, cache=None, prnt=False, exclude_poi=False ):
 
     if len(ys) == 0:
         raise ValueError('Story supplied to formalise contains no choices.')
+
+    if normalise:
+        for col in range(len(xs[0])):
+            vals = [ row[col] for row in xs ]
+            mean = np.mean(vals, axis=0)
+            stddev = np.std(vals, axis=0)
+            if stddev == 0: stddev = 1
+            vals = [ (v - mean)/stddev for v in vals ]
+            for row, val in zip(xs, vals):
+                row[col] = val
 
     return (xs, ys)
 
@@ -90,13 +103,13 @@ def make_input ( story, user, pages, cache=None, exclude_poi=False ):
 
         # add heuristics/values to input vector
         if not exclude_poi:
-#            xs.append((walk_dist, visits, alt, poi, mention,
-#                       r_dst, r_vis, r_alt, r_poi, r_men))
-             xs.append((r_dst, r_vis, r_alt, r_poi, r_men))
+            xs.append([walk_dist, visits, alt, poi, mention,
+                       r_dst, r_vis, r_alt, r_poi, r_men])
+#             xs.append((r_dst, r_vis, r_alt, r_poi, r_men))
         else:
-#            xs.append((walk_dist, visits, alt, mention,
-#                       r_dst, r_vis, r_alt, r_men))
-             xs.append((r_dst, r_vis, r_alt, r_men))
+            xs.append([walk_dist, visits, alt, mention,
+                       r_dst, r_vis, r_alt, r_men])
+#             xs.append((r_dst, r_vis, r_alt, r_men))
 
     return xs
 
@@ -106,6 +119,7 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     data = formalise(story, ppr, cache, exclude_poi=exclude_poi)
     models = []
     cross_validate = num_folds > 1
+    regularisation_lambda = 0.01
 
     # get info about data
     if batch_size is None: batch_size=len(data[0])
@@ -138,6 +152,8 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     model = tf.matmul(x, w) + b
     # our cost function, to see how far from the truth we are:
     cost = tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=model)
+    # L2 regularisation
+    cost = tf.reduce_mean(tf.reduce_mean(cost) + regularisation_lambda*tf.nn.l2_loss(w))
     # our gradient descent optimizer (to minimize cost via. changing w & b):
     gd = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)
 
@@ -168,8 +184,8 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
                     )
                     av_cost = c / num_batches
 
-                if prnt and not cross_validate:
-                    print('epoch', (epoch+1), 'cost =', av_cost)
+#                if prnt and not cross_validate:
+#                    print('epoch', (epoch+1), 'cost =', av_cost)
 
             # testing
             correct_prediction = tf.equal(tf.argmax(model, 1), tf.argmax(y_, 1))
