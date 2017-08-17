@@ -37,14 +37,15 @@ story = imp.storyFromJSON(story_name)
 epr = imp.pathEventsFromJSON("old-logs", story)
 paths_per_reading = an.filter_readings(story, epr)
 cache = ls.auto_dict()
-rker = rk.logreg
+rker = rk.nn
 
 # load logs
 log_store = an.walk(story, paths_per_reading)
 
 # construct model
-if rker == rk.logreg:
-    rk.reg_no_poi = ml.logreg(story, paths_per_reading, cache, epochs=100, num_folds=10, batch_size=1, exclude_poi=False, prnt=True)
+#rk.reg_no_poi = ml.logreg(story, paths_per_reading, cache, epochs=100, num_folds=1, batch_size=1, exclude_poi=True, prnt=True)
+rk.net = ml.nn(story, paths_per_reading, cache, epochs=25, batch_size=1, num_hidden_layers=5, exclude_poi=True, prnt=True)
+
 
 # predict
 sim_store = tr.traverse(story, rker, dc.best, cache=cache)

@@ -5,6 +5,7 @@ import re
 import time
 
 import location as l
+import page as pg
 import ls
 import mapping as mp
 import printer as pt
@@ -43,6 +44,7 @@ def distance ( page, user, story, cache=None ):
 
 def visits ( page, user, story=None, cache=None ):
 # has the user visited this node before?
+#    print('looking for', page.id, 'in', [ p.id for p in user.path ], ':', ls.count(user.path, page.id))
     return ls.count(user.path, page.id)
 
 def walk_dist ( page, user, story, cache=None ):
