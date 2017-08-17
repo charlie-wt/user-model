@@ -407,6 +407,8 @@ def measure_ranker ( story, ppr, ranker, cache=None, prnt=False ):
     # simple list to store the index of each choice, in chronological order.
     options_taken = []
 
+    # fill list containing the ranking of each option taken
+    # (0 -> 'best', according to ranker)
     for r in ppr.values():
         # create stuff
         reading = rd.Reading("reading-0", story)
@@ -436,6 +438,9 @@ def measure_ranker ( story, ppr, ranker, cache=None, prnt=False ):
     counts = [0] * (max(options_taken)+1)
     for o in options_taken:
         counts[o] += 1
+    # smush counts to be out of 1 (ie. the proportion of total choices)
+    for i in range(len(counts)):
+        counts[i] /= len(options_taken)
 
     if prnt:
         print('log choices compared to ranker preference:')

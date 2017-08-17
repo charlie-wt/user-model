@@ -16,6 +16,7 @@ class TimePassedCondition (condition.Condition):
     def check ( self, vars, conds, locs=None, userLoc=None ):
     # check the condition
     # TODO - as yet untested
+    # TODO - should probably just return True, as with locationConditions.
         ts = ls.get(vars, self.variable)
 
         now = time.time()

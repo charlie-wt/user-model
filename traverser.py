@@ -94,27 +94,29 @@ def step_predict ( story, log_store, ranker, cache=None, prnt=False ):
 
     # perform remaining steps in reading
     for i in range(1, len(log_store)-1):
-        # perform movement
+        # get the rankings of options from the current page
         options = ranker(user, story, visible, cache)
 
-        log_options = {}
-        for p in log_store[i].options:
-            if p != 0: log_options[p] = log_store[i].options[p]
-
-        # compare options presented by ranker with popularity of options in logs
+        # only consider instances where there's an actual choice.
         if len(options) > 1:
+            log_options = {}
+            for p in log_store[i].options:
+                if p != 0: log_options[p] = log_store[i].options[p]
+
+            # compare options presented by ranker with popularity of options in logs
             for o in options:
                 if type(o) is not page.Page: continue
                 error += abs(log_options[o] - options[o])#**2
             num_options += len(options)
 
-        # move to next page
+        # move to next page, as per the logs
         move_to_idx = ls.index(visible, log_store[i+1].page.id)
         visible = user.move(move_to_idx, visible, story, reading)
 
-    if prnt: print("error for step-ahead prediction of", story.name+":",
-                   pt.pc(error / num_options, 2))
-    return error / num_options
+    accuracy = 1 - (error/num_options)
+    if prnt: print("accuracy for step-ahead prediction of", story.name+":",
+                   pt.pc(accuracy, 2))
+    return accuracy
 
 def reset ( story, reading, user ):
 # for using the same user/reading in multiple traversals

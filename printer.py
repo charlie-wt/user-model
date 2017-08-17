@@ -50,7 +50,7 @@ def print_pages ( pages, story=None, print_id=False ):
 
 def print_log_paths ( story, paths ):
 # print paths per reading, as output by log importer
-    print("Paths through "+story.name+", per reading:")
+    print("Paths through "+story.name+", for", len(paths), "readings:")
     for r in paths.keys():
         print("reading "+r+":")
         for p in paths[r]:

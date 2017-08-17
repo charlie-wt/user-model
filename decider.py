@@ -23,7 +23,7 @@ def best ( pages, options ):
     by_prob = sorted(options, key = lambda o : options[o])
 
     if prnt: pt.print_page_ranking(by_prob, sorted(options.values()))
-    return pages.index(by_prob[len(by_prob)-1])
+    return pages.index(by_prob[-1])
 
 def rand ( pages, options ):
 # choose via a random number

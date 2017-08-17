@@ -239,6 +239,130 @@ def normalise_inputs ( inputs ):
 
     return inputs
 
+def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
+             batch_size=None, num_folds = 1, train_prop=0.9, prnt=False,
+             exclude_poi=False ):
+    # TODO - output model almost seems to do exactly the wrong thing
+    # setup
+    data = formalise(story, ppr, cache, exclude_poi=exclude_poi)
+    models = []
+    cross_validate = num_folds > 1
+    regularisation_lambda = 0.01
+
+    # get info about data
+    if batch_size is None: batch_size=len(data[0])
+    num_features = len(data[0][0])  # the heuristics and rankings describing a page.
+    num_classes = 1
+    num_samples = len(data[0])      # number of movements between pages.
+
+    # size of training/testing set; do for cross validation if cross_validate.
+    if cross_validate:
+        num_testing = int(num_samples / num_folds)
+        num_training = num_samples - num_testing
+    else:
+        num_training = int(train_prop * num_samples)
+        num_testing = num_samples - num_training
+
+    # Xs & Ys: total inputs and true labels, for all samples.
+    Xs = data[0]
+    Ys = data[1]
+
+    # TODO - this is the opposite of good (but gives better results)
+    for i in range(len(Ys)):
+        Ys[i] = 0 if Ys[i] else 1
+
+    # define tensorflow graph
+    x  = tf.placeholder(tf.float32, [None, num_features])
+    y_ = tf.placeholder(tf.float32, [None])
+
+    # model weights
+    w = tf.Variable(tf.zeros([num_features, num_classes]))
+    b = tf.Variable(tf.zeros([num_classes]))
+
+    # construct model
+    # model calculates y, to test against y_ for cost. Is essentially y=mx+c.
+    model = tf.matmul(x, w) + b
+    # our cost function, to see how far from the truth we are:
+    cost = tf.reduce_sum(tf.square(model - y_))/(2*num_training)
+    # L2 regularisation
+    cost = tf.reduce_mean(tf.reduce_mean(cost) + regularisation_lambda*tf.nn.l2_loss(w))
+    # our gradient descent optimizer (to minimize cost via. changing w & b):
+    gd = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)
+
+    for i in range(num_folds):
+        # split data into training & testing
+        # Xtr & Ytr: training set
+        Xtr = Xs[:i*num_testing] + Xs[(i+1)*num_testing:]
+        Ytr = Ys[:i*num_testing] + Ys[(i+1)*num_testing:]
+        # Xts & Yts: testing set
+        Xts = Xs[i*num_testing:(i+1)*num_testing]
+        Yts = Ys[i*num_testing:(i+1)*num_testing]
+
+        with tf.Session() as sess:
+            sess.run(tf.global_variables_initializer())
+
+            # training cycle
+            num_batches = math.ceil(num_training / batch_size)
+            bxs = batches(Xtr, batch_size)
+            bys = batches(Ytr, batch_size)
+            for epoch in range(epochs):
+                av_cost = 0
+
+                for j in range(num_batches):
+                    # perform gradient descent optimisation on model.
+                    _, c = sess.run(
+                        [gd, cost],
+                        feed_dict = {
+                            x: bxs[j],
+                            y_: bys[j]
+                        }
+                    )
+                    av_cost += c / num_batches
+
+                if prnt and not cross_validate:
+                    print('epoch', (epoch+1), 'cost =', av_cost)
+
+            # testing
+            err = tf.square(model - y_)
+            acc = 1 - tf.reduce_mean(tf.cast(err, tf.float32))
+            if prnt:
+                print('results', end='')
+                print((' for model '+str(i+1)+':') if cross_validate else ':')
+                print('w =', sess.run(w))
+                print('b =', sess.run(b))
+                if train_prop < 1:
+                    print('accuracy:', pt.pc(acc.eval({ x: Xts, y_: Yts }), dec=2))
+
+            models.append({
+                'w': sess.run(w),
+                'b': sess.run(b),
+                'acc': acc.eval({ x: Xts, y_: Yts })
+            })
+
+    # get average model from cross-validated set of models.
+    if cross_validate:
+        av_w = [0] * num_features
+        av_b = [0]
+        for model in models:
+            for j in range(num_features):
+                av_w[j] += model['w'][j]
+            av_b += model['b']
+        for i in range(num_features):
+            av_w[i] /= len(models)
+        av_b /= len(models)
+        average = {
+            'w': av_w,
+            'b': av_b,
+        }
+        if prnt:
+            print('average model:')
+            print('w =', average['w'])
+            print('b =', average['b'])
+    else:
+        average = models[0]
+
+    return average
+
 def one_hot ( data, num_classes=None ):
 # convert a list of class labels (0, 1, 2 etc.) into a list of probability
 # distributions where all probabilities are 0, except the true value which is 1.

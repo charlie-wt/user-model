@@ -84,7 +84,7 @@ def visit_proportions_plot ( ax, sim_data=None, ppr=None, sort='', story=None ):
     return ax
 
 def text_info_plot ( ax, story, ppr=None, stores=None, sim_store=None,
-                     log_store=None, step_ahead_err=None ):
+                     log_store=None, step_ahead_acc=None ):
 # some basic stats on a story, shown via text
     hide_graph_stuff(ax)
     cells = []
@@ -95,9 +95,9 @@ def text_info_plot ( ax, story, ppr=None, stores=None, sim_store=None,
         cells.append(['number of readings:', count])
 
     # step ahead prediction error
-    if step_ahead_err is not None:
-        err = pt.pc(1 - step_ahead_err, 2)
-        cells.append(['step ahead prediction accuracy:', err])
+    if step_ahead_acc is not None:
+        acc = pt.pc(step_ahead_acc, 2)
+        cells.append(['step ahead prediction accuracy:', acc])
 
     if stores is not None:
         # average distance travelled
@@ -140,7 +140,7 @@ def text_info_plot ( ax, story, ppr=None, stores=None, sim_store=None,
             c._text.set_color('k')
 
 def text_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
-                step_ahead_err=None ):
+                step_ahead_acc=None ):
     # basic window stuff
     mpl.rcParams['toolbar'] = 'none'
     mpl.rcParams['font.family'] = 'serif'
@@ -149,7 +149,7 @@ def text_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
 
     # add text info plot
     ax = fig.add_subplot(111)
-    text_info_plot(ax, story, ppr, stores, sim_store, log_store)
+    text_info_plot(ax, story, ppr, stores, sim_store, log_store, step_ahead_acc)
     ax.set_title("basic info for "+story.name)
 
     plt.tight_layout()
@@ -210,7 +210,7 @@ def path_comparison ( story, sim_store, log_store ):
     plt.show()
 
 def show_all ( story, ppr=None, stores=None, sim_store=None, log_store=None,
-               step_ahead_err=None ):
+               step_ahead_acc=None ):
     # basic window stuff
     mpl.rcParams['toolbar'] = 'none'
     mpl.rcParams['font.family'] = 'serif'
@@ -220,7 +220,7 @@ def show_all ( story, ppr=None, stores=None, sim_store=None, log_store=None,
 
     # 1 - text info
     ax1 = fig.add_subplot(211)
-    text_info_plot(ax1, story, ppr, stores, sim_store, log_store, step_ahead_err)
+    text_info_plot(ax1, story, ppr, stores, sim_store, log_store, step_ahead_acc)
 
     # 2 - visit proportions
     ax2 = fig.add_subplot(223)
@@ -244,6 +244,8 @@ def measure_ranker_plot ( ax, story, ppr, ranker, cache=None ):
                        color='blue',
                        edgecolor='none')
     plt.xticks(xs)
+    ax.set_xlabel('rankings of the pages chosen in the logs')
+    ax.set_ylabel('proportion of times the page chosen was given this ranking')
     return ax
 
 def measure_ranker ( story, ppr, ranker, cache=None ):

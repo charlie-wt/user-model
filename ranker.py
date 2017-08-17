@@ -18,42 +18,9 @@ import random
 prnt=True
 
 net = {}
-
-reg = { # 6, 86
-    'w': [[ 29.25730515, -29.25730515],
-          [  0.,           0.        ],
-          [-22.56334496,  22.56334496],
-          [-21.10176659,  21.10176849],
-          [  1.42525840,  -1.42525840],
-          [ -1.38244212,   1.38244212],
-          [ -0.98336744,   0.9833675 ],
-          [ -1.03950977,   1.03950977],
-          [ -0.86692393,   0.86692399],
-          [ -1.24961233,   1.24961233]],
-    'b': [-2.63376451,  2.63376451]
-}
-reg_no_poi = { # 13, 100
-    'w': [[ 0.24642017, -0.24642015],
-          [ 0.15040737, -0.15040742],
-          [-0.54992211,  0.54992199],
-          [-0.53714418,  0.5371443 ],
-          [-0.17919722,  0.17919737],
-          [ 0.,          0.        ],
-          [-0.41608614,  0.41608638],
-          [-0.3324306,   0.3324306 ]],
-    'b': [-0.07880914,  0.0788092 ]
-}
-#reg_no_poi = { # 6, 92
-#    'w': [[  5.54028082,  -5.54027319],
-#          [  0.,           0.        ],
-#          [-15.39587307,  15.39587307],
-#          [  0.51478320,  -0.51478308],
-#          [ -3.04297018,   3.04297018],
-#          [ -2.10439253,   2.10439229],
-#          [ -1.71184516,   1.71184516],
-#          [ -6.63762236,   6.63762283]],
-#    'b': [-0.4354198,   0.43541986]
-#}
+reg_lin_no_poi = {}
+reg = {}
+reg_no_poi = {}
 
 def rand ( user, story, pages, cache=None ):
 # random
@@ -181,6 +148,49 @@ def logreg ( user, story, pages, cache=None ):
         options[p] = 0
     return options
 
+def linreg ( user, story, pages, cache=None ):
+# use logistic regression model to predict the page to choose.
+    import ml
+    if reg is None: raise ValueError('Please initialise regression parameters.')
+    name = user.page().name if user.page() else '--start--'
+    if prnt: print('options from', name+':')
+
+    choices = pages
+#    choices = [ p for p in pages if hs.visits(p, user) == 0 ]
+
+#    inputs = ml.normalise_inputs(ml.make_input(story, user, choices, cache, True))
+    inputs = ml.make_input(story, user, choices, cache, True)
+
+    # apply regression
+    results = []
+    idx = 1
+    for p in inputs:
+        # y = w*x + b
+        output = sum([ p[i]*reg_lin_no_poi['w'][i] for i in range(len(p)) ])
+        output += reg_lin_no_poi['b']
+        results.append(float(output))
+
+    # get rid of negative values - we're just taking the max anyway, and they mess things up :(
+    for i in range(len(results)):
+        results[i] += abs(min(results))
+
+    # normalise (softmax)
+    factor = 1 / sum(results) if sum(results) != 0 else 1
+    chances = [ r * factor for r in results ]
+
+    if prnt:
+        for i in range(len(choices)):
+            name = choices[i].name if choices[i] else '---'
+            print('\t', pt.fmt(results[i], dec=2), '->', pt.pc(chances[i]), ':', name)
+
+    # gen dictionary
+    options = {}
+    for i in range(len(choices)):
+        options[choices[i]] = chances[i]
+    for p in [ p for p in pages if p not in options ]:
+        options[p] = 0
+    return options
+
 def nn ( user, story, pages, cache=None ):
 # use logistic regression model to predict the page to choose.
     import ml
@@ -200,7 +210,7 @@ def nn ( user, story, pages, cache=None ):
     idx = 1
     for p in inputs:
         prediction = _net(np.array(p), np.array(net['w']), np.array(net['b']))
-        print('prediction:', prediction)
+#        print('prediction:', prediction)
         yes = prediction[1]
         no = prediction[0]
         output = yes - no
@@ -239,7 +249,7 @@ def _net ( x, w, b ):
     for i in range(num_hidden_layers):
         # define the hidden layers, and chain them together
         hidden_layer = activation(neuron(layer_input, w[i], b[i]))
-        print('max(0,', neuron(layer_input, w[i], b[i]), ') =', hidden_layer)
+#        print('max(0,', neuron(layer_input, w[i], b[i]), ') =', hidden_layer)
         layer_input = hidden_layer
 
     # final layer - linear activation

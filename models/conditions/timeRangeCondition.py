@@ -17,6 +17,7 @@ class TimeRangeCondition (condition.Condition):
     def check ( self, vars, conds, locs=None, userLoc=None ):
     # check the condition
     # TODO - as yet untested
+    # TODO - should probably just return True, as with locationConditions.
         start = getTime(self.start)
         end = getTime(self.end)
         n = datetime.now()
