@@ -4,7 +4,6 @@ sys.path.append(os.path.join(sys.path[0], "models"))
 import tensorflow as tf
 import numpy as np
 import math
-import statistics as st
 
 import traverser as tr
 import page as pg
@@ -19,7 +18,8 @@ import printer as pt
 # machine learning stuff.
 ##############################
 
-def formalise ( story, ppr, cache=None, prnt=False, normalise=True, exclude_poi=False ):
+def formalise ( story, ppr, cache=None, prnt=False, normalise=True,
+                exclude_poi=False ):
 # put list of pages (forming a path) into a form that can be interpreted by ml.
     if len(ppr) == 0:
         raise ValueError('no logged readings to formalise.')
@@ -61,14 +61,6 @@ def formalise ( story, ppr, cache=None, prnt=False, normalise=True, exclude_poi=
 
     if normalise:
         normalise_inputs(xs)
-#        for col in range(len(xs[0])):
-#            vals = [ row[col] for row in xs ]
-#            mean = np.mean(vals, axis=0)
-#            stddev = np.std(vals, axis=0)
-#            if stddev == 0: stddev = 1
-#            vals = [ (v - mean)/stddev for v in vals ]
-#            for row, val in zip(xs, vals):
-#                row[col] = val
 
     return (xs, ys)
 
@@ -90,7 +82,6 @@ def make_input ( story, user, pages, cache=None, exclude_poi=False ):
         # get heuristic values for this page
         walk_dist = hs.walk_dist(p, user, story, cache)
         visits = hs.visits(p, user)
-#        print('looking for', p.name, 'in', [ p.name for p in user.path if type(p) is pg.Page ], '->', visits)
         alt = hs.altitude(p, user, story, cache)
         if not exclude_poi:
             poi = hs.points_of_interest(p, user, story, cache)
@@ -117,7 +108,8 @@ def make_input ( story, user, pages, cache=None, exclude_poi=False ):
     return xs
 
 def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
-                   batch_size=None, num_folds = 1, train_prop=0.9, prnt=False, exclude_poi=False ):
+             batch_size=None, num_folds = 1, train_prop=0.9, prnt=False,
+             exclude_poi=False ):
     # setup
     data = formalise(story, ppr, cache, exclude_poi=exclude_poi)
     models = []
@@ -267,11 +259,12 @@ def batches ( data, batch_size ):
     return [ data[i*bs:(i+1)*bs] for i in range(nb) ]
 
 def nn ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
-         batch_size=None, num_hidden_layers = 2, train_prop=0.9, prnt=False, exclude_poi=False ):
+         batch_size=None, num_hidden_layers = 2, train_prop=0.9, num_folds=1,
+         prnt=False, exclude_poi=False ):
     # setup
     data = formalise(story, ppr, cache, exclude_poi=exclude_poi)
     models = []
-    cross_validate = False  # TODO - maybe re-add this in the future?
+    cross_validate = num_folds > 1
     regularisation_lambda = 0.01
 
     # get info about data
@@ -300,12 +293,9 @@ def nn ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     def net ( x, w, b ):
         # TODO - currently using ReLU activation because ???
         activation = tf.nn.relu
-#        hidden_layers = []
 
         layer_input = x
         for i in range(num_hidden_layers):
-#            print('x['+str(len(x))+']     w['+str(len(w))+']['+str(len(w[0]))+']['+str(len(w[0][0]))+']')
-#            print('x'+str(tf.rank(x)), 'w'+str(tf.rank(w)))
             # define the hidden layers, and chain them together
             hidden_layer = activation(tf.matmul(layer_input, w[i]) + b[i])
             layer_input = hidden_layer
@@ -318,11 +308,12 @@ def nn ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     w = []
     b = []
     previous_size = num_features
+    hidden_size = 5
     for i in range(num_hidden_layers):
         # initialise weights & biases for hidden layers
-        w.append(tf.Variable(tf.random_normal([previous_size, 5])))
-        b.append(tf.Variable(tf.random_normal([5])))
-        previous_size = 5
+        w.append(tf.Variable(tf.random_normal([previous_size, hidden_size ])))
+        b.append(tf.Variable(tf.random_normal([hidden_size])))
+        previous_size = hidden_size
     # output layer
     w.append(tf.Variable(tf.random_normal([previous_size, num_classes])))
     b.append(tf.Variable(tf.random_normal([num_classes])))
@@ -335,7 +326,7 @@ def nn ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     # our gradient descent optimizer (to minimize cost via. changing w & b):
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
-    for i in [0]:
+    for i in range(num_folds):
         # split data into training & testing
         # Xtr & Ytr: training set
         Xtr = Xs[:i*num_testing] + Xs[(i+1)*num_testing:]
@@ -371,8 +362,6 @@ def nn ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
             if prnt:
                 print('results', end='')
                 print((' for model '+str(i+1)+':') if cross_validate else ':')
-#                print('w =', sess.run(w))
-#                print('b =', sess.run(b))
                 if train_prop < 1:
                     print('accuracy:', pt.pc(acc.eval({ x: Xts, y_: Yts }), dec=2))
 
@@ -384,29 +373,29 @@ def nn ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
 
     # get average model from cross-validated set of models.
     if cross_validate:
-        av_w = [ [0, 0] for i in range(num_features) ]
-        av_b = [0, 0]
-        for i in range(len(models)):
-            for j in range(num_features):
-                av_w[j][0] += models[i]['w'][j][0]
-                av_w[j][1] += models[i]['w'][j][1]
-            av_b[0] += models[i]['b'][0]
-            av_b[1] += models[i]['b'][1]
-        for i in range(num_features):
-            av_w[i][0] /= len(models)
-            av_w[i][1] /= len(models)
-        av_b[0] /= len(models)
-        av_b[1] /= len(models)
+        weights = [ models[i]['w'] for i in range(len(models)) ]
+        biases  = [ models[i]['b'] for i in range(len(models)) ]
+        av_w = weights[0]
+        av_b = biases[0]
+        for i in range(1, len(models)):
+            for j in range(num_hidden_layers):
+                for k in range(len(weights[i][j])):
+                    feature = weights[i][j][k]
+                    av_w[j][k][0] += feature[0]
+                    av_w[j][k][1] += feature[1]
+                av_b[j][0] += biases[i][j][0]
+                av_b[j][1] += biases[i][j][1]
+        for i in range(num_hidden_layers):
+            for j in range(len(av_w[i])):
+                av_w[i][j][0] /= len(models)
+                av_w[i][j][1] /= len(models)
+            av_b[0][i] /= len(models)
+            av_b[1][i] /= len(models)
         average = {
             'w': av_w,
             'b': av_b,
         }
-        if prnt:
-            print('average model:')
-            print('w =', average['w'])
-            print('b =', average['b'])
     else:
         average = models[0]
 
-#    raise NotImplementedError('lol')
     return average

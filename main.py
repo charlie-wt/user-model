@@ -44,7 +44,8 @@ log_store = an.walk(story, paths_per_reading)
 
 # construct model
 #rk.reg_no_poi = ml.logreg(story, paths_per_reading, cache, epochs=100, num_folds=1, batch_size=1, exclude_poi=True, prnt=True)
-rk.net = ml.nn(story, paths_per_reading, cache, epochs=25, batch_size=1, num_hidden_layers=5, exclude_poi=True, prnt=True)
+rk.net = ml.nn(story, paths_per_reading, cache, epochs=100, batch_size=1, num_hidden_layers=5, exclude_poi=True, prnt=True)
+#rk.net = ml.nn(story, paths_per_reading, cache, batch_size=1, num_folds=10, exclude_poi=True, prnt=True)
 
 
 # predict

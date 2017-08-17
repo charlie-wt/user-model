@@ -5,6 +5,7 @@ import heuristics as hs
 import ls
 import printer as pt
 
+import numpy
 import math
 import random
 
@@ -183,6 +184,7 @@ def logreg ( user, story, pages, cache=None ):
 def nn ( user, story, pages, cache=None ):
 # use logistic regression model to predict the page to choose.
     import ml
+    import numpy as np
     if reg is None: raise ValueError('Please initialise regression parameters.')
     name = user.page().name if user.page() else '--start--'
     if prnt: print('options from', name+':')
@@ -197,7 +199,7 @@ def nn ( user, story, pages, cache=None ):
     results = []
     idx = 1
     for p in inputs:
-        prediction = _net(p, net['w'], net['b'])
+        prediction = _net(np.array(p), np.array(net['w']), np.array(net['b']))
         print('prediction:', prediction)
         yes = prediction[1]
         no = prediction[0]
@@ -226,23 +228,22 @@ def nn ( user, story, pages, cache=None ):
     return options
 
 def _net ( x, w, b ):
-    # TODO - doesn't work at the moment - prob should just replace the tf stuff
-    import tensorflow as tf
-    x = [x]
-    activation = tf.nn.relu
+# run a neural net (defined by the weight & bias arrays) on an input
+    import numpy as np
+
     num_hidden_layers = len(b) - 1
+    neuron = lambda x, w, b: x.dot(w) + b      # y = wx + b
+    activation = lambda n: np.maximum(n, 0)    # ReLU
 
     layer_input = x
-    print(num_hidden_layers, 'hidden layers.')
     for i in range(num_hidden_layers):
-        print('iter', i+1)
         # define the hidden layers, and chain them together
-        hidden_layer = activation(tf.matmul(layer_input, w[i]) + b[i])
+        hidden_layer = activation(neuron(layer_input, w[i], b[i]))
+        print('max(0,', neuron(layer_input, w[i], b[i]), ') =', hidden_layer)
         layer_input = hidden_layer
 
     # final layer - linear activation
-    output = tf.matmul(layer_input, w[-1]) + b[-1]
+#    output = activation(neuron(layer_input, w[-1], b[-1]))
+    output = neuron(layer_input, w[-1], b[-1])
 
-    with tf.Session() as sess:
-        prediction = sess.run(_net(x, w, b)
-    return output.eval()
+    return output

@@ -238,7 +238,7 @@ def measure_ranker_plot ( ax, story, ppr, ranker, cache=None ):
     counts = an.measure_ranker(story, ppr, ranker, cache)
 
     # chart params
-    width = 1
+    width = 0.5
     xs = range(len(counts))
     rects = ax.bar(xs, counts, width,
                        color='blue',
@@ -251,7 +251,7 @@ def measure_ranker ( story, ppr, ranker, cache=None ):
     # set up window
     mpl.rcParams['toolbar'] = 'none'
     mpl.rcParams['font.family'] = 'serif'
-    fig = plt.figure(figsize=(14, 10))
+    fig = plt.figure(figsize=(10, 8))
     fig.canvas.set_window_title(story.name)
 
     # add bar chart
