@@ -288,10 +288,8 @@ def show_main_three ( story, ppr, stores, sim_store, log_store, step_ahead_acc,
     ax3 = fig.add_subplot(133)
     measure_ranker_plot(ax3, story, ppr, ranker, cache)
     ax3.set_title('comparison of log choices and ranker preference')
-
-    # 4 - step ahead accuracy
-#    ax4 = fig.add_subplot(236)
-#    text_info_plot(ax4, story, step_ahead_acc=step_ahead_acc)
+    acc_msg = 'step ahead accuracy:' + pt.pc(step_ahead_acc, dec=2)
+    ax3.text(1.5, -0.15, acc_msg, fontsize=15, ha='center')
 
     fig.subplots_adjust(wspace=1, top=0.5, bottom=0.2)
 
