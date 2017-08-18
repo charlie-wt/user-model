@@ -265,6 +265,39 @@ def measure_ranker ( story, ppr, ranker, cache=None ):
     plt.tight_layout()
     plt.show()
 
+def show_main_three ( story, ppr, stores, sim_store, log_store, step_ahead_acc,
+                      ranker, cache=None ):
+    # basic window stuff
+    mpl.rcParams['toolbar'] = 'none'
+    mpl.rcParams['font.family'] = 'serif'
+    fig = plt.figure(figsize=(18, 8))
+    fig.canvas.set_window_title(story.name)
+    fig.suptitle("info for "+story.name, fontsize=21)
+
+    # 1 - visit proportions
+    ax1 = fig.add_subplot(131)
+    visit_proportions_plot(ax1, an.most_visited(story, stores), ppr, 'story', story)
+    ax1.set_title('proportions of visits to each page of the story')
+
+    # 2 - path comparison
+    ax2 = fig.add_subplot(132)
+    path_comparison_plot(ax2, story, sim_store, log_store)
+    ax2.set_title('comparison of simulated and log-based paths')
+
+    # 3 - ranker accuracy
+    ax3 = fig.add_subplot(133)
+    measure_ranker_plot(ax3, story, ppr, ranker, cache)
+    ax3.set_title('comparison of log choices and ranker preference')
+
+    # 4 - step ahead accuracy
+#    ax4 = fig.add_subplot(236)
+#    text_info_plot(ax4, story, step_ahead_acc=step_ahead_acc)
+
+    fig.subplots_adjust(wspace=1, top=0.5, bottom=0.2)
+
+    plt.tight_layout()
+    plt.show()
+
 def hide_graph_stuff ( ax ):
 # remove axes & ticks for a subplot
     ax.spines['left'].set_color('none')

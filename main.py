@@ -37,7 +37,7 @@ story = imp.storyFromJSON(story_name)
 epr = imp.pathEventsFromJSON("old-logs", story)
 paths_per_reading = an.filter_readings(story, epr)
 cache = ls.auto_dict()
-rker = rk.nn
+rker = rk.walk_dist
 
 # load logs
 log_store = an.walk(story, paths_per_reading)
@@ -45,16 +45,17 @@ log_store = an.walk(story, paths_per_reading)
 # construct model
 #rk.reg_no_poi = ml.logreg(story, paths_per_reading, cache, epochs=100, num_folds=10, batch_size=1, exclude_poi=True, prnt=True)
 #rk.reg_lin_no_poi = ml.linreg(story, paths_per_reading, cache, epochs=100, num_folds=10, batch_size=1, exclude_poi=True, prnt=True)
-rk.net = ml.nn(story, paths_per_reading, cache, epochs=100, learning_rate=0.01, batch_size=1, num_hidden_layers=5, exclude_poi=True, prnt=True)
-#rk.net = ml.nn(story, paths_per_reading, cache, batch_size=1, num_folds=10, exclude_poi=True, prnt=True)
+#rk.net = ml.nn(story, paths_per_reading, cache, epochs=250, learning_rate=0.001, batch_size=1, num_hidden_layers=10, exclude_poi=True, prnt=True)
+#rk.net = ml.nn(story, paths_per_reading, cache, epochs=150, num_hidden_layers=10, batch_size=1, num_folds=10, exclude_poi=True, prnt=True)
 
 
 # predict
 sim_store = tr.traverse(story, rker, dc.best, cache=cache)
 
-gui.measure_ranker(story, paths_per_reading, rker, cache)
+#gui.measure_ranker(story, paths_per_reading, rker, cache)
 acc = tr.step_predict(story, log_store, rker, cache)
-stores = tr.traverse_many(story, ranker=rker, cache=cache)
+stores = tr.traverse_many(story, n=50, ranker=rker, cache=cache)
 
 # analyse paths
-gui.show_all(story, paths_per_reading, stores, sim_store, log_store, acc)
+gui.show_main_three(story, paths_per_reading, stores, sim_store, log_store, acc, rker, cache)
+#gui.show_all(story, paths_per_reading, stores, sim_store, log_store, acc)
