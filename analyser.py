@@ -308,7 +308,9 @@ def distance_travelled ( story, stores, prnt=False ):
                 break
         # measure the distance to each page from there
         for i in range(startidx, len(store)):
-            dest_loc = store[i].page.getLoc(story)
+            dest = store[i].page
+            if dest is None: continue
+            dest_loc = dest.getLoc(story)
             if dest_loc is None: continue
 
             distance += lc.metres(curr_loc, dest_loc)

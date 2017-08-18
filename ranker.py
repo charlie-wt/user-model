@@ -15,7 +15,7 @@ import random
 # function.
 ##############################
 
-prnt=True
+prnt=False
 
 net = {}
 reg_lin_no_poi = {}

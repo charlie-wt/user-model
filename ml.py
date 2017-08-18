@@ -4,6 +4,7 @@ sys.path.append(os.path.join(sys.path[0], "models"))
 import tensorflow as tf
 import numpy as np
 import math
+from collections import OrderedDict
 
 import traverser as tr
 import page as pg
@@ -19,10 +20,14 @@ import printer as pt
 ##############################
 
 def formalise ( story, ppr, cache=None, prnt=False, normalise=True,
-                exclude_poi=False ):
+                exclude_poi=False, enforce_ordering=True ):
 # put list of pages (forming a path) into a form that can be interpreted by ml.
     if len(ppr) == 0:
         raise ValueError('no logged readings to formalise.')
+
+    # possibly order ppr (by reading name), for consistent learned models.
+    if enforce_ordering:
+        ppr = OrderedDict(sorted(ppr.items(), key = lambda e: e[0]))
 
     if prnt: print('formalised path data:')
     xs = []
@@ -319,8 +324,8 @@ def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
                     )
                     av_cost += c / num_batches
 
-                if prnt and not cross_validate:
-                    print('epoch', (epoch+1), 'cost =', av_cost)
+#                if prnt and not cross_validate:
+#                    print('epoch', (epoch+1), 'cost =', av_cost)
 
             # testing
             err = tf.square(model - y_)
