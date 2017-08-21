@@ -228,6 +228,12 @@ def measure_ranker_plot ( ax, story, ppr, ranker, cache=None ):
     rects = ax.bar(xs, counts, width,
                        color='blue',
                        edgecolor='none')
+
+    # add a red line at y=1.0, and rotate the x labels (page names)
+    n = len(counts)
+    ax.plot(range(-1, n+1), [1]*(n+2), 'r-')
+#    plt.setp(ax.get_xticklabels(), rotation=90, fontsize=10)
+
     plt.xticks(xs)
     ax.set_xlabel('page rankings')
     ax.set_ylabel('times page chosen was given this ranking')

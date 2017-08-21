@@ -24,6 +24,17 @@ def traverse ( story, ranker, decider, max_steps=50, reading=None, user=None,
 
     visible = page.update_all(story.pages, story, reading, user)
 
+    # put user in the middle at the start?
+    locs = (0, 0)
+    count = 0
+    for p in visible:
+        loc = p.getLoc(story)
+        if loc:
+            locs = (locs[0]+loc[0], locs[1]+loc[1])
+            count += 1
+    locs = (locs[0]/count, locs[1]/count)
+    user.loc = locs
+
     path = []
     # move to a page
     if prnt: print("traversing "+story.name+":")

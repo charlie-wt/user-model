@@ -19,16 +19,16 @@ prnt=False
 
 manual_heuristics = {
     'w': [
-         -1.00000,          # walk dist
-        -100.00000,          # visits
+         -0.50000,          # walk dist
+         -5.00000,          # visits
          -0.05000,          # alt
-#          0.10000,          # poi
+#         0.10000,          # poi
           0.05000,          # mention
          -3.00000,          # ranking - walk dist
-         -100.00000,          # ranking - visits
+         -5.00000,          # ranking - visits
          -0.10000,          # ranking - alt
-#          0.15000,          # ranking - poi
-          0.10000           # ranking - mention
+#        -0.15000,          # ranking - poi
+         -0.30000           # ranking - mention
     ],
     'b': 0.00000
 }
@@ -144,12 +144,18 @@ def logreg ( user, story, pages, cache=None ):
         results.append(output)
 
     # get rid of negative values - we're just taking the max anyway, and they mess things up :(
+    smallest = abs(min(results))
     for i in range(len(results)):
-        results[i] += abs(min(results))
+        results[i] += smallest
 
     # normalise (softmax)
     factor = 1 / sum(results) if sum(results) != 0 else 1
     chances = [ r * factor for r in results ]
+
+    # avoid having only 0.0 chance for everything
+    if chances == [0] * len(chances):
+        equal_chance = 1 / len(chances)
+        chances = [equal_chance] * len(chances)
 
     if prnt:
         for i in range(len(choices)):
@@ -188,12 +194,19 @@ def linreg ( user, story, pages, cache=None ):
         results.append(float(output))
 
     # get rid of negative values - we're just taking the max anyway, and they mess things up :(
+    smallest = abs(min(results))
     for i in range(len(results)):
-        results[i] += abs(min(results))
+#        if prnt: print(results[i], '+', smallest, '->', (results[i]+smallest))
+        results[i] += smallest
 
     # normalise (softmax)
     factor = 1 / sum(results) if sum(results) != 0 else 1
     chances = [ r * factor for r in results ]
+
+    # avoid having only 0.0 chance for everything
+    if chances == [0] * len(chances):
+        equal_chance = 1 / len(chances)
+        chances = [equal_chance] * len(chances)
 
     if prnt:
         for i in range(len(choices)):
@@ -212,7 +225,7 @@ def nn ( user, story, pages, cache=None ):
 # use logistic regression model to predict the page to choose.
     import ml
     import numpy as np
-    if reg is None: raise ValueError('Please initialise regression parameters.')
+    if reg is None: raise ValueError('Please initialise neural network.')
     name = user.page().name if user.page() else '--start--'
     if prnt: print('options from', name+':')
 
@@ -234,12 +247,18 @@ def nn ( user, story, pages, cache=None ):
         results.append(output)
 
     # get rid of negative values - we're just taking the max anyway, and they mess things up :(
+    smallest = abs(min(results))
     for i in range(len(results)):
-        results[i] += abs(min(results))
+        results[i] += smallest
 
     # normalise (softmax)
     factor = 1 / sum(results) if sum(results) != 0 else 1
     chances = [ r * factor for r in results ]
+
+    # avoid having only 0.0 chance for everything
+    if chances == [0] * len(chances):
+        equal_chance = 1 / len(chances)
+        chances = [equal_chance] * len(chances)
 
     if prnt:
         for i in range(len(choices)):

@@ -38,6 +38,18 @@ def formalise ( story, ppr, cache=None, prnt=False, normalise=True,
     user = us.User("user-0")
     if cache is None: cache = ls.auto_dict()
 
+    # put user in the middle at the start?
+    visible = pg.update_all(story.pages, story, reading, user)
+    locs = (0, 0)
+    count = 0
+    for p in visible:
+        loc = p.getLoc(story)
+        if loc:
+            locs = (locs[0]+loc[0], locs[1]+loc[1])
+            count += 1
+    locs = (locs[0]/count, locs[1]/count)
+    user.loc = locs
+
     # perform reading
     count = 1
     for r in ppr:
@@ -111,6 +123,20 @@ def make_input ( story, user, pages, cache=None, exclude_poi=False ):
 #             xs.append((r_dst, r_vis, r_alt, r_men))
 
     return xs
+
+def normalise_inputs ( inputs ):
+    for col in range(len(inputs[0])):
+        vals = [ row[col] for row in inputs ]
+        mean = np.mean(vals, axis=0)
+        stddev = np.std(vals, axis=0)
+        if stddev == 0: stddev = 1
+#        print('vals =', vals[:10], '...')
+        vals = [ (v - mean)/stddev for v in vals ]
+        for row, val in zip(inputs, vals):
+            row[col] = val
+#        print('vals =', vals[:10], '...')
+
+    return inputs
 
 def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
              batch_size=None, num_folds = 1, train_prop=0.9, prnt=False,
@@ -231,18 +257,6 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
         average = models[0]
 
     return average
-
-def normalise_inputs ( inputs ):
-    for col in range(len(inputs[0])):
-        vals = [ row[col] for row in inputs ]
-        mean = np.mean(vals, axis=0)
-        stddev = np.std(vals, axis=0)
-        if stddev == 0: stddev = 1
-        vals = [ (v - mean)/stddev for v in vals ]
-        for row, val in zip(inputs, vals):
-            row[col] = val
-
-    return inputs
 
 def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
              batch_size=None, num_folds = 1, train_prop=0.9, prnt=False,
