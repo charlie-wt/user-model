@@ -9,25 +9,7 @@ import ls
 # functions to display various bits of info in a gui.
 ##############################
 
-def visit_proportions ( sim_data, ppr=None, sort='', story=None ):
-# display a window with a bar chart of the proportion of visits to each page
-    # set up window
-    mpl.rcParams['toolbar'] = 'none'
-    mpl.rcParams['font.family'] = 'serif'
-    fig = plt.figure(figsize=(14, 10))
-    fig.canvas.set_window_title((story.name if story is not None else "visits"))
-
-    # add bar chart
-    ax = fig.add_subplot(111)
-    visit_proportions_plot(ax, sim_data, ppr, sort, story)
-    title = "visits to each page per reading" + \
-            (" for "+story.name if story is not None else "")
-    ax.set_title(title)
-
-    plt.tight_layout()
-    plt.show()
-
-def visit_proportions_plot ( ax, sim_data=None, ppr=None, sort='', story=None ):
+def visit_proportions_plot ( ax, story, sim_data=None, ppr=None, sort='' ):
 # a bar chart of the proportion of visits to each page
     if sim_data is None and ppr is None: return
 
@@ -81,15 +63,32 @@ def visit_proportions_plot ( ax, sim_data=None, ppr=None, sort='', story=None ):
     ax.plot(range(-1, n+1), [1]*(n+2), 'r-')
     plt.setp(ax.get_xticklabels(), rotation=90, fontsize=10)
 
+    # title
+    ax.set_title('visits to each page per reading', fontsize=15)
+
     return ax
 
+def visit_proportions ( sim_data, story, ppr=None, sort='' ):
+# display a window with a bar chart of the proportion of visits to each page
+    # set up window
+    mpl.rcParams['toolbar'] = 'none'
+    mpl.rcParams['font.family'] = 'serif'
+    fig = plt.figure(figsize=(14, 10))
+    fig.canvas.set_window_title('visits | ' + story.name)
+
+    # add bar chart
+    ax = fig.add_subplot(111)
+    visit_proportions_plot(ax, story, sim_data, ppr, sort)
+
+    plt.tight_layout()
+    plt.show()
+
 def text_info_plot ( ax, story, ppr=None, stores=None, sim_store=None,
-#                     log_store=None, step_ahead_acc=None ):
-                     ranker=None ):
+                     ranker=None, cache=None ):
 # some basic stats on a story, shown via text
     hide_graph_stuff(ax)
     cells = []
-    cache = ls.auto_dict()
+    if cache is None: cache = ls.auto_dict()
 
     # number of readings
     if ppr is not None:
@@ -97,8 +96,6 @@ def text_info_plot ( ax, story, ppr=None, stores=None, sim_store=None,
         cells.append(['number of readings:', count])
 
     # step ahead prediction error
-#    if step_ahead_acc is not None:
-#        acc = pt.pc(step_ahead_acc, 2)
     if ranker is not None:
         acc = pt.pc(an.measure_ranker(story, ppr, ranker, cache)[0], dec=2)
         cells.append(['step ahead prediction accuracy:', acc])
@@ -143,18 +140,22 @@ def text_info_plot ( ax, story, ppr=None, stores=None, sim_store=None,
             c._loc = 'right'
             c._text.set_color('k')
 
-def text_info ( story, ppr=None, stores=None, sim_store=None, log_store=None,
-                step_ahead_acc=None ):
+    # title
+    ax.set_title('basic info', fontsize=15)
+
+    return ax
+
+def text_info ( story, ppr=None, stores=None, sim_store=None, ranker=None,
+                cache=None ):
     # basic window stuff
     mpl.rcParams['toolbar'] = 'none'
     mpl.rcParams['font.family'] = 'serif'
     fig = plt.figure(figsize=(8, 3))
-    fig.canvas.set_window_title(story.name)
+    fig.canvas.set_window_title('info | ' + story.name)
 
     # add text info plot
     ax = fig.add_subplot(111)
-    text_info_plot(ax, story, ppr, stores, sim_store, log_store, step_ahead_acc)
-    ax.set_title("basic info for "+story.name)
+    text_info_plot(ax, story, ppr, stores, sim_store, ranker, cache)
 
     plt.tight_layout()
     plt.show()
@@ -198,48 +199,22 @@ def path_comparison_plot ( ax, story, sim_store, log_store ):
             pt.pc(an.path_similarity(story, sim_store, log_store)),
             ha='center', fontsize=16)
 
+    # title
+    ax.set_title('simulated vs. log-based path', fontsize=15)
+
+    return ax
+
 def path_comparison ( story, sim_store, log_store ):
     # basic window stuff
     mpl.rcParams['toolbar'] = 'none'
     mpl.rcParams['font.family'] = 'serif'
-    fig = plt.figure(figsize=(10, 10))
-    fig.canvas.set_window_title(story.name)
+    fig = plt.figure(figsize=(10, 6))
+    fig.canvas.set_window_title('paths | ' + story.name)
 
     # add path comparison plot
     ax = fig.add_subplot(111)
     path_comparison_plot(ax, story, sim_store, log_store)
-    ax.set_title("simulated vs. log-based path through "+story.name)
 
-    plt.tight_layout()
-    plt.show()
-
-def show_all ( story, ppr=None, stores=None, sim_store=None, log_store=None,
-               ranker=None ):
-    # basic window stuff
-    mpl.rcParams['toolbar'] = 'none'
-    mpl.rcParams['font.family'] = 'serif'
-    fig = plt.figure(figsize=(15, 10))
-    fig.canvas.set_window_title(story.name)
-    fig.suptitle("info for "+story.name, fontsize=21)
-
-    # 1 - text info
-    ax1 = fig.add_subplot(221)
-    text_info_plot(ax1, story, ppr, stores, sim_store, ranker)
-
-    # 3 - ranker accuracy
-    ax4 = fig.add_subplot(222)
-    measure_ranker_plot(ax4, story, ppr, ranker)#, cache)
-    ax4.set_title('comparison of log choices and ranker preference')
-
-    # 2 - visit proportions
-    ax2 = fig.add_subplot(223)
-    visit_proportions_plot(ax2, an.most_visited(story, stores), ppr, 'story', story)
-
-    # 3 - path comparison
-    ax3 = fig.add_subplot(224)
-    path_comparison_plot(ax3, story, sim_store, log_store)
-
-    fig.subplots_adjust(wspace=1, top=0.5, bottom=0.2)
     plt.tight_layout()
     plt.show()
 
@@ -256,6 +231,10 @@ def measure_ranker_plot ( ax, story, ppr, ranker, cache=None ):
     plt.xticks(xs)
     ax.set_xlabel('page rankings')
     ax.set_ylabel('times page chosen was given this ranking')
+
+    # title
+    ax.set_title('comparison of log choices and ranker preference', fontsize=15)
+
     return ax
 
 def measure_ranker ( story, ppr, ranker, cache=None ):
@@ -264,13 +243,11 @@ def measure_ranker ( story, ppr, ranker, cache=None ):
     mpl.rcParams['toolbar'] = 'none'
     mpl.rcParams['font.family'] = 'serif'
     fig = plt.figure(figsize=(10, 8))
-    fig.canvas.set_window_title(story.name)
+    fig.canvas.set_window_title('ranker | ' + story.name)
 
     # add bar chart
     ax = fig.add_subplot(111)
     measure_ranker_plot(ax, story, ppr, ranker, cache)
-    title = 'comparison of log choices and ranker preference for ' + story.name
-    ax.set_title(title)
 
     plt.tight_layout()
     plt.show()
@@ -286,24 +263,56 @@ def show_main_three ( story, ppr, stores, sim_store, log_store, ranker,
 
     # 1 - visit proportions
     ax1 = fig.add_subplot(131)
-    visit_proportions_plot(ax1, an.most_visited(story, stores), ppr, 'story', story)
-    ax1.set_title('proportions of visits to each page of the story')
+    visit_proportions_plot(ax1, story, an.most_visited(story, stores), ppr, 'story')
 
     # 2 - path comparison
     ax2 = fig.add_subplot(132)
     path_comparison_plot(ax2, story, sim_store, log_store)
-    ax2.set_title('comparison of simulated and log-based paths')
 
     # 3 - ranker accuracy
     ax3 = fig.add_subplot(133)
     measure_ranker_plot(ax3, story, ppr, ranker, cache)
-    ax3.set_title('comparison of log choices and ranker preference')
     acc = an.measure_ranker(story, ppr, ranker, cache)[0]
-    acc_msg = 'step ahead accuracy:' + pt.pc(acc, dec=2)
+    acc_msg = 'step ahead accuracy: ' + pt.pc(acc, dec=2)
     ax3.text(1.5, -0.15, acc_msg, fontsize=15, ha='center')
 
+    # spacing
+    fig.subplots_adjust(wspace=1, top=0.2, bottom=0.0)
+    plt.tight_layout()
+
+    plt.show()
+
+def show_all ( story, ppr=None, stores=None, sim_store=None, log_store=None,
+               ranker=None, cache=None ):
+    if cache is None: cache = ls.auto_dict()
+
+    # basic window stuff
+    mpl.rcParams['toolbar'] = 'none'
+    mpl.rcParams['font.family'] = 'serif'
+    fig = plt.figure(figsize=(15, 10))
+    fig.canvas.set_window_title(story.name)
+    fig.suptitle("info for "+story.name, fontsize=21)
+
+    # 1 - text info
+    ax1 = fig.add_subplot(221)
+    text_info_plot(ax1, story, ppr, stores, sim_store, ranker, cache)
+
+    # 2 - ranker accuracy
+    ax2 = fig.add_subplot(222)
+    measure_ranker_plot(ax2, story, ppr, ranker, cache)
+
+    # 3 - visit proportions
+    ax3 = fig.add_subplot(223)
+    visit_proportions_plot(ax3, story, an.most_visited(story, stores), ppr, 'story')
+
+    # 4 - path comparison
+    ax4 = fig.add_subplot(224)
+    path_comparison_plot(ax4, story, sim_store, log_store)
+
+    # spacing
     fig.subplots_adjust(wspace=1, top=0.5, bottom=0.2)
     plt.tight_layout()
+
     plt.show()
 
 def hide_graph_stuff ( ax ):

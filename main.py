@@ -39,8 +39,12 @@ paths_per_reading = an.filter_readings(story, epr)
 cache = ls.auto_dict()
 rker = rk.walk_dist
 
-# load logs
+# make path from logs
 log_store = an.walk(story, paths_per_reading)
+
+# predict
+sim_store = tr.traverse(story, rker, dc.best, cache=cache)
+stores = tr.traverse_many(story, n=50, ranker=rker, cache=cache)
 
 # construct model
 #rk.reg_no_poi = ml.logreg(story, paths_per_reading, cache, epochs=100, num_folds=10, batch_size=1, exclude_poi=True, prnt=True)
@@ -48,18 +52,5 @@ log_store = an.walk(story, paths_per_reading)
 #rk.net = ml.nn(story, paths_per_reading, cache, epochs=250, learning_rate=0.001, batch_size=1, num_hidden_layers=10, exclude_poi=True, prnt=True)
 #rk.net = ml.nn(story, paths_per_reading, cache, epochs=150, num_hidden_layers=10, batch_size=1, num_folds=10, exclude_poi=True, prnt=True)
 
-
-# predict
-sim_store = tr.traverse(story, rker, dc.best, cache=cache)
-
-#gui.measure_ranker(story, paths_per_reading, rker, cache)
-#acc = tr.step_predict(story, log_store, rker, cache)
-acc = an.measure_ranker(story, paths_per_reading, rker, cache=cache)[0]
-stores = tr.traverse_many(story, n=50, ranker=rker, cache=cache)
-
 # analyse paths
-#gui.show_main_three(story, paths_per_reading, stores, sim_store, log_store, acc, rker, cache)
-#gui.show_all(story, paths_per_reading, stores, sim_store, log_store, acc)
-
-#gui.show_main_three(story, paths_per_reading, stores, sim_store, log_store, rker, cache)
-gui.show_all(story, paths_per_reading, stores, sim_store, log_store, rker)
+gui.show_main_three(story, paths_per_reading, stores, sim_store, log_store, rker, cache)
