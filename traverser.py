@@ -74,49 +74,50 @@ def traverse_many ( story, n=100, ranker=rk.rand, decider=dc.rand, cache=None,
 
     return stores
 
-def step_predict ( story, log_store, ranker, cache=None, prnt=False ):
-# compare the proportions of user visits from a log-based reading with the
-# proportional probabilities spat out by the ranker, for n steps ahead.
-    reading = rd.Reading("reading-0", story)
-    user = us.User("user-0")
-    if cache is None: cache = ls.auto_dict()
-    visible = page.update_all(story.pages, story, reading, user)
-    error = 0
-    num_options = 0
-
-    # perform first step
-    options = ranker(user, story, visible, cache)
-    for o in options:
-        error += abs(log_store[0].options[o] - options[o])#**2
-    num_options += len(options)
-    move_to_idx = ls.index(visible, log_store[1].page.id)
-    visible = user.move(move_to_idx, visible, story, reading)
-
-    # perform remaining steps in reading
-    for i in range(1, len(log_store)-1):
-        # get the rankings of options from the current page
-        options = ranker(user, story, visible, cache)
-
-        # only consider instances where there's an actual choice.
-        if len(options) > 1:
-            log_options = {}
-            for p in log_store[i].options:
-                if p != 0: log_options[p] = log_store[i].options[p]
-
-            # compare options presented by ranker with popularity of options in logs
-            for o in options:
-                if type(o) is not page.Page: continue
-                error += abs(log_options[o] - options[o])#**2
-            num_options += len(options)
-
-        # move to next page, as per the logs
-        move_to_idx = ls.index(visible, log_store[i+1].page.id)
-        visible = user.move(move_to_idx, visible, story, reading)
-
-    accuracy = 1 - (error/num_options)
-    if prnt: print("accuracy for step-ahead prediction of", story.name+":",
-                   pt.pc(accuracy, 2))
-    return accuracy
+#def step_predict ( story, log_store, ranker, cache=None, prnt=False ):
+## see how often the ranker predicts the page that was most taken in the logs.
+#    reading = rd.Reading("reading-0", story)
+#    user = us.User("user-0")
+#    if cache is None: cache = ls.auto_dict()
+#    visible = page.update_all(story.pages, story, reading, user)
+#    acc = 0
+#    num_choices = 0
+#
+#    # perform first step
+#    options = ranker(user, story, visible, cache)
+#    if len(options) > 1:
+#        best = visible[dc.best(visible, options)]
+#        if best == log_store[1].page:
+#            acc += 1
+#        num_choices += 1
+#    move_to_idx = ls.index(visible, log_store[1].page.id)
+#    visible = user.move(move_to_idx, visible, story, reading)
+#
+#    # perform remaining steps in reading
+#    for i in range(1, len(log_store)-1):
+#        # get the rankings of options from the current page
+#        options = ranker(user, story, visible, cache)
+#
+#        # only consider instances where there's an actual choice.
+#        if len(options) > 1:
+#            log_options = {}
+#            for p in log_store[i+1].options:
+#                if p != 0: log_options[p] = log_store[i+1].options[p]
+#
+#            # compare options presented by ranker with popularity of options in logs
+#            best = visible[dc.best(visible, options)]
+#            if best == log_store[i+1].page:
+#                acc += 1
+#            num_choices += 1
+#
+#        # move to next page, as per the logs
+#        move_to_idx = ls.index(visible, log_store[i+1].page.id)
+#        visible = user.move(move_to_idx, visible, story, reading)
+#
+#    acc /= num_choices
+#    if prnt: print("accuracy for step-ahead prediction of", story.name+":",
+#                   pt.pc(acc, 2))
+#    return acc
 
 def reset ( story, reading, user ):
 # for using the same user/reading in multiple traversals

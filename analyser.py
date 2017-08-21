@@ -274,9 +274,9 @@ def log_most_visited ( story, ppr, prnt=False ):
 
     return proportions
 
-def get_unreachables ( story, stores=None, prnt=False ):
+def get_unreachables ( story, stores=None, cache=None, prnt=False ):
 # for a bunch of readings, return the pages that were never reached.
-    if stores is None: stores = tr.traverse_many(story)
+    if stores is None: stores = tr.traverse_many(story, cache=cache)
     visits = page_visits(story, stores)
     unreachables = [ p for p in visits if visits[p] == 0 ]
 
@@ -407,6 +407,7 @@ def filter_readings ( story, epr, max_metres_per_second=5, prnt=False ):
 def measure_ranker ( story, ppr, ranker, cache=None, prnt=False ):
 # see how the ordering of a ranker measures up against the choices made in logs.
     # simple list to store the index of each choice, in chronological order.
+    if cache is None: cache = ls.auto_dict()
     options_taken = []
 
     # fill list containing the ranking of each option taken
@@ -415,7 +416,6 @@ def measure_ranker ( story, ppr, ranker, cache=None, prnt=False ):
         # create stuff
         reading = rd.Reading("reading-0", story)
         user = us.User("user-0")
-        if cache is None: cache = ls.auto_dict()
         visible = pg.update_all(story.pages, story, reading, user)
 
         # perform reading

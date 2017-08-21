@@ -17,6 +17,21 @@ import random
 
 prnt=False
 
+manual_heuristics = {
+    'w': [
+         -1.00000,          # walk dist
+        -100.00000,          # visits
+         -0.05000,          # alt
+#          0.10000,          # poi
+          0.05000,          # mention
+         -3.00000,          # ranking - walk dist
+         -100.00000,          # ranking - visits
+         -0.10000,          # ranking - alt
+#          0.15000,          # ranking - poi
+          0.10000           # ranking - mention
+    ],
+    'b': 0.00000
+}
 net = {}
 reg_lin_no_poi = {}
 reg = {}
@@ -113,6 +128,7 @@ def logreg ( user, story, pages, cache=None ):
     inputs = ml.make_input(story, user, choices, cache, True)
 
     # apply regression
+    model = reg_no_poi
     results = []
     idx = 1
     for p in inputs:
@@ -120,10 +136,10 @@ def logreg ( user, story, pages, cache=None ):
         # TODO - perhaps instead of just using the 'yes' amount, do yes - no?
         #        Then even if both are high, you don't end up thinking the page
         #        is too desirable.
-        yes = sum([ p[i]*reg_no_poi['w'][i][1] for i in range(len(p)) ])
+        yes = sum([ p[i]*model['w'][i][1] for i in range(len(p)) ])
         yes += reg_no_poi['b'][1]
-        no = sum([ p[i]*reg_no_poi['w'][i][0] for i in range(len(p)) ])
-        no += reg_no_poi['b'][0]
+        no = sum([ p[i]*model['w'][i][0] for i in range(len(p)) ])
+        no += model['b'][0]
         output = yes - no
         results.append(output)
 
@@ -162,12 +178,13 @@ def linreg ( user, story, pages, cache=None ):
     inputs = ml.make_input(story, user, choices, cache, True)
 
     # apply regression
+    model = manual_heuristics
     results = []
     idx = 1
     for p in inputs:
         # y = w*x + b
-        output = sum([ p[i]*reg_lin_no_poi['w'][i] for i in range(len(p)) ])
-        output += reg_lin_no_poi['b']
+        output = sum([ p[i]*model['w'][i] for i in range(len(p)) ])
+        output += model['b']
         results.append(float(output))
 
     # get rid of negative values - we're just taking the max anyway, and they mess things up :(

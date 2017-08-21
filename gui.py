@@ -84,10 +84,12 @@ def visit_proportions_plot ( ax, sim_data=None, ppr=None, sort='', story=None ):
     return ax
 
 def text_info_plot ( ax, story, ppr=None, stores=None, sim_store=None,
-                     log_store=None, step_ahead_acc=None ):
+#                     log_store=None, step_ahead_acc=None ):
+                     ranker=None ):
 # some basic stats on a story, shown via text
     hide_graph_stuff(ax)
     cells = []
+    cache = ls.auto_dict()
 
     # number of readings
     if ppr is not None:
@@ -95,8 +97,10 @@ def text_info_plot ( ax, story, ppr=None, stores=None, sim_store=None,
         cells.append(['number of readings:', count])
 
     # step ahead prediction error
-    if step_ahead_acc is not None:
-        acc = pt.pc(step_ahead_acc, 2)
+#    if step_ahead_acc is not None:
+#        acc = pt.pc(step_ahead_acc, 2)
+    if ranker is not None:
+        acc = pt.pc(an.measure_ranker(story, ppr, ranker, cache)[0], dec=2)
         cells.append(['step ahead prediction accuracy:', acc])
 
     if stores is not None:
@@ -111,7 +115,7 @@ def text_info_plot ( ax, story, ppr=None, stores=None, sim_store=None,
 
         # unreachable pages
         names = ''
-        unreachables = an.get_unreachables(story, stores)
+        unreachables = an.get_unreachables(story, stores, cache)
         if len(unreachables) != 0:
             for p in unreachables:
                 names += p.name + '\n '
@@ -210,7 +214,7 @@ def path_comparison ( story, sim_store, log_store ):
     plt.show()
 
 def show_all ( story, ppr=None, stores=None, sim_store=None, log_store=None,
-               step_ahead_acc=None ):
+               ranker=None ):
     # basic window stuff
     mpl.rcParams['toolbar'] = 'none'
     mpl.rcParams['font.family'] = 'serif'
@@ -219,8 +223,13 @@ def show_all ( story, ppr=None, stores=None, sim_store=None, log_store=None,
     fig.suptitle("info for "+story.name, fontsize=21)
 
     # 1 - text info
-    ax1 = fig.add_subplot(211)
-    text_info_plot(ax1, story, ppr, stores, sim_store, log_store, step_ahead_acc)
+    ax1 = fig.add_subplot(221)
+    text_info_plot(ax1, story, ppr, stores, sim_store, ranker)
+
+    # 3 - ranker accuracy
+    ax4 = fig.add_subplot(222)
+    measure_ranker_plot(ax4, story, ppr, ranker)#, cache)
+    ax4.set_title('comparison of log choices and ranker preference')
 
     # 2 - visit proportions
     ax2 = fig.add_subplot(223)
@@ -230,6 +239,7 @@ def show_all ( story, ppr=None, stores=None, sim_store=None, log_store=None,
     ax3 = fig.add_subplot(224)
     path_comparison_plot(ax3, story, sim_store, log_store)
 
+    fig.subplots_adjust(wspace=1, top=0.5, bottom=0.2)
     plt.tight_layout()
     plt.show()
 
@@ -244,8 +254,8 @@ def measure_ranker_plot ( ax, story, ppr, ranker, cache=None ):
                        color='blue',
                        edgecolor='none')
     plt.xticks(xs)
-    ax.set_xlabel('rankings of the pages chosen in the logs')
-    ax.set_ylabel('proportion of times the page chosen was given this ranking')
+    ax.set_xlabel('page rankings')
+    ax.set_ylabel('times page chosen was given this ranking')
     return ax
 
 def measure_ranker ( story, ppr, ranker, cache=None ):
@@ -265,8 +275,8 @@ def measure_ranker ( story, ppr, ranker, cache=None ):
     plt.tight_layout()
     plt.show()
 
-def show_main_three ( story, ppr, stores, sim_store, log_store, step_ahead_acc,
-                      ranker, cache=None ):
+def show_main_three ( story, ppr, stores, sim_store, log_store, ranker,
+                      cache=None ):
     # basic window stuff
     mpl.rcParams['toolbar'] = 'none'
     mpl.rcParams['font.family'] = 'serif'
@@ -288,11 +298,11 @@ def show_main_three ( story, ppr, stores, sim_store, log_store, step_ahead_acc,
     ax3 = fig.add_subplot(133)
     measure_ranker_plot(ax3, story, ppr, ranker, cache)
     ax3.set_title('comparison of log choices and ranker preference')
-    acc_msg = 'step ahead accuracy:' + pt.pc(step_ahead_acc, dec=2)
+    acc = an.measure_ranker(story, ppr, ranker, cache)[0]
+    acc_msg = 'step ahead accuracy:' + pt.pc(acc, dec=2)
     ax3.text(1.5, -0.15, acc_msg, fontsize=15, ha='center')
 
     fig.subplots_adjust(wspace=1, top=0.5, bottom=0.2)
-
     plt.tight_layout()
     plt.show()
 
