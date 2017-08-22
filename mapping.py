@@ -82,6 +82,11 @@ def alt ( loc, prnt=False ):
 
     ele = elevation_client.get_elevation(loc[0], loc[1])
 
+    if ele == None:
+        raise ValueError('Couldn\'t get an altitude for loc '+str(loc)+
+                         '; perhaps this location is outside the range of '+
+                         'your altitude data file.')
+
     if prnt: print("elevation of " + str(loc) + ":", ele)
     return ele
 

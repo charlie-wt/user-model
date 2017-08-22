@@ -47,8 +47,9 @@ def formalise ( story, ppr, cache=None, prnt=False, normalise=True,
         if loc:
             locs = (locs[0]+loc[0], locs[1]+loc[1])
             count += 1
-    locs = (locs[0]/count, locs[1]/count)
-    user.loc = locs
+    if count != 0:
+        locs = (locs[0]/count, locs[1]/count)
+        user.loc = locs
 
     # perform reading
     count = 1
@@ -454,12 +455,12 @@ def nn ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     hidden_size = 5
     for i in range(num_hidden_layers):
         # initialise weights & biases for hidden layers
-        w.append(tf.Variable(tf.random_normal([previous_size, hidden_size ])))
-        b.append(tf.Variable(tf.random_normal([hidden_size])))
+        w.append(tf.Variable(tf.random_normal([ previous_size, hidden_size ])))
+        b.append(tf.Variable(tf.random_normal([ hidden_size ])))
         previous_size = hidden_size
     # output layer
-    w.append(tf.Variable(tf.random_normal([previous_size, num_classes])))
-    b.append(tf.Variable(tf.random_normal([num_classes])))
+    w.append(tf.Variable(tf.random_normal([ previous_size, num_classes ])))
+    b.append(tf.Variable(tf.random_normal([ num_classes ])))
 
     # construct model
     # model calculates y, to test against y_ for cost. Is essentially y=mx+c.
@@ -540,5 +541,14 @@ def nn ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
         }
     else:
         average = models[0]
+
+    if prnt:
+        print('final net:')
+        print('w:')
+        for weight in average['w']:
+            print(weight)
+        print('b:')
+        for bias in average['b']:
+            print(bias)
 
     return average

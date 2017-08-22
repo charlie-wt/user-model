@@ -339,7 +339,8 @@ def branching_factor ( story, stores, prnt=False ):
     if prnt: print("average branching factor for", story.name+":", bf)
     return bf
 
-def filter_readings ( story, epr, max_metres_per_second=5, prnt=False ):
+def filter_readings ( story, epr, max_metres_per_second=5, legacy=False,
+                      prnt=False ):
 # take an events per reading dictionary, and filter out illegitimate ones
     filtered = {}
     reading = rd.Reading("reading-0", story)
@@ -368,7 +369,7 @@ def filter_readings ( story, epr, max_metres_per_second=5, prnt=False ):
         if removed: continue
 
         # 2 : if the reading is empty
-        pages = pg.fromLogEvents(story, epr[reading_id])
+        pages = pg.fromLogEvents(story, epr[reading_id], legacy)
         if len(pages) == 0:
             removed = True
             if prnt: print("removing", reading_id+": empty reading")

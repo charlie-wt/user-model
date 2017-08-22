@@ -100,6 +100,13 @@ def pc ( num, dec=0 ):
         rounded = percent[:percent.index(".")+dec]+"%"
     return " "+rounded if num < 0.1 else rounded
 
+def truncate ( word, length=16, ellipses=True ):
+# truncate a word to a certain length
+    shortened = word[:length]
+    if ellipses:
+        shortened = shortened[:-3] + '...'
+    return shortened
+
 def fmt ( num, dec=0, suf=''):
 # round a number to dec decimal places, return string with suf suffix.
     if dec > 0: dec += 1

@@ -24,6 +24,7 @@ import timeRangeCondition
 import variable
 import logevent
 import printer as pt
+import analyser as an
 
 ##### importer ###############
 # a set of functions to import various structures from json files.
@@ -32,7 +33,7 @@ import printer as pt
 def storyFromJSON ( filename, prnt=False ):
 # load a story in from a .json file
     # read the file, and convert to a json object
-    file = open("json/"+filename+".json", 'r')
+    file = open("json/"+filename+".json", 'r', encoding='utf-8')
     data = file.read()
     file.close()
 
@@ -165,23 +166,25 @@ def locationFromJSON ( json ):
             float(json["lon"]),
             float(json["radius"]))
 
-def pathEventsFromJSON ( filename, story=None, prnt=False):
+def pathEventsFromJSON ( filename, story=None, legacy=False, prnt=False):
 # read a log file and return a dictionary containing the paths taken through the
 # specified story, per reading.
     # load file
-    logfile = open("json/"+filename+".json", 'r')
+    logfile = open("json/"+filename+".json", 'r', encoding='utf-8')
     logs = logfile.read()
     logfile.close()
     logs_json = json.loads(logs)
+    read_page_tag = 'playreadingcard' if legacy else 'PageRead'
 
     # get a list of event objects for moving through the story
     events = []
     for e in logs_json:
-        if e["type"] == "playreadingcard":
+        if e["type"] == read_page_tag:
             if story is not None:
-                if e["data"]["storyId"] == story.id: events.append(logEventFromJSON(e))
+                if e["data"]["storyId"] == story.id:
+                    events.append(logEventFromJSON(e, legacy))
             else:
-                events.append(logEventFromJSON(e))
+                events.append(logEventFromJSON(e, legacy))
     events.sort(key = lambda e: e.date)
 
     # convert list into dictionary, arranged per reading
@@ -201,24 +204,27 @@ def pathEventsFromJSON ( filename, story=None, prnt=False):
 
     return epr
 
-def pathPagesFromJSON ( filename, story, prnt=False ):
+def pathPagesFromJSON ( filename, story, legacy=False, prnt=False ):
 # same as pathEventsFromJSON, but the dictionary contains lists of pages,
 # instead of lists of events
-    epr = pathEventsFromJSON(filename, story, False)
+    epr = pathEventsFromJSON(filename, story, legacy, False)
     ppr = {}
 
     for r in epr:
-        pages = page.fromLogEvents(story, epr[r])
+        pages = page.fromLogEvents(story, epr[r], legacy)
         ppr[r] = pages
 
-    if prnt: print("Found", str(len(ppr))+(" real" if discard else ""),
-                   "readings for", story.name+".")
+    if prnt: print("Found", len(ppr), "readings for", story.name+".")
     return ppr
 
-def logEventFromJSON ( json ):
+def filteredPathsFromJSON ( filename, story, legacy=False, prnt=False ):
+    epr = pathEventsFromJSON(filename, story, legacy, False)
+    return an.filter_readings(story, epr, legacy=legacy, prnt=prnt)
+
+def logEventFromJSON ( json, legacy=False ):
     return logevent.LogEvent(
             json["id"],
             json["user"],
-            logevent.makeTime(json["date"]),
+            logevent.makeTime(json["date"], legacy),
             json["type"],
             json["data"])

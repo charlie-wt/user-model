@@ -32,8 +32,9 @@ def traverse ( story, ranker, decider, max_steps=50, reading=None, user=None,
         if loc:
             locs = (locs[0]+loc[0], locs[1]+loc[1])
             count += 1
-    locs = (locs[0]/count, locs[1]/count)
-    user.loc = locs
+    if count != 0:
+        locs = (locs[0]/count, locs[1]/count)
+        user.loc = locs
 
     path = []
     # move to a page

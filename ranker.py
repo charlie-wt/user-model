@@ -19,13 +19,13 @@ prnt=False
 
 manual_heuristics = {
     'w': [
-         -0.50000,          # walk dist
-         -5.00000,          # visits
+         -5.00000,          # walk dist
+        -10.00000,          # visits
          -0.05000,          # alt
 #         0.10000,          # poi
           0.05000,          # mention
-         -3.00000,          # ranking - walk dist
-         -5.00000,          # ranking - visits
+        -50.00000,          # ranking - walk dist
+        -10.00000,          # ranking - visits
          -0.10000,          # ranking - alt
 #        -0.15000,          # ranking - poi
          -0.30000           # ranking - mention
@@ -117,7 +117,8 @@ def mentioned ( user, story, pages, cache=None ):
 def logreg ( user, story, pages, cache=None ):
 # use logistic regression model to predict the page to choose.
     import ml
-    if reg is None: raise ValueError('Please initialise regression parameters.')
+    model = reg_no_poi
+    if not model: raise ValueError('Please initialise regression parameters.')
     name = user.page().name if user.page() else '--start--'
     if prnt: print('options from', name+':')
 
@@ -128,7 +129,6 @@ def logreg ( user, story, pages, cache=None ):
     inputs = ml.make_input(story, user, choices, cache, True)
 
     # apply regression
-    model = reg_no_poi
     results = []
     idx = 1
     for p in inputs:
@@ -173,18 +173,38 @@ def logreg ( user, story, pages, cache=None ):
 def linreg ( user, story, pages, cache=None ):
 # use logistic regression model to predict the page to choose.
     import ml
-    if reg is None: raise ValueError('Please initialise regression parameters.')
+    model = manual_heuristics
+    if not model: raise ValueError('Please initialise regression parameters.')
     name = user.page().name if user.page() else '--start--'
     if prnt: print('options from', name+':')
 
     choices = pages
 #    choices = [ p for p in pages if hs.visits(p, user) == 0 ]
 
-#    inputs = ml.normalise_inputs(ml.make_input(story, user, choices, cache, True))
-    inputs = ml.make_input(story, user, choices, cache, True)
+    inputs = ml.normalise_inputs(ml.make_input(story, user, choices, cache, True))
+#    inputs = ml.make_input(story, user, choices, cache, True)
+
+#    if prnt:
+#        print('inputs: [')
+#        for row in range(len(inputs)):
+#            print('\t', inputs[row])
+#        print(']')
+    # ugly - make all inputs > 0
+    smallests = [0]*len(inputs[0])
+    for column in range(len(inputs[0])):
+        smallests[column] = min([ inputs[row][column] for row in range(len(inputs)) ])
+#    if prnt: print('smallests:', smallests)
+    for row in range(len(inputs)):
+        for column in range(len(inputs[row])):
+            inputs[row][column] += abs(smallests[column])
+            if inputs[row][column] < 0 and prnt: print('!!!don\'t work!!!')
+#    if prnt:
+#        print('inputs: [')
+#        for row in range(len(inputs)):
+#            print('\t', inputs[row])
+#        print(']')
 
     # apply regression
-    model = manual_heuristics
     results = []
     idx = 1
     for p in inputs:
@@ -196,7 +216,10 @@ def linreg ( user, story, pages, cache=None ):
     # get rid of negative values - we're just taking the max anyway, and they mess things up :(
     smallest = abs(min(results))
     for i in range(len(results)):
-#        if prnt: print(results[i], '+', smallest, '->', (results[i]+smallest))
+        if prnt:
+            print(pt.fmt(results[i], dec=2), '+',
+                  pt.fmt(smallest, dec=2), '->',
+                  pt.fmt(results[i]+smallest, dec=2))
         results[i] += smallest
 
     # normalise (softmax)
@@ -225,7 +248,7 @@ def nn ( user, story, pages, cache=None ):
 # use logistic regression model to predict the page to choose.
     import ml
     import numpy as np
-    if reg is None: raise ValueError('Please initialise neural network.')
+    if not net: raise ValueError('Please initialise neural network.')
     name = user.page().name if user.page() else '--start--'
     if prnt: print('options from', name+':')
 

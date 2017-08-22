@@ -50,20 +50,21 @@ def update_all ( pages, story, reading, user ):
         if page.visible: visible.append(page)
     return visible
 
-def fromLogEvent ( story, le ):
+def fromLogEvent ( story, logEvent, legacy=False ):
 # turn 'go to page' log event into a page
-    return ls.get(story.pages, le.data["cardId"])
+    page_id_tag = 'cardId' if legacy else 'pageId'
+    return ls.get(story.pages, logEvent.data[page_id_tag])
 
-def fromLogEvents ( story, les ):
+def fromLogEvents ( story, logEvents, legacy=False ):
 # turn 'go to page' log events into pages
     pages = []
-    for le in les:
-        new_page = fromLogEvent(story, le)
+    for le in logEvents:
+        new_page = fromLogEvent(story, le, legacy)
         if new_page is not None: pages.append(new_page)
     return pages
 
 def last ( page, visible=None ):
-# is this page the last in its story?
+# is this page the last in its story? - kind of speculative, imperfect.
     check = \
            page == None \
         or page == 0 \

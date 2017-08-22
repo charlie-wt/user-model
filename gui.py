@@ -22,7 +22,7 @@ def visit_proportions_plot ( ax, story, sim_data=None, ppr=None, sort='' ):
         # split data
         if sort == 'story' and story is not None:
             sim_data.sort(key = lambda p : story.pages.index(p[0]))
-        names = [ p[0].name for p in sim_data ]
+        names = [ pt.truncate(p[0].name) for p in sim_data ]
         props = [ p[1] for p in sim_data ]
 
         # chart params
@@ -43,7 +43,7 @@ def visit_proportions_plot ( ax, story, sim_data=None, ppr=None, sort='' ):
         elif sim_data is not None:
             sim_pages = [ p[0] for p in sim_data ]
             log_data.sort(key = lambda p : sim_pages.index(p[0]))
-        names = [ p[0].name for p in log_data ]
+        names = [ pt.truncate(p[0].name) for p in log_data ]
         props = [ p[1] for p in log_data ]
 
         # chart params

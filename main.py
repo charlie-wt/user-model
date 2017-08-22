@@ -28,22 +28,21 @@ names = ["A Walk In The Park",                  #  0
 
 
 
-story_name = names[6]
+story_name = names[3]
 
 
 
 # create/load stuff
 story = imp.storyFromJSON(story_name)
-epr = imp.pathEventsFromJSON("old-logs", story)
-paths_per_reading = an.filter_readings(story, epr)
+paths_per_reading = imp.filteredPathsFromJSON("new-logs", story, legacy=False, prnt=True)
 cache = ls.auto_dict()
-rker = rk.linreg
+rker = rk.logreg
 
 # make path from logs
 log_store = an.walk(story, paths_per_reading)
 
 # construct model
-#rk.reg_no_poi = ml.logreg(story, paths_per_reading, cache, epochs=100, num_folds=1, batch_size=1, exclude_poi=True, prnt=True)
+rk.reg_no_poi = ml.logreg(story, paths_per_reading, cache, epochs=100, num_folds=1, batch_size=1, exclude_poi=True, prnt=True)
 #rk.reg_lin_no_poi = ml.linreg(story, paths_per_reading, cache, epochs=100, num_folds=1, batch_size=1, exclude_poi=True, prnt=True)
 #rk.net = ml.nn(story, paths_per_reading, cache, epochs=250, learning_rate=0.001, batch_size=1, num_hidden_layers=10, exclude_poi=True, prnt=True)
 #rk.net = ml.nn(story, paths_per_reading, cache, epochs=150, num_hidden_layers=10, batch_size=1, num_folds=10, exclude_poi=True, prnt=True)
@@ -52,7 +51,7 @@ log_store = an.walk(story, paths_per_reading)
 rk.prnt = True
 sim_store = tr.traverse(story, rker, dc.best, cache=cache, prnt=True, max_steps=20)
 rk.prnt = False
-stores = tr.traverse_many(story, n=50, ranker=rker, cache=cache)
+stores = tr.traverse_many(story, n=10, ranker=rker, cache=cache)
 
 # analyse paths
 gui.show_main_three(story, paths_per_reading, stores, sim_store, log_store, rker, cache)
