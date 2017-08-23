@@ -117,7 +117,7 @@ def mentioned ( user, story, pages, cache=None ):
 def logreg ( user, story, pages, cache=None ):
 # use logistic regression model to predict the page to choose.
     import ml
-    model = reg_no_poi
+    model = reg
     if not model: raise ValueError('Please initialise regression parameters.')
     name = user.page().name if user.page() else '--start--'
     if prnt: print('options from', name+':')
@@ -137,7 +137,7 @@ def logreg ( user, story, pages, cache=None ):
         #        Then even if both are high, you don't end up thinking the page
         #        is too desirable.
         yes = sum([ p[i]*model['w'][i][1] for i in range(len(p)) ])
-        yes += reg_no_poi['b'][1]
+        yes += model['b'][1]
         no = sum([ p[i]*model['w'][i][0] for i in range(len(p)) ])
         no += model['b'][0]
         output = yes - no
