@@ -117,7 +117,7 @@ def mentioned ( user, story, pages, cache=None ):
 def logreg ( user, story, pages, cache=None ):
 # use logistic regression model to predict the page to choose.
     import ml
-    model = reg
+    model = reg_no_poi
     if not model: raise ValueError('Please initialise regression parameters.')
     name = user.page().name if user.page() else '--start--'
     if prnt: print('options from', name+':')

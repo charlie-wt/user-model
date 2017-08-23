@@ -37,13 +37,13 @@ story_name = names[6]
 story = imp.storyFromJSON(story_name)
 paths_per_reading = imp.filteredPathsFromJSON("old-logs", story, legacy=True, prnt=True)
 cache = ls.auto_dict()
-rker = rk.walk_dist
+rker = rk.logreg
 
 # make path from logs
 log_store = an.walk(story, paths_per_reading)
 
 # construct model
-#rk.reg = ml.logreg(story, paths_per_reading, cache, epochs=100, num_folds=1, batch_size=1, exclude_poi=False, prnt=True)
+rk.reg_no_poi = ml.logreg(story, paths_per_reading, cache, epochs=100, num_folds=1, batch_size=1, exclude_poi=True, prnt=True)
 #rk.reg_lin_no_poi = ml.linreg(story, paths_per_reading, cache, epochs=100, num_folds=1, batch_size=1, exclude_poi=True, prnt=True)
 #rk.net = ml.nn(story, paths_per_reading, cache, epochs=25, learning_rate=0.001, batch_size=1, num_hidden_layers=10, exclude_poi=True, prnt=True)
 #rk.net = ml.nn(story, paths_per_reading, cache, epochs=150, num_hidden_layers=10, batch_size=1, num_folds=10, exclude_poi=True, prnt=True)
@@ -59,4 +59,5 @@ stores = tr.traverse_many(story, n=100, ranker=rker, cache=cache)
 #gui.show_all(story, paths_per_reading, stores, sim_store, log_store, rker, cache)
 
 # export data
-ex.exportPathsPerReadingToCSV(paths_per_reading, prnt=True)
+#ex.pathToCSV(log_store, prnt=True)
+ex.storesToJSON(log_store, 'log_store.json',  prnt=True)
