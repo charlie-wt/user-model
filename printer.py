@@ -1,6 +1,8 @@
 import sys, os
 sys.path.append(os.path.join(sys.path[0], "models"))
 
+from collections import defaultdict
+
 import location as lc
 import page as pg
 import record as rc
@@ -148,3 +150,13 @@ def print_sim_log_comparison ( sim_path, log_path ):
 
         left_pad = 34 - len(s_name)
         print(s_name + " "*left_pad + l_name)
+
+def print_cache ( cache ):
+# print a cache, currently with max depth of two elements between type & value.
+    for t in cache:
+        for elem in cache[t]:
+            if type(cache[t][elem]) is defaultdict:
+                for elem2 in cache[t][elem]:
+                    print('\t', t, ':', elem, ':', elem2, ':', cache[t][elem][elem2])
+            else:
+                print('\t', t, ':', elem, ':', cache[t][elem])

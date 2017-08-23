@@ -4,6 +4,7 @@ sys.path.append(os.path.join(sys.path[0], "models/functions"))
 sys.path.append(os.path.join(sys.path[0], "models/conditions"))
 
 import json
+import csv
 from datetime import timedelta
 
 import story
@@ -25,6 +26,8 @@ import variable
 import logevent
 import printer as pt
 import analyser as an
+import exporter as ex
+import ls
 
 ##### importer ###############
 # a set of functions to import various structures from json files.
@@ -228,3 +231,62 @@ def logEventFromJSON ( json, legacy=False ):
             logevent.makeTime(json["date"], legacy),
             json["type"],
             json["data"])
+
+def cacheFromCSV ( filename, prnt=False ):
+# read in a heuristics cache from a .csv file.
+    filename = ex.clip_filename(filename, 'csv')
+    cache = ls.auto_dict()
+
+    def recurse ( cache, row ):
+    # add elements of the csv row to the cache deeply
+        if len(row) > 2:
+            recurse(cache[row[0]], row[1:])
+        else:
+            cache[row[0]] = to_num(row[1])
+
+    def to_num ( string ):
+    # try and convert a string to a number (but leave it if you can't)
+        try:
+            return int(string)
+        except:
+            try:
+                return float(string)
+            except:
+                return string
+
+    with open(filename+'.csv', 'r', newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            recurse(cache, row)
+
+    if prnt:
+        print('imported cache = [')
+        pt.print_cache(cache)
+        print(']')
+
+    return cache
+
+def cacheFromJSON ( filename, prnt=False ):
+# TODO - untested
+    filename = ex.clip_filename(filename, 'json')
+    with open(filename+".json", 'r', encoding='utf-8') as jsonfile:
+        data = jsonfile.read()
+        jsonfile.close()
+        json_object = json.loads(data)
+
+        cache = ls.auto_dict()
+        cache.update(json_object)
+
+        if prnt:
+            print('imported cache = [')
+            pt.print_cache(cache)
+            print(']')
+
+       return cache
+
+def merge_paths_per_readings ( ppr1, ppr2 ):
+# put two paths_per_reading dictionaries together.
+# TODO - extend this to arbitrary length.
+    new = ppr1.copy()
+    new.update(ppr2)
+    return new
