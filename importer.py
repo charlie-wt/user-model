@@ -37,10 +37,11 @@ import reading as rd
 # a set of functions to import various structures from json files.
 ##############################
 
-def storyFromJSON ( filename, prnt=False ):
+def story_from_json ( filename, prnt=False ):
 # load a story in from a .json file
     # read the file, and convert to a json object
-    file = open("json/"+filename+".json", 'r', encoding='utf-8')
+    filename = ex.clip_filename(filename, 'json')
+    file = open(filename+".json", 'r', encoding='utf-8')
     data = file.read()
     file.close()
 
@@ -55,22 +56,22 @@ def storyFromJSON ( filename, prnt=False ):
     # pages
     story_pages = []
     for page in json_object["pages"]:
-        story_pages.append(pageFromJSON(page))
+        story_pages.append(page_from_json(page))
 
     # functions
     story_functions = []
     for function in json_object["functions"]:
-        story_functions.append(functionFromJSON(function))
+        story_functions.append(function_from_json(function))
 
     # conditions
     story_conditions = []
     for condition in json_object["conditions"]:
-        story_conditions.append(conditionFromJSON(condition))
+        story_conditions.append(condition_from_json(condition))
 
     # locations
     story_locations = []
     for location in json_object["locations"]:
-        story_locations.append(locationFromJSON(location))
+        story_locations.append(location_from_json(location))
 
     # combine into story
     sto = story.Story(story_id,
@@ -83,7 +84,7 @@ def storyFromJSON ( filename, prnt=False ):
     if prnt: pt.print_story(sto)
     return sto
 
-def pageFromJSON ( json ):
+def page_from_json ( json ):
     return page.Page(
             json["id"],
             json["name"],
@@ -91,7 +92,7 @@ def pageFromJSON ( json ):
             json["conditions"],
             json["content"])
 
-def functionFromJSON ( json ):
+def function_from_json ( json ):
     type = json["type"]
     if   ( type == "increment" ):
         return incrementFunction.IncrementFunction(
@@ -123,7 +124,7 @@ def functionFromJSON ( json ):
                 json["variable"])
     else: return None
 
-def conditionFromJSON ( json ):
+def condition_from_json ( json ):
     type = json["type"]
     if   ( type == "check" ):
         return checkCondition.CheckCondition(
@@ -165,7 +166,7 @@ def conditionFromJSON ( json ):
     else:
         return None
 
-def locationFromJSON ( json ):
+def location_from_json ( json ):
     return location.Location(
             json["id"],
             json["type"],
@@ -173,11 +174,12 @@ def locationFromJSON ( json ):
             float(json["lon"]),
             float(json["radius"]))
 
-def pathEventsFromJSON ( filename, story=None, legacy=False, prnt=False):
+def path_events_from_json ( filename, story=None, legacy=False, prnt=False):
 # read a log file and return a dictionary containing the paths taken through the
 # specified story, per reading.
     # load file
-    logfile = open("json/"+filename+".json", 'r', encoding='utf-8')
+    filename = ex.clip_filename(filename, 'json')
+    logfile = open(filename+".json", 'r', encoding='utf-8')
     logs = logfile.read()
     logfile.close()
     logs_json = json.loads(logs)
@@ -189,9 +191,9 @@ def pathEventsFromJSON ( filename, story=None, legacy=False, prnt=False):
         if e["type"] == read_page_tag:
             if story is not None:
                 if e["data"]["storyId"] == story.id:
-                    events.append(logEventFromJSON(e, legacy))
+                    events.append(log_event_from_json(e, legacy))
             else:
-                events.append(logEventFromJSON(e, legacy))
+                events.append(log_event_from_json(e, legacy))
     events.sort(key = lambda e: e.date)
 
     # convert list into dictionary, arranged per reading
@@ -211,32 +213,32 @@ def pathEventsFromJSON ( filename, story=None, legacy=False, prnt=False):
 
     return epr
 
-def logEventFromJSON ( json, legacy=False ):
+def log_event_from_json ( json, legacy=False ):
     return logevent.LogEvent(
             json["id"],
             json["user"],
-            logevent.makeTime(json["date"], legacy),
+            logevent.make_time(json["date"], legacy),
             json["type"],
             json["data"])
 
-def pathPagesFromJSON ( filename, story, legacy=False, prnt=False ):
-# same as pathEventsFromJSON, but the dictionary contains lists of pages,
+def path_pages_from_json ( filename, story, legacy=False, prnt=False ):
+# same as path_events_from_json, but the dictionary contains lists of pages,
 # instead of lists of events
-    epr = pathEventsFromJSON(filename, story, legacy, False)
+    epr = path_events_from_json(filename, story, legacy, False)
     ppr = {}
 
     for r in epr:
-        pages = page.fromLogEvents(story, epr[r], legacy)
+        pages = page.from_log_events(story, epr[r], legacy)
         ppr[r] = pages
 
     if prnt: print("Found", len(ppr), "readings for", story.name+".")
     return ppr
 
-def filteredPathsFromJSON ( filename, story, legacy=False, prnt=False ):
-    epr = pathEventsFromJSON(filename, story, legacy, False)
+def filtered_paths_from_json ( filename, story, legacy=False, prnt=False ):
+    epr = path_events_from_json(filename, story, legacy, False)
     return an.filter_readings(story, epr, legacy=legacy, prnt=prnt)
 
-def cacheFromCSV ( filename, prnt=False ):
+def cache_from_csv ( filename, prnt=False ):
 # read in a heuristics cache from a .csv file.
     filename = ex.clip_filename(filename, 'csv')
     cache = ch.cache()
@@ -260,7 +262,7 @@ def cacheFromCSV ( filename, prnt=False ):
 
     return cache
 
-def cacheFromJSON ( filename, prnt=False ):
+def cache_from_json ( filename, prnt=False ):
     filename = ex.clip_filename(filename, 'json')
     with open(filename+".json", 'r', encoding='utf-8') as jsonfile:
         data = jsonfile.read()
@@ -277,7 +279,7 @@ def cacheFromJSON ( filename, prnt=False ):
 
     return cache
 
-def storesFromCSV ( filename, story, prnt=False ):
+def stores_from_csv ( filename, story, prnt=False ):
     # load file
     filename = ex.clip_filename(filename, 'csv')
     stores = []
@@ -321,14 +323,14 @@ def storesFromCSV ( filename, story, prnt=False ):
                    ('s' if len(stores) > 1 else ''), 'from csv.')
     return stores
 
-def storeFromCSV ( filename, story, prnt=False ):
+def store_from_csv ( filename, story, prnt=False ):
     filename = ex.clip_filename(filename, 'csv')
-    stores = storesFromCSV(filename, story, prnt=False)
+    stores = stores_from_csv(filename, story, prnt=False)
     store = stores[0]
     if prnt: print('imported store from csv of length', str(len(store))+'.')
     return store
 
-def storesFromJSON ( filename, story, prnt=False ):
+def stores_from_json ( filename, story, prnt=False ):
     filename = ex.clip_filename(filename, 'json')
     with open(filename+".json", 'r', encoding='utf-8') as jsonfile:
         data = jsonfile.read()

@@ -31,7 +31,7 @@ def traverse ( story, ranker=rk.rand, decider=dc.rand, n=1, cache=None,
         locs = (0, 0)
         count = 0
         for p in visible:
-            loc = p.getLoc(story)
+            loc = p.get_loc(story)
             if loc:
                 locs = (locs[0]+loc[0], locs[1]+loc[1])
                 count += 1

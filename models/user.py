@@ -19,7 +19,7 @@ class User ( base.Base ):
         self.path.append(pages[page_id])
 
         # update player's location (lat, lon) to that of new page, if applicable
-        page_loc = self.page().getLoc(story)
+        page_loc = self.page().get_loc(story)
         if page_loc is not None:
             self.loc = page_loc
 

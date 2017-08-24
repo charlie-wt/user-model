@@ -171,15 +171,15 @@ def distance_travelled ( story, stores, prnt=False ):
         curr_loc = (0, 0)
         for i in range(len(store)):
             if store[i].page is not None and \
-               store[i].page.getLoc(story) is not None:
-                curr_loc = store[i].page.getLoc(story)
+               store[i].page.get_loc(story) is not None:
+                curr_loc = store[i].page.get_loc(story)
                 startidx = i+1
                 break
         # measure the distance to each page from there
         for i in range(startidx, len(store)):
             dest = store[i].page
             if dest is None: continue
-            dest_loc = dest.getLoc(story)
+            dest_loc = dest.get_loc(story)
             if dest_loc is None: continue
 
             distance += lc.metres(curr_loc, dest_loc)
@@ -238,7 +238,7 @@ def filter_readings ( story, epr, max_metres_per_second=5, legacy=False,
         if removed: continue
 
         # 2 : if the reading is empty
-        pages = pg.fromLogEvents(story, epr[reading_id], legacy)
+        pages = pg.from_log_events(story, epr[reading_id], legacy)
         if len(pages) == 0:
             removed = True
             if prnt: print("removing", reading_id+": empty reading")

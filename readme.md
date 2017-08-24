@@ -47,7 +47,7 @@ also needed:
 
 ### **Basic Usage**
 
-##### *Example usage can be found in the `main.py` file above*
+##### *Example usage can be found in the `example.py` file above*
 
 #### **Loading a story**
 To load a story from its JSON representation:

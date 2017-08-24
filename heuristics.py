@@ -18,7 +18,7 @@ import printer as pt
 def distance ( page, user, story, cache=None ):
 # straight line distance from user -> page.
     prnt=False
-    page_loc = page.getLoc(story)
+    page_loc = page.get_loc(story)
     us_page = user.page()
 
     # if next page has no location, dist = 0
@@ -26,7 +26,7 @@ def distance ( page, user, story, cache=None ):
         return 0
     else:
         # if current page has no location, we can't use the cache
-        if us_page is None or us_page.getLoc(story) is None:
+        if us_page is None or us_page.get_loc(story) is None:
             return l.metres(user.loc, page_loc)
         elif cache is not None:
             # get from cache if possible
@@ -38,7 +38,7 @@ def distance ( page, user, story, cache=None ):
                 return cache['distance'][page.id][us_page.id]
 
     # get straight line distance, add to cache
-    dist = l.metres(us_page.getLoc(story), page_loc)
+    dist = l.metres(us_page.get_loc(story), page_loc)
     if cache is not None: cache['distance'][us_page.id][page.id] = dist
     return dist
 
@@ -50,7 +50,7 @@ def visits ( page, user, story=None, cache=None ):
 def walk_dist ( page, user, story, cache=None ):
 # walking distance, via roads (osrm).
     prnt=False
-    page_loc = page.getLoc(story)
+    page_loc = page.get_loc(story)
     us_page = user.page()
 
     # if next page has no location, dist = 0
@@ -58,7 +58,7 @@ def walk_dist ( page, user, story, cache=None ):
         return 0
     else:
         # if current page has no location, we can't use the cache
-        if us_page is None or us_page.getLoc(story) is None:
+        if us_page is None or us_page.get_loc(story) is None:
             return mp.dist(user.loc, page_loc)
         elif cache is not None:
             # get from cache if possible
@@ -70,7 +70,7 @@ def walk_dist ( page, user, story, cache=None ):
                 return cache['walk_dist'][page.id][us_page.id]
 
     # get walking distance, add to cache
-    dist = mp.dist(us_page.getLoc(story), page_loc)
+    dist = mp.dist(us_page.get_loc(story), page_loc)
     if cache is not None: cache['walk_dist'][us_page.id][page.id] = dist
     if prnt: print(us_page.name, "->", page.name, "=", dist)
     return dist
@@ -78,7 +78,7 @@ def walk_dist ( page, user, story, cache=None ):
 def altitude ( page, user, story, cache=None ):
 # altitude of page
     prnt=False
-    page_loc = page.getLoc(story)
+    page_loc = page.get_loc(story)
     if page_loc is None:
         if prnt: print(page.name, "can be accessed from anywhere.")
         return mp.alt(user.loc)
@@ -98,7 +98,7 @@ def altitude ( page, user, story, cache=None ):
 def points_of_interest ( page, user, story, cache=None ):
 # get the number of points of interest near a page
     prnt=False
-    page_loc = page.getLoc(story)
+    page_loc = page.get_loc(story)
     if page_loc is None: page_loc = user.loc
 
     # get from cache if possible

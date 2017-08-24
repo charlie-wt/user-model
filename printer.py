@@ -29,7 +29,7 @@ def print_visible ( vis, story, us ):
 # print the list of visible pages in a story
     print("\tvisible pages:")
     for p in vis:
-        page_loc = p.getLoc(story)
+        page_loc = p.get_loc(story)
         if page_loc is not None:
             dist = lc.metres(us.loc, page_loc)
             print("\t" + p.id + " : " + p.name + " -> " + str(int(dist)) + " metres away.")

@@ -44,7 +44,7 @@ def formalise ( story, ppr, cache=None, prnt=False, normalise=True,
     locs = (0, 0)
     count = 0
     for p in visible:
-        loc = p.getLoc(story)
+        loc = p.get_loc(story)
         if loc:
             locs = (locs[0]+loc[0], locs[1]+loc[1])
             count += 1

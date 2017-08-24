@@ -34,10 +34,10 @@ story_name = names[6]
 
 
 # create/load stuff
-story = imp.storyFromJSON(story_name)
-ppr1 = imp.filteredPathsFromJSON("old-logs", story, legacy=True, prnt=True)
-ppr2 = imp.filteredPathsFromJSON("new-logs", story, legacy=False, prnt=True)
-paths_per_reading = imp.merge_paths_per_readings(ppr1, ppr2)
+story = imp.story_from_json('json/'+story_name)
+ppr_new = imp.filtered_paths_from_json("json/new-logs", story, prnt=True)
+ppr_old = imp.filtered_paths_from_json("json/old-logs", story, legacy=True, prnt=True)
+paths_per_reading = imp.merge_paths_per_readings(ppr_new, ppr_old)
 cache = ch.cache()
 
 # make path from logs
@@ -51,4 +51,4 @@ stores = tr.traverse(story, n=100, cache=cache)
 gui.show_main_three(story, paths_per_reading, stores, sim_store, log_store, rk.walk_dist, cache)
 
 # export data
-ex.storeToCSV(log_store, story, prnt=True)
+ex.store_to_csv(log_store, story, prnt=True)

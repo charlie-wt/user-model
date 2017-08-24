@@ -10,7 +10,7 @@ class LogEvent (base.Base):
         self.type = type
         self.data = data
 
-def makeTime ( string, legacy=False ):
+def make_time ( string, legacy=False ):
     if legacy:
         return datetime.strptime(string, "%Y-%m-%dT%X.000Z")
     else:

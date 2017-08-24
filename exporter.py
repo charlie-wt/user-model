@@ -9,7 +9,7 @@ import page as pg
 # functions to export a bunch of the program's data structures & outputs to csv.
 ##############################
 
-def pathsPerReadingToCSV ( ppr, filename='mypaths_per_reading', prnt=False ):
+def paths_per_reading_to_csv ( ppr, filename='mypaths_per_reading', prnt=False ):
 # export a paths per reading dictionary. Not totally useful when the user logs
 # exist as well, but there you go.
 # format:
@@ -28,7 +28,7 @@ def pathsPerReadingToCSV ( ppr, filename='mypaths_per_reading', prnt=False ):
     if prnt: print('wrote paths for', len(ppr), 'reading'+ \
             ('s' if len(ppr) > 1 else ''), 'to', str(filename)+'.csv')
 
-def pathsToCSV ( stores, filename='mypaths', prnt=False ):
+def paths_to_csv ( stores, filename='mypaths', prnt=False ):
 # export lists of pages
 # format:
 #   path1.page1.id, ..., path1.pagen.id
@@ -47,15 +47,15 @@ def pathsToCSV ( stores, filename='mypaths', prnt=False ):
     if prnt: print('wrote', len(stores), 'path'+ \
                   ('s' if len(stores) > 1 else ''), 'to', str(filename)+'.csv')
 
-def pathToCSV ( store, filename='mypath', prnt=False ):
+def path_to_csv ( store, filename='mypath', prnt=False ):
 # export a list of pages
 # format:
 #   page1.id, ..., pagen.id
     filename = clip_filename(filename, 'csv')
-    pathsToCSV(store, filename, prnt=False)
+    paths_to_csv(store, filename, prnt=False)
     if prnt: print('wrote path to', str(filename)+'.csv')
 
-def storesToCSV ( stores, story, filename='mystores', prnt=False ):
+def stores_to_csv ( stores, story, filename='mystores', prnt=False ):
 # export a store (pages in a path, along with probabilities of next page to visit).
 # TODO - does it even make sense to try and stuff this into a csv format?
     filename = clip_filename(filename, 'csv')
@@ -90,12 +90,12 @@ def storesToCSV ( stores, story, filename='mystores', prnt=False ):
     if prnt: print('wrote', len(stores), 'store'+ \
                    ('s' if len(stores) > 1 else ''), 'to', str(filename)+'.csv')
 
-def storeToCSV ( store, story, filename='mystore', prnt=False ):
+def store_to_csv ( store, story, filename='mystore', prnt=False ):
     filename = clip_filename(filename, 'csv')
-    storesToCSV(store, story, filename, prnt=False)
+    stores_to_csv(store, story, filename, prnt=False)
     if prnt: print('wrote store to', str(filename)+'.csv')
 
-def cacheToCSV ( cache, filename='mycache', prnt=False ):
+def cache_to_csv ( cache, filename='mycache', prnt=False ):
 # export a cache (list of heuristic values)
 # format:
 #   data_type, page1.id, [page2.id, ..., pagen.id,] value
@@ -118,7 +118,7 @@ def cacheToCSV ( cache, filename='mycache', prnt=False ):
 
     if prnt: print('wrote cache to', str(filename)+'.csv')
 
-def regressionToCSV ( reg, filename='myregression', prnt=False ):
+def regression_to_csv ( reg, filename='myregression', prnt=False ):
 # export regression parameters (list of heuristic values)
 # format:
 #   weight[0][0], weight[0][1], ... weight[0][n]
@@ -136,18 +136,18 @@ def regressionToCSV ( reg, filename='myregression', prnt=False ):
 
     if prnt: print('wrote regression to', str(filename)+'.csv')
 
-def logregToCSV ( logreg, filename='mylogreg', prnt=False ):
+def logreg_to_csv ( logreg, filename='mylogreg', prnt=False ):
 # convenience function, for readibility mostly.
     filename = clip_filename(filename, 'csv')
-    exportRegressionToCSV(logreg, filename, prnt=False)
+    regression_to_csv(logreg, filename, prnt=False)
     if prnt: print('wrote logistic regression to', str(filename)+'.csv')
-def linregToCSV ( linreg, filename='mylinreg', prnt=False ):
+def linreg_to_csv ( linreg, filename='mylinreg', prnt=False ):
 # convenience function, for readability mostly.
     filename = clip_filename(filename, 'csv')
-    exportLogregToCSV(linreg, filename, prnt=False)
+    regression_to_csv(linreg, filename, prnt=False)
     if prnt: print('wrote linear regression to', str(filename)+'.csv')
 
-def nnToCSV ( nn, filename='myNN', prnt=False ):
+def nn_to_csv ( nn, filename='myNN', prnt=False ):
 # export a neural network (list of weight matrices & bias vectors)
 # format:
 #   w1, [                                         ]
@@ -173,13 +173,13 @@ def nnToCSV ( nn, filename='myNN', prnt=False ):
 
     if prnt: print('wrote neural network to', str(filename)+'.csv')
 
-def cacheToJSON ( cache, filename='mycache', prnt=False ):
+def cache_to_json ( cache, filename='mycache', prnt=False ):
     filename = clip_filename(filename, 'json')
     with open(filename+'.json', 'w', newline='') as jsonfile:
         json.dump(cache, jsonfile, indent=4)
     if prnt: print('wrote cache to', str(filename)+'.json')
 
-def storesToJSON ( stores, filename='mystores', prnt=False ):
+def stores_to_json ( stores, filename='mystores', prnt=False ):
     filename = clip_filename(filename, 'json')
     if type(stores[0]) is not list:
         stores = [stores]
@@ -198,9 +198,9 @@ def storesToJSON ( stores, filename='mystores', prnt=False ):
     if prnt: print('wrote', len(stores), 'store'+ \
                    ('s' if len(stores) > 1 else ''), 'to', str(filename)+'.json')
 
-def storeToJSON ( store, filename='mystore', prnt=False ):
+def store_to_json ( store, filename='mystore', prnt=False ):
     filename = clip_filename(filename, 'json')
-    storesToJSON(store, filename, prnt=False)
+    stores_to_json(store, filename, prnt=False)
     if prnt: print('wrote store to', str(filename)+'.json')
 
 def clip_filename ( filename, extension ):

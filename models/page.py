@@ -12,7 +12,7 @@ class Page (base.Base):
         self.name = name
         self.functions = functions
         self.conditions = conditions
-        self.text = _removeHTML(text)
+        self.text = _remove_HTML(text)
         self.visible = False
 
     def update ( self, story, reading, user ):
@@ -28,7 +28,7 @@ class Page (base.Base):
         for f in self.functions:
             ls.get(story.functions, f).execute(story, reading, user)
 
-    def getLoc( self, story ):
+    def get_loc( self, story ):
     # get the location of this page (via location condition)
         for cond_id in self.conditions:
             cond = ls.get(story.conditions, cond_id)
@@ -38,7 +38,7 @@ class Page (base.Base):
                 return loc
         return None
 
-def _removeHTML ( text ):
+def _remove_HTML ( text ):
 # remove anthing in <html tags> from a string
     return re.sub('<[^>]+?>', ' ', text)
 
@@ -50,16 +50,16 @@ def update_all ( pages, story, reading, user ):
         if page.visible: visible.append(page)
     return visible
 
-def fromLogEvent ( story, logEvent, legacy=False ):
+def from_log_event ( story, logEvent, legacy=False ):
 # turn 'go to page' log event into a page
     page_id_tag = 'cardId' if legacy else 'pageId'
     return ls.get(story.pages, logEvent.data[page_id_tag])
 
-def fromLogEvents ( story, logEvents, legacy=False ):
+def from_log_events ( story, logEvents, legacy=False ):
 # turn 'go to page' log events into pages
     pages = []
     for le in logEvents:
-        new_page = fromLogEvent(story, le, legacy)
+        new_page = from_log_event(story, le, legacy)
         if new_page is not None: pages.append(new_page)
     return pages
 

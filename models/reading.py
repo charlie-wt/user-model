@@ -14,9 +14,9 @@ class Reading ( base.Base ):
         self.story = story
         self.state = state
         self.timestamp = timestamp
-        self.setUpVariables()
+        self.set_up_variables()
 
-    def setUpVariables ( self ):
+    def set_up_variables ( self ):
         for fn in self.story.functions:
             if fn.type == "increment" or fn.type == "set" or fn.type == "settimestamp":
                 ls.save(self.vars, variable.Variable(fn.variable, None))
