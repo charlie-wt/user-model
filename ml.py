@@ -12,6 +12,7 @@ import user as us
 import reading as rd
 import heuristics as hs
 import ranker as rk
+import cache as ch
 import ls
 import printer as pt
 
@@ -36,7 +37,7 @@ def formalise ( story, ppr, cache=None, prnt=False, normalise=True,
     # create stuff
     reading = rd.Reading("reading-0", story)
     user = us.User("user-0")
-    if cache is None: cache = ls.auto_dict()
+    if cache is None: cache = ch.cache()
 
     # put user in the middle at the start?
     visible = pg.update_all(story.pages, story, reading, user)

@@ -28,6 +28,7 @@ import printer as pt
 import analyser as an
 import exporter as ex
 import ls
+import cache as ch
 import record as rc
 import user as us
 import reading as rd
@@ -210,6 +211,14 @@ def pathEventsFromJSON ( filename, story=None, legacy=False, prnt=False):
 
     return epr
 
+def logEventFromJSON ( json, legacy=False ):
+    return logevent.LogEvent(
+            json["id"],
+            json["user"],
+            logevent.makeTime(json["date"], legacy),
+            json["type"],
+            json["data"])
+
 def pathPagesFromJSON ( filename, story, legacy=False, prnt=False ):
 # same as pathEventsFromJSON, but the dictionary contains lists of pages,
 # instead of lists of events
@@ -227,18 +236,10 @@ def filteredPathsFromJSON ( filename, story, legacy=False, prnt=False ):
     epr = pathEventsFromJSON(filename, story, legacy, False)
     return an.filter_readings(story, epr, legacy=legacy, prnt=prnt)
 
-def logEventFromJSON ( json, legacy=False ):
-    return logevent.LogEvent(
-            json["id"],
-            json["user"],
-            logevent.makeTime(json["date"], legacy),
-            json["type"],
-            json["data"])
-
 def cacheFromCSV ( filename, prnt=False ):
 # read in a heuristics cache from a .csv file.
     filename = ex.clip_filename(filename, 'csv')
-    cache = ls.auto_dict()
+    cache = ch.cache()
 
     def recurse ( cache, row ):
     # add elements of the csv row to the cache deeply
@@ -266,7 +267,7 @@ def cacheFromJSON ( filename, prnt=False ):
         jsonfile.close()
         json_object = json.loads(data)
 
-        cache = ls.auto_dict()
+        cache = ch.cache()
         cache.update(json_object)
 
     if prnt:
@@ -323,7 +324,6 @@ def storesFromCSV ( filename, story, prnt=False ):
 def storeFromCSV ( filename, story, prnt=False ):
     filename = ex.clip_filename(filename, 'csv')
     stores = storesFromCSV(filename, story, prnt=False)
-    print(type(stores))#, ':', type(stores[0]), ':', type(stores[0][0]))
     store = stores[0]
     if prnt: print('imported store from csv of length', str(len(store))+'.')
     return store

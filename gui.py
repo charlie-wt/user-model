@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import analyser as an
 import printer as pt
 import ls
+import cache as ch
 
 ##### gui ####################
 # functions to display various bits of info in a gui.
@@ -88,7 +89,7 @@ def text_info_plot ( ax, story, ppr=None, stores=None, sim_store=None,
 # some basic stats on a story, shown via text
     hide_graph_stuff(ax)
     cells = []
-    if cache is None: cache = ls.auto_dict()
+    if cache is None: cache = ch.cache()
 
     # number of readings
     if ppr is not None:
@@ -290,8 +291,8 @@ def show_main_three ( story, ppr, stores, sim_store, log_store, ranker,
 
 def show_all ( story, ppr=None, stores=None, sim_store=None, log_store=None,
                ranker=None, cache=None ):
-    if cache is None: cache = ls.auto_dict()
-
+    if cache is None: cache = ch.cache()
+# everything in one window
     # basic window stuff
     mpl.rcParams['toolbar'] = 'none'
     mpl.rcParams['font.family'] = 'serif'

@@ -6,3 +6,4 @@ caches
 *.swp
 *.json
 *.csv
+test.py
