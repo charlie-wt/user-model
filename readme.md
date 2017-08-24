@@ -52,7 +52,7 @@ also needed:
 #### **Loading a story**
 To load a story from its JSON representation:
 ```python
-myStory = importer.storyFromJSON('My Story File')
+myStory = importer.story_from_JSON('My Story File')
 ```
 The function returns a `Story` object for use elsewhere.
 
@@ -61,11 +61,11 @@ User logs can also be loaded in from their JSON representation.
 
 To simply load every path in the JSON file for a particular story:
 ```python
-paths_per_reading = importer.pathPagesFromJSON('My Log File', myStory)
+paths_per_reading = importer.path_pages_from_JSON('My Log File', myStory)
 ```
 To try and filter out demo-mode readings from the logs:
 ```python
-paths_per_reading = importer.filteredPathsFromJSON('My Log File', myStory)
+paths_per_reading = importer.filtered_paths_from_JSON('My Log File', myStory)
 ```
 This will look for developer user IDs, see if the sequence of paths taken is possible within the constraints of the story and see how fast the user would have been going to determine if a reading may have been in demo-mode. These readings are filtered out.
 
@@ -141,14 +141,14 @@ gui.show_main_three(myStory, paths_per_reading, stores, sim_store, log_store, ra
 #### **Exporting data to a file**
 There are many functions to export different forms of information to a `.csv` format:
 
-- `exporter.pathsPerReadingToCSV(paths_per_reading, 'my export file')` for a `paths_per_reading` dictionary.
-- `exporter.pathsToCSV(stores, 'my export file')` for a bunch of stores as output by `traverse` or `traverse_log`.
-- `exporter.storesToCSV(stores, myStory, 'my export file')` to also retain info on `options` from each page.
-- `exporter.cacheToCSV(myCache, 'my export file')` for a `cache`; this can be re-imported later, to further avoid having to calculate heuristics.
-- `exporter.regressionToCSV(myRegressionParams, 'my export file')` for regression parameters (linear or logistic), as output by their respective machine learning functions.
-- `exporter.nnToCSV(myNN, 'my export file')` for a neural network as output by `ml.nn`.
+- `exporter.paths_per_reading_to_csv(paths_per_reading, 'my export file')` for a `paths_per_reading` dictionary.
+- `exporter.paths_to_csv(stores, 'my export file')` for a bunch of stores as output by `traverse` or `traverse_log`.
+- `exporter.stores_to_CSV(stores, myStory, 'my export file')` to also retain info on `options` from each page.
+- `exporter.cache_to_CSV(myCache, 'my export file')` for a `cache`; this can be re-imported later, to further avoid having to calculate heuristics.
+- `exporter.regression_to_CSV(myRegressionParams, 'my export file')` for regression parameters (linear or logistic), as output by their respective machine learning functions.
+- `exporter.nn_to_CSV(myNN, 'my export file')` for a neural network as output by `ml.nn`.
 
 There are also some functions that output to JSON, where this format makes more sense than csv:
 
-- `cacheToJSON(myCache, 'my export file')` for a cache. This format can also be re-imported later.
-- `storesToJSON(stores, 'my export file')` for a list of stores as output by `traverse` or `traverse_log`.
+- `cache_to_JSON(myCache, 'my export file')` for a cache. This format can also be re-imported later.
+- `stores_to_JSON(stores, 'my export file')` for a list of stores as output by `traverse` or `traverse_log`.
