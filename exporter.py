@@ -26,7 +26,7 @@ def pathsPerReadingToCSV ( ppr, filename='mypaths_per_reading', prnt=False ):
             writer.writerow(row)
 
     if prnt: print('wrote paths for', len(ppr), 'reading'+ \
-            ('s ' if len(ppr) > 1 else ' ')+'to', str(filename)+'.csv')
+            ('s' if len(ppr) > 1 else ''), 'to', str(filename)+'.csv')
 
 def pathsToCSV ( stores, filename='mypaths', prnt=False ):
 # export lists of pages
@@ -45,7 +45,7 @@ def pathsToCSV ( stores, filename='mypaths', prnt=False ):
                 path.append(page_id(r.page))
             writer.writerow(path)
     if prnt: print('wrote', len(stores), 'path'+ \
-                  ('s ' if len(stores) > 1 else ' ')+'to', str(filename)+'.csv')
+                  ('s' if len(stores) > 1 else ''), 'to', str(filename)+'.csv')
 
 def pathToCSV ( store, filename='mypath', prnt=False ):
 # export a list of pages
@@ -55,10 +55,12 @@ def pathToCSV ( store, filename='mypath', prnt=False ):
     pathsToCSV(store, filename, prnt=False)
     if prnt: print('wrote path to', str(filename)+'.csv')
 
-def storeToCSV ( story, store, filename='mystore', prnt=False ):
+def storesToCSV ( stores, story, filename='mystores', prnt=False ):
 # export a store (pages in a path, along with probabilities of next page to visit).
 # TODO - does it even make sense to try and stuff this into a csv format?
     filename = clip_filename(filename, 'csv')
+    if type(stores[0]) is not list:
+        stores = [stores]
     with open(filename+'.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(['page', 'probability of going to page...'])
@@ -67,22 +69,30 @@ def storeToCSV ( story, store, filename='mystore', prnt=False ):
             page_probs.append(page_id(page))
         page_probs.append('---quit---')
         writer.writerow([''] + page_probs)
-        for r in store:
-            row = []
-            if type(r.page) is pg.Page:
-                row.append(r.page.id)
-            else:
-                row.append('---')
-            row += ['0']*(len(story.pages)+1)
-            for page in r.options:
-                if type(page) is pg.Page:
-                    idx = page_probs.index(page.id)
-                elif page == 0:
-                    idx = page_probs.index('---quit---')
+        for store in stores:
+            for r in store:
+                row = []
+                if type(r.page) is pg.Page:
+                    row.append(r.page.id)
                 else:
-                    idx = page_probs.index('---')
-                row[idx+1] = str(r.options[page])
-            writer.writerow(row)
+                    row.append('---')
+                row += ['']*(len(story.pages)+1)
+                for page in r.options:
+                    if type(page) is pg.Page:
+                        idx = page_probs.index(page.id)
+                    elif page == 0:
+                        idx = page_probs.index('---quit---')
+                    else:
+                        idx = page_probs.index('---')
+                    row[idx+1] = str(r.options[page])
+                writer.writerow(row)
+            writer.writerow('')
+    if prnt: print('wrote', len(stores), 'store'+ \
+                   ('s' if len(stores) > 1 else ''), 'to', str(filename)+'.csv')
+
+def storeToCSV ( store, story, filename='mystore', prnt=False ):
+    filename = clip_filename(filename, 'csv')
+    storesToCSV(store, story, filename, prnt=False)
     if prnt: print('wrote store to', str(filename)+'.csv')
 
 def cacheToCSV ( cache, filename='mycache', prnt=False ):
@@ -186,7 +196,7 @@ def storesToJSON ( stores, filename='mystores', prnt=False ):
             jsonable.append(one_store_json)
         json.dump(jsonable, jsonfile, indent=4)
     if prnt: print('wrote', len(stores), 'store'+ \
-                   ('s ' if len(stores) > 1 else ' ')+'to', str(filename)+'.json')
+                   ('s' if len(stores) > 1 else ''), 'to', str(filename)+'.json')
 
 def storeToJSON ( store, filename='mystore', prnt=False ):
     filename = clip_filename(filename, 'json')

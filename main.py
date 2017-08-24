@@ -39,11 +39,12 @@ ppr1 = imp.filteredPathsFromJSON("old-logs", story, legacy=True, prnt=True)
 ppr2 = imp.filteredPathsFromJSON("new-logs", story, legacy=False, prnt=True)
 paths_per_reading = imp.merge_paths_per_readings(ppr1, ppr2)
 #cache = ls.auto_dict()
-cache = imp.cacheFromCSV('caches/cache - '+story_name, prnt=True)
+cache = imp.cacheFromJSON('caches/cache - '+story_name)
 rker = rk.logreg
 
 # make path from logs
-log_store = an.walk(story, paths_per_reading)
+#log_store = an.walk(story, paths_per_reading)
+log_store = imp.storeFromCSV('mystore', story, prnt=True)
 
 # construct model
 rk.reg_no_poi = ml.logreg(story, paths_per_reading, cache, epochs=100, num_folds=1, batch_size=1, exclude_poi=True, prnt=True)
@@ -58,9 +59,9 @@ rk.prnt = False
 stores = tr.traverse_many(story, n=100, ranker=rker, cache=cache)
 
 # analyse paths
-#gui.show_main_three(story, paths_per_reading, stores, sim_store, log_store, rker, cache)
+gui.show_main_three(story, paths_per_reading, stores, sim_store, log_store, rker, cache)
 #gui.show_all(story, paths_per_reading, stores, sim_store, log_store, rker, cache)
 
 # export data
 #ex.pathToCSV(log_store, prnt=True)
-#ex.storesToJSON(log_store, 'log_store.json',  prnt=True)
+#ex.storeToCSV(log_store, story, prnt=True)

@@ -28,6 +28,9 @@ import printer as pt
 import analyser as an
 import exporter as ex
 import ls
+import record as rc
+import user as us
+import reading as rd
 
 ##### importer ###############
 # a set of functions to import various structures from json files.
@@ -242,17 +245,7 @@ def cacheFromCSV ( filename, prnt=False ):
         if len(row) > 2:
             recurse(cache[row[0]], row[1:])
         else:
-            cache[row[0]] = to_num(row[1])
-
-    def to_num ( string ):
-    # try and convert a string to a number (but leave it if you can't)
-        try:
-            return int(string)
-        except:
-            try:
-                return float(string)
-            except:
-                return string
+            cache[row[0]] = num(row[1])
 
     with open(filename+'.csv', 'r', newline='') as csvfile:
         reader = csv.reader(csvfile)
@@ -267,7 +260,6 @@ def cacheFromCSV ( filename, prnt=False ):
     return cache
 
 def cacheFromJSON ( filename, prnt=False ):
-# TODO - untested
     filename = ex.clip_filename(filename, 'json')
     with open(filename+".json", 'r', encoding='utf-8') as jsonfile:
         data = jsonfile.read()
@@ -277,12 +269,90 @@ def cacheFromJSON ( filename, prnt=False ):
         cache = ls.auto_dict()
         cache.update(json_object)
 
-        if prnt:
-            print('imported cache = [')
-            pt.print_cache(cache)
-            print(']')
+    if prnt:
+        print('imported cache = [')
+        pt.print_cache(cache)
+        print(']')
 
-       return cache
+    return cache
+
+def storesFromCSV ( filename, story, prnt=False ):
+    # load file
+    filename = ex.clip_filename(filename, 'csv')
+    stores = []
+    with open(filename+".csv", 'r', encoding='utf-8') as csvfile:
+        reader = csv.reader(csvfile)
+
+        # discard the first row
+        next(reader)
+
+        # the list of page ids used by the options dictionaries is the second row.
+        pages = next(reader)[1:]
+        pages[pages.index('---quit---')] = 0
+
+        # read the remaining rows, containing the actual steps of the reading.
+        store = []
+        for row in reader:
+            # if we hit an empty line, start a new reading.
+            if len(row) == 0:
+                stores.append(store)
+                store = []
+                continue
+
+            # get current page
+            current_page = None
+            if row[0] != '---':
+                current_page = ls.get(story.pages, row[0])
+
+            # get options for next page
+            options = {}
+            for i in range(len(row[1:])):
+                row_idx = i+1
+                page_id = pages[i]
+                op_page = ls.get(story.pages, page_id)
+                options[op_page] = row[row_idx]
+
+            # put it all together
+            record = rc.Record(current_page, options)
+            store.append(record)
+
+    if prnt: print('imported', len(stores), 'store'+ \
+                   ('s' if len(stores) > 1 else ''), 'from csv.')
+    return stores
+
+def storeFromCSV ( filename, story, prnt=False ):
+    filename = ex.clip_filename(filename, 'csv')
+    stores = storesFromCSV(filename, story, prnt=False)
+    print(type(stores))#, ':', type(stores[0]), ':', type(stores[0][0]))
+    store = stores[0]
+    if prnt: print('imported store from csv of length', str(len(store))+'.')
+    return store
+
+def storesFromJSON ( filename, story, prnt=False ):
+    filename = ex.clip_filename(filename, 'json')
+    with open(filename+".json", 'r', encoding='utf-8') as jsonfile:
+        data = jsonfile.read()
+        jsonfile.close()
+        json_object = json.loads(data)
+
+        stores = []
+        for json_store in json_object:
+            store = []
+            for json_record in json_store:
+                current_page = ls.get(story.pages, json_record['page'])
+                options = {}
+                for p in json_record['options']:
+                    op_page = ls.get(story.pages, p)
+                    options[op_page] = json_record['options'][p]
+
+                record = rc.Record(current_page, options)
+                store.append(record)
+            stores.append(store)
+
+        if prnt: print('imported', len(stores), 'store'+ \
+                       ('s' if len(stores) > 1 else ''), 'from json.')
+
+    return stores
 
 def merge_paths_per_readings ( ppr1, ppr2 ):
 # put two paths_per_reading dictionaries together.
@@ -290,3 +360,13 @@ def merge_paths_per_readings ( ppr1, ppr2 ):
     new = ppr1.copy()
     new.update(ppr2)
     return new
+
+def num ( string ):
+# try and convert a string to a number (but leave it if you can't)
+    try:
+        return int(string)
+    except:
+        try:
+            return float(string)
+        except:
+            return string
