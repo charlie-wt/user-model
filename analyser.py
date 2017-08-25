@@ -276,8 +276,8 @@ def filter_readings ( story, epr, max_metres_per_second=5, legacy=False,
 
 def measure_ranker ( story, ppr, ranker, cache=None, prnt=False ):
 # see how the ordering of a ranker measures up against the choices made in logs.
-    # simple list to store the index of each choice, in chronological order.
     if cache is None: cache = ch.cache()
+    # simple list to store the index of each choice, in chronological order.
     options_taken = []
 
     # fill list containing the ranking of each option taken
@@ -293,6 +293,9 @@ def measure_ranker ( story, ppr, ranker, cache=None, prnt=False ):
             # get ranker's preference (best -> worst)
             options = ranker(user, story, visible, cache)
             ranking = sorted(options.keys(), key = lambda p : -options[p])
+#            for p in ranking:
+#                print(p.name)
+#            print('---')
 
             # record which of the ranker's options was chosen
             if len(ranking) > 1:
@@ -302,6 +305,7 @@ def measure_ranker ( story, ppr, ranker, cache=None, prnt=False ):
             move_to_idx = ls.index(visible, r[i].id)
             visible = user.move(move_to_idx, visible, story, reading)
         tr.reset(story, reading, user)
+#        print('----------')
 
     if len(options_taken) == 0:
         raise ValueError('Story supplied to measure_ranker contains no choices.')

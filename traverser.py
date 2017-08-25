@@ -68,8 +68,8 @@ def reset ( story, reading, user ):
     user.__init__(user.id)
     reading.__init__(reading.id, story)
 
-def traverse_log ( story, paths_per_reading, max_steps=50, reading=None,
-                   user=None, prnt=False):
+def traverse_log ( story, paths_per_reading, max_steps=50, allow_quitting=False,
+                   reading=None, user=None, prnt=False):
 # traverse a story based on the most popular user choices.
     if len(paths_per_reading) == 0:
         raise ValueError("can't walk "+story.name+"; no logged readings.")
@@ -105,33 +105,43 @@ def traverse_log ( story, paths_per_reading, max_steps=50, reading=None,
 
     # traverse
     for i in range(max_steps-1):
-        # get list of pages to visit from logs, eliminate the unreachable
+        # get list of pages to visit from logs
         if prnt: print("---")
 #        options = get_path_distribution(user.page(), paths_per_reading)
         options = get_path_distribution_discourage_loops(
                 user.page(), paths_per_reading, user.path)
         quit = options[0] if 0 in options else 0
-        if prnt: pt.print_walk_full_options(visible, options)
+        if prnt: pt.print_walk_full_options(visible, options, allow_quitting)
 
+        # eliminate unreachable pages, add back visible but never visited ones.
         to_delete = [ k for k, v in options.items() if k not in visible ]
         for k in to_delete: del options[k]
+        rc.fill_options(options, visible)
+        if allow_quitting:
+            options[0] = quit
 
         if prnt:
             print("\nfinal options:")
             for o in options:
-                print("\t"+o.name)
+                print("\t" + (o.name if o != 0 else '--Quit--'))
 
         rc.add(path, user.page(), options, visible)
 
         # pick one of the remaining pages and move to it
         move_to = pick_most_likely(options)
+        if move_to == 0:
+            if prnt:
+                print("\n[[ Chose to quit ]]")
+                print("\n=== end walk ===")
+            rc.add(path, user.page(), {})
+            return path
         visible = user.move(visible.index(move_to), visible, story, reading)
         if prnt: print("\n[[ Chose", user.page().name, "]]")
 
         path[-1].options[0] = quit
 
         # stop if end reached
-        if pg.last(user.page()):
+        if pg.last(user.page(), visible):
             if prnt: print("\n=== end walk ===")
             rc.add(path, user.page(), {})
             return path

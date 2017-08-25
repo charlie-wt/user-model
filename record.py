@@ -9,15 +9,14 @@
 class Record:
     def __init__ ( self, page, options, visible=None ):
         self.page = page
-        self.options = options
+        self.options = dict(options)
         if visible is not None: fill_options(self.options, visible)
 
 def fill_options ( options, visible ):
 # add to the options dictionary all nodes that are visible, but have never been
 # visited in the logs.
     for p in visible:
-        if p not in options:
-            options[p] = 0
+        if p not in options: options[p] = 0
 
 def add ( store, page, options, visible=None ):
 # create a new record and add to a store (list of records).

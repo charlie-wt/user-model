@@ -69,7 +69,7 @@ def visit_proportions_plot ( ax, story, sim_data=None, ppr=None, sort='' ):
 
     return ax
 
-def visit_proportions ( sim_data, story, ppr=None, sort='' ):
+def visit_proportions ( story, sim_data=None, ppr=None, sort='' ):
 # display a window with a bar chart of the proportion of visits to each page
     # set up window
     mpl.rcParams['toolbar'] = 'none'

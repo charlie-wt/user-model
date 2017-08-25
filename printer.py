@@ -117,7 +117,7 @@ def fmt ( num, dec=0, suf=''):
     if '.' in stnum and dec != -1: rounded = stnum[:stnum.index('.')+dec] + suf
     return rounded
 
-def print_walk_full_options ( visible, options ):
+def print_walk_full_options ( visible, options, allow_quitting ):
 # print visible pages, options taken by users and their intersection (for use
 # during analysis walks).
     print("popularity of pages:\n\tvisible:")
@@ -128,11 +128,14 @@ def print_walk_full_options ( visible, options ):
                 amount = options[o]
                 break
         print("\t\t"+p.name, ":", pc(amount))
-    print("\tnot visible/quit:")
+    if allow_quitting and 0 in options:
+        print("\t\t--Quit-- :", pc(options[0]))
+    not_allowed = "\tnot visible:" if allow_quitting else "\tnot visible/quit:"
+    print(not_allowed)
     for o in options.keys():
-        if type(o) == int:
+        if not allow_quitting and type(o) == int:
             print("\t\t--Quit-- :", pc(options[o]))
-        elif o not in visible:
+        elif o not in visible and type(o) != int:
             print("\t\t"+o.name, pc(options[o]))
 
 def print_sim_log_comparison ( sim_path, log_path ):
