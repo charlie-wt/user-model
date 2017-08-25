@@ -57,7 +57,7 @@ def formalise ( story, ppr, cache=None, prnt=False, normalise=True,
     for r in ppr:
         path = ppr[r]
         visible = pg.update_all(story.pages, story, reading, user)
-        for i in range(len(path)-1):
+        for i in range(len(path)):
             # calculate heuristics (and rankings) for each option, and store
             if len(visible) > 1:
                 # add heuristic/ranking information to input vector

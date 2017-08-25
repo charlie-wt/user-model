@@ -10,24 +10,24 @@ import cache as ch
 # functions to display various bits of info in a gui.
 ##############################
 
-def visit_proportions_plot ( ax, story, sim_data=None, ppr=None, sort='' ):
+def visit_proportions_plot ( ax, story, sim_store=None, ppr=None, sort='' ):
 # a bar chart of the proportion of visits to each page
-    if sim_data is None and ppr is None: return
+    if sim_store is None and ppr is None: return
 
     # global info
-    width = 0.75 if sim_data is None or ppr is None else 0.35
+    width = 0.75 if sim_store is None or ppr is None else 0.35
 
     # 1 - simulation data
     sim_rects = None
-    if sim_data is not None:
+    if sim_store is not None:
         # split data
         if sort == 'story' and story is not None:
-            sim_data.sort(key = lambda p : story.pages.index(p[0]))
-        names = [ pt.truncate(p[0].name) for p in sim_data ]
-        props = [ p[1] for p in sim_data ]
+            sim_store.sort(key = lambda p : story.pages.index(p[0]))
+        names = [ pt.truncate(p[0].name) for p in sim_store ]
+        props = [ p[1] for p in sim_store ]
 
         # chart params
-        xs = range(len(sim_data))
+        xs = range(len(sim_store))
         sim_rects = ax.bar(xs, props, width,
                            color='blue',
                            edgecolor='none',
@@ -36,20 +36,20 @@ def visit_proportions_plot ( ax, story, sim_data=None, ppr=None, sort='' ):
     # 2 - log data
     log_rects = None
     if ppr is not None:
-        log_data = an.log_most_visited(story, ppr)
+        log_store = an.log_most_visited(story, ppr)
 
         # split data
         if sort == 'story' and story is not None:
-            log_data.sort(key = lambda p : story.pages.index(p[0]))
-        elif sim_data is not None:
-            sim_pages = [ p[0] for p in sim_data ]
-            log_data.sort(key = lambda p : sim_pages.index(p[0]))
-        names = [ pt.truncate(p[0].name) for p in log_data ]
-        props = [ p[1] for p in log_data ]
+            log_store.sort(key = lambda p : story.pages.index(p[0]))
+        elif sim_store is not None:
+            sim_pages = [ p[0] for p in sim_store ]
+            log_store.sort(key = lambda p : sim_pages.index(p[0]))
+        names = [ pt.truncate(p[0].name) for p in log_store ]
+        props = [ p[1] for p in log_store ]
 
         # chart params
-        xs = range(len(log_data))
-        if sim_data is not None: xs = [ x + width for x in xs ]
+        xs = range(len(log_store))
+        if sim_store is not None: xs = [ x + width for x in xs ]
         log_rects = ax.bar(xs, props, width,
                            color='red',
                            edgecolor='none',
@@ -60,7 +60,7 @@ def visit_proportions_plot ( ax, story, sim_data=None, ppr=None, sort='' ):
         ax.legend((sim_rects[0], log_rects[0]), ('sim', 'log'))
 
     # add a red line at y=1.0, and rotate the x labels (page names)
-    n = len(sim_data) if sim_data is not None else len(log_data)
+    n = len(sim_store) if sim_store is not None else len(log_store)
     ax.plot(range(-1, n+1), [1]*(n+2), 'r-')
     plt.setp(ax.get_xticklabels(), rotation=90, fontsize=10)
 
@@ -69,7 +69,7 @@ def visit_proportions_plot ( ax, story, sim_data=None, ppr=None, sort='' ):
 
     return ax
 
-def visit_proportions ( story, sim_data=None, ppr=None, sort='' ):
+def visit_proportions ( story, sim_store=None, ppr=None, sort='' ):
 # display a window with a bar chart of the proportion of visits to each page
     # set up window
     mpl.rcParams['toolbar'] = 'none'
@@ -79,7 +79,7 @@ def visit_proportions ( story, sim_data=None, ppr=None, sort='' ):
 
     # add bar chart
     ax = fig.add_subplot(111)
-    visit_proportions_plot(ax, story, sim_data, ppr, sort)
+    visit_proportions_plot(ax, story, sim_store, ppr, sort)
 
     plt.tight_layout()
     plt.show()
@@ -96,7 +96,7 @@ def text_info_plot ( ax, story, ppr=None, stores=None, sim_store=None,
         count = str(len(ppr))
         cells.append(['number of readings:', count])
 
-    # step ahead prediction error
+    # step ahead prediction accuracy
     if ranker is not None:
         acc = pt.pc(an.measure_ranker(story, ppr, ranker, cache)[0], dec=2)
         cells.append(['step ahead prediction accuracy:', acc])

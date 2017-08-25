@@ -46,6 +46,10 @@ def _remove_HTML ( text ):
 def update_all ( pages, story, reading, user ):
 # update a bunch of pages at once
     visible = []
+    if type(user.page()) is Page and user.page().transition == 'end':
+        for page in pages:
+            page.visible = False
+        return []
     for page in pages:
         page.update( story, reading, user )
         if page.visible: visible.append(page)

@@ -125,6 +125,8 @@ log_store = traverser.traverse_log(myStory, paths_per_reading)
 ```
 This function will do a simulated reading. However, at each point, the program will go where most people went next from the current page (out of all visible pages). The generated reading can therefore be used as a 'representative' reading of how the users acted in the logs.
 
+The `allow_quitting` option may be set to `True` to enable the traversal to quit the story early, if this was the most popular action. It defaults to `False`.
+
 The returned store's `Record`s have an extra 'page' in their `options`: `0`. This represents the amount of people that quit the story from this page.
 
 #### **Displaying analysis in a GUI window**
@@ -152,3 +154,6 @@ There are also some functions that output to JSON, where this format makes more 
 
 - `cache_to_JSON(myCache, 'my export file')` for a cache. This format can also be re-imported later.
 - `stores_to_JSON(stores, 'my export file')` for a list of stores as output by `traverse` or `traverse_log`.
+
+### **More specific info on the modules**
+Consult the [wiki](https://github.com/charlie-wt/user-model/wiki).

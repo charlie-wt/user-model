@@ -145,7 +145,7 @@ def log_most_visited ( story, ppr, prnt=False ):
 
 def get_unreachables ( story, stores=None, cache=None, prnt=False ):
 # for a bunch of readings, return the pages that were never reached.
-    if stores is None: stores = tr.traverse_many(story, cache=cache)
+    if stores is None: stores = tr.traverse(story, n=150, cache=cache)
     visits = page_visits(story, stores)
     unreachables = [ p for p in visits if visits[p] == 0 ]
 
@@ -248,11 +248,23 @@ def filter_readings ( story, epr, max_metres_per_second=5, legacy=False,
         # 3 : if the path taken was impossible
         visible = pg.update_all(story.pages, story, reading, user)
         dist = 0
+        curr_loc = (0, 0)
+        for p in pages:
+            if p.get_loc(story) is not None:
+                curr_loc = p.get_loc(story)
+
         for p in pages:
             if p not in visible:
                 removed = True
                 if prnt: print("removing", reading_id+": impossible reading")
                 break
+
+        #     (also count up the total distance travelled here.)
+            dest_loc = p.get_loc(story)
+            if dest_loc is not None:
+                dist += lc.metres(curr_loc, dest_loc)
+                curr_loc = dest_loc
+
             visible = user.move(visible.index(p), visible, story, reading)
         tr.reset(story, reading, user)
 
@@ -261,9 +273,15 @@ def filter_readings ( story, epr, max_metres_per_second=5, legacy=False,
         # 4 : if user travelled at a speed greater than max_metres_per_second
         av_dist = dist / len(pages)
         av_duration = (epr[reading_id][-1].date - epr[reading_id][0].date) / len(pages)
-        if av_duration.total_seconds() < av_dist * max_metres_per_second:
+        if av_duration.total_seconds() < av_dist / max_metres_per_second:
             removed = True
-            if prnt: print("removing", reading_id+": moved too fast")
+            if prnt:
+                if av_duration.total_seconds() > 0:
+                    av_speed = av_dist / av_duration.total_seconds()
+                    print("removing", reading_id+": moved too fast",
+                          "(average speed was "+pt.fmt(av_speed,dec=1)+"m/s).")
+                else:
+                    print("removing", reading_id+": reading lasted 0 seconds.")
             continue
 
         if removed: continue
@@ -289,13 +307,10 @@ def measure_ranker ( story, ppr, ranker, cache=None, prnt=False ):
         visible = pg.update_all(story.pages, story, reading, user)
 
         # perform reading
-        for i in range(0, len(r)-1):
+        for i in range(0, len(r)):
             # get ranker's preference (best -> worst)
             options = ranker(user, story, visible, cache)
             ranking = sorted(options.keys(), key = lambda p : -options[p])
-#            for p in ranking:
-#                print(p.name)
-#            print('---')
 
             # record which of the ranker's options was chosen
             if len(ranking) > 1:
@@ -305,7 +320,6 @@ def measure_ranker ( story, ppr, ranker, cache=None, prnt=False ):
             move_to_idx = ls.index(visible, r[i].id)
             visible = user.move(move_to_idx, visible, story, reading)
         tr.reset(story, reading, user)
-#        print('----------')
 
     if len(options_taken) == 0:
         raise ValueError('Story supplied to measure_ranker contains no choices.')

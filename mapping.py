@@ -92,6 +92,7 @@ def alt ( loc, prnt=False ):
 
 def poi ( loc, radius=100, prnt=False ):
 # find the number of points of interest from within [radius]m of [loc]
+    prnt=False
     # form query
     url = "http://overpass-api.de/api/interpreter"
     query = 'data=[out:json];('
