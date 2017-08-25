@@ -7,11 +7,12 @@ import base
 import ls
 
 class Page (base.Base):
-    def __init__ ( self, id, name, functions, conditions, text=None ):
+    def __init__ ( self, id, name, functions, conditions, transition, text=None ):
         self.id = id
         self.name = name
         self.functions = functions
         self.conditions = conditions
+        self.transition = transition
         self.text = _remove_HTML(text)
         self.visible = False
 
@@ -68,7 +69,8 @@ def last ( page, visible=None ):
     check = \
            page == None \
         or page == 0 \
-        or page.name == "Finish" \
-        or page.name == "Finish Story"
+        or page.transition == 'end' \
+        or page.name == 'Finish' \
+        or page.name == 'Finish Story'
     if visible is not None: check = check or len(visible) == 0
     return check

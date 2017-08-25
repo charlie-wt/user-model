@@ -1,5 +1,3 @@
-from collections import defaultdict
-
 ##### ls #####################
 # a few simple functions to help with manipulating lists.
 ##############################
@@ -26,6 +24,3 @@ def count ( ls, id ):
     for item in ls:
         if item.id == id: count += 1
     return count
-
-# a dictionary that automatically creates keys if they don't exist, deeply
-auto_dict = lambda: defaultdict(auto_dict)

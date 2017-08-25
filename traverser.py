@@ -48,16 +48,19 @@ def traverse ( story, ranker=rk.rand, decider=dc.rand, n=1, cache=None,
             rc.add(path, (user.page() if path else None), options, visible)
             visible = user.move(decider(visible, options), visible, story, reading)
 
+            # stop if we can't go anywhere
+            if pg.last(user.page(), visible):
+                rc.add(path, user.page(), {})
+                if prnt and n == 1:
+                    pt.print_user_state(user)
+                    print('=== end walk ===')
+                break
+
             # print stuff
             if prnt and n == 1:
                 pt.print_user_state(user)
                 pt.print_visible(visible, story, user)
-
-            # stop if we can't go anywhere
-            if pg.last(user.page(), visible):
-                rc.add(path, user.page(), {})
-                break
-            if prnt and n == 1: print()
+                print()
         stores.append(path)
         reset(story, reading, user)
 

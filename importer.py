@@ -90,6 +90,7 @@ def page_from_json ( json ):
             json["name"],
             json["functions"],
             json["conditions"],
+            json["pageTransition"],
             json["content"])
 
 def function_from_json ( json ):
