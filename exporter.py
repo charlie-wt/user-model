@@ -4,6 +4,7 @@ sys.path.append(os.path.join(sys.path[0], "models"))
 import json
 import csv
 import page as pg
+import analyser as an
 
 ##### exporter ###############
 # functions to export a bunch of the program's data structures & outputs to csv.
@@ -202,6 +203,101 @@ def store_to_json ( store, filename='mystore', prnt=False ):
     filename = clip_filename(filename, 'json')
     stores_to_json(store, filename, prnt=False)
     if prnt: print('wrote store to', str(filename)+'.json')
+
+def compare_paths_to_csv ( story, store1, store2, filename='path comparison',
+                           prnt=False ):
+# export the result of analyser.compare_paths to csv
+    result = an.compare_paths(story, store1, store2, prnt=False)
+    filename = clip_filename(filename, 'csv')
+    with open(filename+'.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow([result])
+
+    if prnt: print('wrote path comparison to', str(filename)+'.csv')
+    return result
+
+def path_similarity_to_csv ( story, store1, store2, filename='path similarity',
+                             prnt=False ):
+# export the result of analyser.path_similarity to csv
+    result = an.path_similarity(story, store1, store2, prnt=False)
+    filename = clip_filename(filename, 'csv')
+    with open(filename+'.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow([result])
+
+    if prnt: print('wrote path similarity to', str(filename)+'.csv')
+    return result
+
+def page_visits_to_csv ( story, stores, filename='page visits', prnt=False ):
+# export the result of analyser.page_visits to csv
+    results = an.page_visits(story, stores, prnt=False)
+    filename = clip_filename(filename, 'csv')
+    with open(filename+'.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        for page in results:
+            writer.writerow([page_id(page), results[page]])
+
+    if prnt: print('wrote page visits to', str(filename)+'.csv')
+    return results
+
+def most_visited_to_csv ( story, stores, filename='most visited', prnt=False ):
+# export the result of analyser.most_visited to csv
+    results = an.most_visited(story, stores, prnt=False)
+    filename = clip_filename(filename, 'csv')
+    with open(filename+'.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        for result in results:
+            writer.writerow([page_id(result[0]), result[1]])
+
+    if prnt: print('wrote most visited to', str(filename)+'.csv')
+    return results
+
+def get_unreachables_to_csv ( story, stores=None, cache=None, filename='get unreachables', prnt=False ):
+# export the result of analyser.get_unreachables to csv
+    results = an.get_unreachables(story, stores, cache, prnt=False)
+    filename = clip_filename(filename, 'csv')
+    with open(filename+'.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        for result in results:
+            writer.writerow(page_id(result))
+
+    if prnt: print('wrote get unreachables to', str(filename)+'.csv')
+    return results
+
+def distance_travelled_to_csv ( story, stores, filename='distance travelled', prnt=False ):
+# export the result of analyser.distance_travelled to csv
+    results = an.distance_travelled(story, stores, prnt=False)
+    filename = clip_filename(filename, 'csv')
+    with open(filename+'.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        for result in results:
+            writer.writerow([result])
+
+    if prnt: print('wrote distance travelled to', str(filename)+'.csv')
+    return results
+
+def branching_factor_to_csv ( story, stores, filename='branching factor', prnt=False ):
+# export the result of analyser.branching_factor to csv
+    result = an.branching_factor(story, stores, prnt=False)
+    filename = clip_filename(filename, 'csv')
+    with open(filename+'.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow([result])
+
+    if prnt: print('wrote branching factor to', str(filename)+'.csv')
+    return result
+
+def measure_ranker_to_csv ( story, ppr, ranker, cache=None, filename='measure ranker', prnt=False ):
+# export the result of analyser.measure_ranker to csv
+    results = an.measure_ranker(story, ppr, ranker, cache, prnt=False)
+    filename = clip_filename(filename, 'csv')
+    with open(filename+'.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        for i in range(len(results)):
+            writer.writerow([i, results[i]])
+
+    if prnt: print('wrote measure ranker to', str(filename)+'.csv')
+    return results
 
 def clip_filename ( filename, extension ):
 # so that it doesn't matter if the user calls their file 'myname' or 'myname.json'
