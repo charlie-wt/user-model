@@ -6,17 +6,22 @@ import csv
 import page as pg
 import analyser as an
 
-##### exporter ###############
-# functions to export a bunch of the program's data structures & outputs to csv.
-##############################
+'''
+exporter
+
+functions to export a bunch of the program's data structures & outputs to csv.
+'''
 
 def paths_per_reading_to_csv ( ppr, filename='mypaths_per_reading', prnt=False ):
-# export a paths per reading dictionary. Not totally useful when the user logs
-# exist as well, but there you go.
-# format:
-#   reading1.id, reading1.page1.id, ..., reading1.pagen.id
-#                            ...
-#   readingn.id, readingn.page1.id, ..., readingn.pagen.id
+    '''
+    export a paths per reading dictionary. Not totally useful when the user logs
+    exist as well, but there you go.
+
+    format:
+      reading1.id, reading1.page1.id, ..., reading1.pagen.id
+                               ...
+      readingn.id, readingn.page1.id, ..., readingn.pagen.id
+    '''
     filename = clip_filename(filename, 'csv')
     with open(filename+'.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
@@ -30,11 +35,14 @@ def paths_per_reading_to_csv ( ppr, filename='mypaths_per_reading', prnt=False )
             ('s' if len(ppr) > 1 else ''), 'to', str(filename)+'.csv')
 
 def paths_to_csv ( stores, filename='mypaths', prnt=False ):
-# export lists of pages
-# format:
-#   path1.page1.id, ..., path1.pagen.id
-#                   ...
-#   pathn.page1.id, ..., pathn.pagen.id
+    '''
+    export lists of pages.
+
+    format:
+      path1.page1.id, ..., path1.pagen.id
+                      ...
+      pathn.page1.id, ..., pathn.pagen.id
+    '''
     filename = clip_filename(filename, 'csv')
     if type(stores[0]) is not list:
         stores = [stores]
@@ -49,16 +57,21 @@ def paths_to_csv ( stores, filename='mypaths', prnt=False ):
                   ('s' if len(stores) > 1 else ''), 'to', str(filename)+'.csv')
 
 def path_to_csv ( store, filename='mypath', prnt=False ):
-# export a list of pages
-# format:
-#   page1.id, ..., pagen.id
+    '''
+    export a list of pages.
+
+    format:
+      page1.id, ..., pagen.id
+    '''
     filename = clip_filename(filename, 'csv')
     paths_to_csv(store, filename, prnt=False)
     if prnt: print('wrote path to', str(filename)+'.csv')
 
 def stores_to_csv ( stores, story, filename='mystores', prnt=False ):
-# export a store (pages in a path, along with probabilities of next page to visit).
-# TODO - does it even make sense to try and stuff this into a csv format?
+    ''' export a store (pages in a path, along with probabilities of next page
+    to visit).
+    '''
+    # TODO - does it even make sense to try and stuff this into a csv format?
     filename = clip_filename(filename, 'csv')
     if type(stores[0]) is not list:
         stores = [stores]
@@ -97,9 +110,12 @@ def store_to_csv ( store, story, filename='mystore', prnt=False ):
     if prnt: print('wrote store to', str(filename)+'.csv')
 
 def cache_to_csv ( cache, filename='mycache', prnt=False ):
-# export a cache (list of heuristic values)
-# format:
-#   data_type, page1.id, [page2.id, ..., pagen.id,] value
+    '''
+    export a cache (list of heuristic values).
+
+    format:
+      data_type, page1.id, [page2.id, ..., pagen.id,] value
+    '''
     from collections import defaultdict
     filename = clip_filename(filename, 'csv')
 
@@ -120,13 +136,16 @@ def cache_to_csv ( cache, filename='mycache', prnt=False ):
     if prnt: print('wrote cache to', str(filename)+'.csv')
 
 def regression_to_csv ( reg, filename='myregression', prnt=False ):
-# export regression parameters (list of heuristic values)
-# format:
-#   weight[0][0], weight[0][1], ... weight[0][n]
-#                      ...
-#   weight[n][0], weight[n][1], ... weight[n][n]
-#
-#        bias[0],      bias[1], ...      bias[n]
+    '''
+    export regression parameters (list of heuristic values).
+
+    format:
+      weight[0][0], weight[0][1], ... weight[0][n]
+                         ...
+      weight[n][0], weight[n][1], ... weight[n][n]
+
+           bias[0],      bias[1], ...      bias[n]
+    '''
     filename = clip_filename(filename, 'csv')
     with open(filename+'.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
@@ -138,25 +157,28 @@ def regression_to_csv ( reg, filename='myregression', prnt=False ):
     if prnt: print('wrote regression to', str(filename)+'.csv')
 
 def logreg_to_csv ( logreg, filename='mylogreg', prnt=False ):
-# convenience function, for readibility mostly.
+    ''' convenience function, for readibility mostly. '''
     filename = clip_filename(filename, 'csv')
     regression_to_csv(logreg, filename, prnt=False)
     if prnt: print('wrote logistic regression to', str(filename)+'.csv')
 def linreg_to_csv ( linreg, filename='mylinreg', prnt=False ):
-# convenience function, for readability mostly.
+    ''' convenience function, for readability mostly. '''
     filename = clip_filename(filename, 'csv')
     regression_to_csv(linreg, filename, prnt=False)
     if prnt: print('wrote linear regression to', str(filename)+'.csv')
 
 def nn_to_csv ( nn, filename='myNN', prnt=False ):
-# export a neural network (list of weight matrices & bias vectors)
-# format:
-#   w1, [                                         ]
-#   w1, [     <weight matrix for first layer>     ]
-#   w1, [                                         ]
-#                   ... repeat to wn ...
-#   b1, [      <bias vector for first layer>      ]
-#                   ... repeat to bn ...
+    '''
+    export a neural network (list of weight matrices & bias vectors).
+
+    format:
+      w1, [                                         ]
+      w1, [     <weight matrix for first layer>     ]
+      w1, [                                         ]
+                      ... repeat to wn ...
+      b1, [      <bias vector for first layer>      ]
+                      ... repeat to bn ...
+    '''
     import numpy as np
     filename = clip_filename(filename, 'csv')
     with open(filename+'.csv', 'w', newline='') as csvfile:
@@ -206,7 +228,7 @@ def store_to_json ( store, filename='mystore', prnt=False ):
 
 def compare_paths_to_csv ( story, store1, store2, filename='path comparison',
                            prnt=False ):
-# export the result of analyser.compare_paths to csv
+    ''' export the result of analyser.compare_paths to csv. '''
     result = an.compare_paths(story, store1, store2, prnt=False)
     filename = clip_filename(filename, 'csv')
     with open(filename+'.csv', 'w', newline='') as csvfile:
@@ -218,7 +240,7 @@ def compare_paths_to_csv ( story, store1, store2, filename='path comparison',
 
 def path_similarity_to_csv ( story, store1, store2, filename='path similarity',
                              prnt=False ):
-# export the result of analyser.path_similarity to csv
+    ''' export the result of analyser.path_similarity to csv. '''
     result = an.path_similarity(story, store1, store2, prnt=False)
     filename = clip_filename(filename, 'csv')
     with open(filename+'.csv', 'w', newline='') as csvfile:
@@ -229,7 +251,7 @@ def path_similarity_to_csv ( story, store1, store2, filename='path similarity',
     return result
 
 def page_visits_to_csv ( story, stores, filename='page visits', prnt=False ):
-# export the result of analyser.page_visits to csv
+    ''' export the result of analyser.page_visits to csv. '''
     results = an.page_visits(story, stores, prnt=False)
     filename = clip_filename(filename, 'csv')
     with open(filename+'.csv', 'w', newline='') as csvfile:
@@ -241,7 +263,7 @@ def page_visits_to_csv ( story, stores, filename='page visits', prnt=False ):
     return results
 
 def most_visited_to_csv ( story, stores, filename='most visited', prnt=False ):
-# export the result of analyser.most_visited to csv
+    ''' export the result of analyser.most_visited to csv. '''
     results = an.most_visited(story, stores, prnt=False)
     filename = clip_filename(filename, 'csv')
     with open(filename+'.csv', 'w', newline='') as csvfile:
@@ -253,7 +275,7 @@ def most_visited_to_csv ( story, stores, filename='most visited', prnt=False ):
     return results
 
 def get_unreachables_to_csv ( story, stores=None, cache=None, filename='get unreachables', prnt=False ):
-# export the result of analyser.get_unreachables to csv
+    ''' export the result of analyser.get_unreachables to csv. '''
     results = an.get_unreachables(story, stores, cache, prnt=False)
     filename = clip_filename(filename, 'csv')
     with open(filename+'.csv', 'w', newline='') as csvfile:
@@ -265,7 +287,7 @@ def get_unreachables_to_csv ( story, stores=None, cache=None, filename='get unre
     return results
 
 def distance_travelled_to_csv ( story, stores, filename='distance travelled', prnt=False ):
-# export the result of analyser.distance_travelled to csv
+    ''' export the result of analyser.distance_travelled to csv. '''
     results = an.distance_travelled(story, stores, prnt=False)
     filename = clip_filename(filename, 'csv')
     with open(filename+'.csv', 'w', newline='') as csvfile:
@@ -277,7 +299,7 @@ def distance_travelled_to_csv ( story, stores, filename='distance travelled', pr
     return results
 
 def branching_factor_to_csv ( story, stores, filename='branching factor', prnt=False ):
-# export the result of analyser.branching_factor to csv
+    ''' export the result of analyser.branching_factor to csv. '''
     result = an.branching_factor(story, stores, prnt=False)
     filename = clip_filename(filename, 'csv')
     with open(filename+'.csv', 'w', newline='') as csvfile:
@@ -288,7 +310,7 @@ def branching_factor_to_csv ( story, stores, filename='branching factor', prnt=F
     return result
 
 def measure_ranker_to_csv ( story, ppr, ranker, cache=None, filename='measure ranker', prnt=False ):
-# export the result of analyser.measure_ranker to csv
+    ''' export the result of analyser.measure_ranker to csv. '''
     results = an.measure_ranker(story, ppr, ranker, cache, prnt=False)
     filename = clip_filename(filename, 'csv')
     with open(filename+'.csv', 'w', newline='') as csvfile:
@@ -300,14 +322,16 @@ def measure_ranker_to_csv ( story, ppr, ranker, cache=None, filename='measure ra
     return results
 
 def clip_filename ( filename, extension ):
-# so that it doesn't matter if the user calls their file 'myname' or 'myname.json'
+    ''' so that it doesn't matter if the user calls their file 'myname' or
+    'myname.json'.
+    '''
     ext_length = len(extension)+1
     if filename[-ext_length:] == '.'+extension:
         filename = filename[:-ext_length]
     return filename
 
 def page_id ( page ):
-# get an identifier for a page, taking into account quitting etc.
+    ''' get an identifier for a page, taking into account quitting etc. '''
     name = '---'
     if type(page) is pg.Page:
         name = page.id

@@ -7,6 +7,9 @@ import condition
 import ls
 
 class TimePassedCondition (condition.Condition):
+    ''' a condition that checks whether enough time has passed since a
+    variable was set.
+    '''
     def __init__ ( self, id, variable, minutes ):
         self.id = id
         self.type = "timepassed"
@@ -14,14 +17,15 @@ class TimePassedCondition (condition.Condition):
         self.minutes = minutes
 
     def check ( self, vars, conds, locs=None, userLoc=None ):
-    # check the condition
-    # TODO - as yet untested
-    # TODO - should probably just return True, as with locationConditions.
-        ts = ls.get(vars, self.variable)
+        ''' check the condition '''
+        return True
 
-        now = time.time()
-        timestamp = int(ts.value)
-
-        earliest = timestamp + now
-
-        return earliest < now
+#        # TODO - as yet untested
+#        ts = ls.get(vars, self.variable)
+#
+#        now = time.time()
+#        timestamp = int(ts.value)
+#
+#        earliest = timestamp + now
+#
+#        return earliest < now

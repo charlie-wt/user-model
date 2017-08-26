@@ -16,13 +16,17 @@ import cache as ch
 import ls
 import printer as pt
 
-##### ml #####################
-# machine learning stuff.
-##############################
+'''
+ml
+
+machine learning stuff.
+'''
 
 def formalise ( story, ppr, cache=None, prnt=False, normalise=True,
                 exclude_poi=False, enforce_ordering=True ):
-# put list of pages (forming a path) into a form that can be interpreted by ml.
+    ''' put list of pages (forming a path) into a form that can be interpreted
+    by ml.
+    '''
     if len(ppr) == 0:
         raise ValueError('no logged readings to formalise.')
 
@@ -84,7 +88,7 @@ def formalise ( story, ppr, cache=None, prnt=False, normalise=True,
     return (xs, ys)
 
 def make_input ( story, user, pages, cache=None, exclude_poi=False ):
-# get a tuple of heuristics + rankings for each page.
+    ''' get a tuple of heuristics + rankings for each page. '''
     if type(pages) != list: pages = [pages]
 
     xs = []
@@ -385,8 +389,10 @@ def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     return average
 
 def one_hot ( data, num_classes=None ):
-# convert a list of class labels (0, 1, 2 etc.) into a list of probability
-# distributions where all probabilities are 0, except the true value which is 1.
+    ''' convert a list of class labels (0, 1, 2 etc.) into a list of
+    probability distributions where all probabilities are 0, except the true
+    value which is 1.
+    '''
     oh = []
     if num_classes is None: num_classes = max(data) + 1
 
@@ -398,7 +404,7 @@ def one_hot ( data, num_classes=None ):
     return oh
 
 def batches ( data, batch_size ):
-# turn big list of data into a bunch of batches
+    ''' turn big list of data into a bunch of batches. '''
     bs = batch_size
     nb = math.ceil(len(data)/batch_size)
     return [ data[i*bs:(i+1)*bs] for i in range(nb) ]

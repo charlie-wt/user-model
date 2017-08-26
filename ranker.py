@@ -9,11 +9,12 @@ import numpy
 import math
 import random
 
-###### ranker ################
-# take visible pages, and return probability distribution of them for which
-# page to choose via one of the functions. output to be given to some decider
-# function.
-##############################
+'''
+ranker
+
+take visible pages, and return probability distribution of them for which page
+to choose via one of the functions. output to be given to some decider function.
+'''
 
 prnt=False
 
@@ -38,7 +39,7 @@ reg = {}
 reg_no_poi = {}
 
 def rand ( user, story, pages, cache=None ):
-# random
+    ''' random. '''
     prob = 1 / len(pages)
     options = {}
     for i in range(len(pages)):
@@ -46,7 +47,7 @@ def rand ( user, story, pages, cache=None ):
     return options
 
 def rank_by ( heuristic, inverse=False, no_loops=False ):
-# rank using a heuristic
+    ''' rank using a heuristic. '''
     def rank ( user, story, pages, cache=None ):
         # possibly only deal with pages not previously visited
         choices = pages
@@ -85,37 +86,37 @@ def rank_by ( heuristic, inverse=False, no_loops=False ):
     return rank
 
 def dist ( user, story, pages, cache=None ):
-# shortest straight line distance
+    ''' shortest straight line distance. '''
     fn = rank_by(hs.distance, True, True)
     return fn(user, story, pages, cache)
 
 def walk_dist ( user, story, pages, cache=None ):
-# shortest walking distance, via roads
+    ''' shortest walking distance, via roads. '''
     fn = rank_by(hs.walk_dist, True, True)
     return fn(user, story, pages, cache)
 
 def visits ( user, story, pages, cache=None ):
-# prefer the least visited page
+    ''' prefer the least visited page. '''
     fn = rank_by(hs.visits, True, True)
     return fn(user, story, pages, cache)
 
 def alt ( user, story, pages, cache=None ):
-# prefer to go downhill
+    ''' prefer to go downhill. '''
     fn = rank_by(hs.altitude, True, True)
     return fn(user, story, pages, cache)
 
 def poi ( user, story, pages, cache=None ):
-# prefer pages with more nearby points of interest
+    ''' prefer pages with more nearby points of interest. '''
     fn = rank_by(hs.points_of_interest, False, True)
     return fn(user, story, pages, cache)
 
 def mentioned ( user, story, pages, cache=None ):
-# prefer pages with names mentioned more by the current page's text.
+    ''' prefer pages with names mentioned more by the current page's text. '''
     fn = rank_by(hs.mentioned, False, True)
     return fn(user, story, pages, cache)
 
 def logreg ( user, story, pages, cache=None ):
-# use logistic regression model to predict the page to choose.
+    ''' use logistic regression model to predict the page to choose. '''
     import ml
     model = reg
     if not model: raise ValueError('Please initialise regression parameters.')
@@ -171,7 +172,7 @@ def logreg ( user, story, pages, cache=None ):
     return options
 
 def linreg ( user, story, pages, cache=None ):
-# use logistic regression model to predict the page to choose.
+    ''' use linear regression model to predict the page to choose. '''
     import ml
     model = manual_heuristics
     if not model: raise ValueError('Please initialise regression parameters.')
@@ -245,7 +246,7 @@ def linreg ( user, story, pages, cache=None ):
     return options
 
 def nn ( user, story, pages, cache=None ):
-# use logistic regression model to predict the page to choose.
+    ''' use logistic regression model to predict the page to choose. '''
     import ml
     import numpy as np
     if not net: raise ValueError('Please initialise neural network.')
@@ -297,7 +298,7 @@ def nn ( user, story, pages, cache=None ):
     return options
 
 def _net ( x, w, b ):
-# run a neural net (defined by the weight & bias arrays) on an input
+    ''' run a neural net (defined by the weight & bias arrays) on an input. '''
     import numpy as np
 
     num_hidden_layers = len(b) - 1

@@ -6,12 +6,14 @@ import printer as pt
 import ls
 import cache as ch
 
-##### gui ####################
-# functions to display various bits of info in a gui.
-##############################
+'''
+gui
+
+functions to display various bits of info in a gui.
+'''
 
 def visit_proportions_plot ( ax, story, sim_store=None, ppr=None, sort='' ):
-# a bar chart of the proportion of visits to each page
+    ''' a bar chart of the proportion of visits to each page. '''
     if sim_store is None and ppr is None: return
 
     # global info
@@ -70,7 +72,9 @@ def visit_proportions_plot ( ax, story, sim_store=None, ppr=None, sort='' ):
     return ax
 
 def visit_proportions ( story, sim_store=None, ppr=None, sort='' ):
-# display a window with a bar chart of the proportion of visits to each page
+    ''' display a window with a bar chart of the proportion of visits to each
+    page.
+    '''
     # set up window
     mpl.rcParams['toolbar'] = 'none'
     mpl.rcParams['font.family'] = 'serif'
@@ -86,7 +90,7 @@ def visit_proportions ( story, sim_store=None, ppr=None, sort='' ):
 
 def text_info_plot ( ax, story, ppr=None, stores=None, sim_store=None,
                      ranker=None, cache=None ):
-# some basic stats on a story, shown via text
+    ''' some basic stats on a story, shown via text. '''
     hide_graph_stuff(ax)
     cells = []
     if cache is None: cache = ch.cache()
@@ -162,7 +166,9 @@ def text_info ( story, ppr=None, stores=None, sim_store=None, ranker=None,
     plt.show()
 
 def path_comparison_plot ( ax, story, sim_store, log_store ):
-# show paths taken by simulation & average log, & edit distance between them.
+    ''' show paths taken by simulation & average log, & edit distance between
+    them.
+    '''
     hide_graph_stuff(ax)
 
     # get page names for paths, put in right format for table
@@ -220,7 +226,9 @@ def path_comparison ( story, sim_store, log_store ):
     plt.show()
 
 def measure_ranker_plot ( ax, story, ppr, ranker, cache=None ):
-# plot the frequency of choices in relation to how the ranker ranked them.
+    ''' plot the frequency of choices in relation to how the ranker ranked
+    them.
+    '''
     counts = an.measure_ranker(story, ppr, ranker, cache)
 
     # chart params
@@ -245,7 +253,9 @@ def measure_ranker_plot ( ax, story, ppr, ranker, cache=None ):
     return ax
 
 def measure_ranker ( story, ppr, ranker, cache=None ):
-# display a window with a bar chart showing a comparison of log choice & ranker
+    ''' display a window with a bar chart showing a comparison of log choice &
+    ranker.
+    '''
     # set up window
     mpl.rcParams['toolbar'] = 'none'
     mpl.rcParams['font.family'] = 'serif'
@@ -292,7 +302,7 @@ def show_main_three ( story, ppr, stores, sim_store, log_store, ranker,
 def show_all ( story, ppr=None, stores=None, sim_store=None, log_store=None,
                ranker=None, cache=None ):
     if cache is None: cache = ch.cache()
-# everything in one window
+    ''' everything in one window. '''
     # basic window stuff
     mpl.rcParams['toolbar'] = 'none'
     mpl.rcParams['font.family'] = 'serif'
@@ -323,7 +333,7 @@ def show_all ( story, ppr=None, stores=None, sim_store=None, log_store=None,
     plt.show()
 
 def hide_graph_stuff ( ax ):
-# remove axes & ticks for a subplot
+    ''' remove axes & ticks for a subplot. '''
     ax.spines['left'].set_color('none')
     ax.spines['right'].set_color('none')
     ax.spines['top'].set_color('none')

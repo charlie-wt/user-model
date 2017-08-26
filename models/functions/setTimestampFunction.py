@@ -7,6 +7,7 @@ import function
 import ls
 
 class SetTimestampFunction (function.Function):
+    ''' a function that sets a variable to be equal to the current time. '''
     def __init__ ( self, id, conditions, variable ):
         self.id = id
         self.type = "settimestamp"
@@ -14,6 +15,7 @@ class SetTimestampFunction (function.Function):
         self.variable = variable
 
     def execute ( self, story, reading, user=None ):
+        ''' execute the function. '''
         if not self.conditions_pass(reading.vars, story.conditions, story.locations, user.loc): return
 
         var = ls.get(reading.vars, self.var)

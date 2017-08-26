@@ -8,12 +8,14 @@ import page as pg
 import record as rc
 import ls
 
-##### printer ################
-# functions for printing various bits of info, to keep the main code clean.
-##############################
+'''
+printer
+
+functions for printing various bits of info, to keep the main code clean.
+'''
 
 def print_story ( story, reading=None ):
-# print basic story info
+    ''' print basic story info. '''
     print("'"+story.name+"' is story", story.id, "and contains", len(story.pages), "pages,", len(story.conditions), "conditions,", len(story.functions), "functions", end="")
     if reading is not None:
         print(",", len(story.locations), "locations &", len(reading.vars), "variables.")
@@ -21,12 +23,12 @@ def print_story ( story, reading=None ):
         print(" &", len(story.locations), "locations.")
 
 def print_user_state ( user ):
-# print where the user is in the story
+    ''' print where the user is in the story. '''
     print("user is now at page '"+user.page().name+"',",
           "and is at location ("+str(user.lat())+", "+str(user.lon())+").")
 
 def print_visible ( vis, story, us ):
-# print the list of visible pages in a story
+    ''' print the list of visible pages in a story. '''
     print("\tvisible pages:")
     for p in vis:
         page_loc = p.get_loc(story)
@@ -37,21 +39,21 @@ def print_visible ( vis, story, us ):
             print("\t" + p.id + " : " + p.name + ", which can be accessed from anywhere.")
 
 def print_all_paths ( stores, story=None, print_id=False ):
-# print all the paths taken through a story
+    ''' print all the paths taken through a story. '''
     if story is not None: print('all', len(stores), 'paths through', story.name+':')
     for path in stores:
         print('---------------------------------------------------')
         print_pages(path, print_id=print_id)
 
 def print_pages ( pages, story=None, print_id=False ):
-# print a bunch of pages
+    ''' print a bunch of pages. '''
     if type(pages[0]) == rc.Record: pages = [ r.page for r in pages ]
     if story is not None: print("path through", story.name+":")
     for p in pages: print((p.id+" : " if print_id else "") + \
                           (p.name if type(p) is pg.Page else "---"))
 
 def print_log_paths ( story, paths ):
-# print paths per reading, as output by log importer
+    ''' print paths per reading, as output by log importer. '''
     print("Paths through "+story.name+", for", len(paths), "readings:")
     for r in paths.keys():
         print("reading "+r+":")
@@ -59,7 +61,7 @@ def print_log_paths ( story, paths ):
             print("\t", p.id, ":", p.name)
 
 def print_event_path ( story, path ):
-# print the path of events taken through a story by a real user
+    ''' print the path of events taken through a story by a real user. '''
     if len(path) is 0: return
 
     print("Path taken by user through "+story.name+":")
@@ -72,15 +74,16 @@ def print_event_path ( story, path ):
             print(pg.data["cardLabel"], "("+pg.data["cardId"]+")", "(NOT FOUND)")
 
 def print_page_ranking ( pages, probs ):
-# print pages & their probabilities. Assumes desired ordering.
+    ''' print pages & their probabilities. Assumes desired ordering. '''
     print("Page rankings:")
     for i in range(len(pages)):
         print(pc(probs[i]), ":", pages[i].name)
     print("---")
 
 def print_options ( options, page ):
-# similar to print_page_ranking, but takes an options dictionary and deals with
-# the end case - for use by functions in analyser.py
+    ''' similar to print_page_ranking, but takes an options dictionary and
+    deals with the end case - for use by functions in analyser.py.
+    '''
     pname = page.name if page is not None else "---"
     print("Options from "+pname+":")
     for p in options:
@@ -89,12 +92,14 @@ def print_options ( options, page ):
         print("\t"+pc(options[p]), ":", name)
 
 def print_store ( store ):
-# print the path taken with choice probabilities, via a store (list of records)
+    ''' print the path taken with choice probabilities, via a store (list of
+    records).
+    '''
     for r in store:
         print_options(r.options, r.page)
 
 def pc ( num, dec=0 ):
-# percentify a 0-1 fraction
+    ''' percentify a 0-1 fraction. '''
     if dec > 0: dec += 1
     percent = str(num*100)
     rounded = percent+"%"
@@ -103,14 +108,14 @@ def pc ( num, dec=0 ):
     return " "+rounded if num < 0.1 else rounded
 
 def truncate ( word, length=16, ellipses=True ):
-# truncate a word to a certain length
+    ''' truncate a word to a certain length. '''
     shortened = word[:length]
     if ellipses:
         shortened = shortened[:-3] + '...'
     return shortened
 
 def fmt ( num, dec=0, suf=''):
-# round a number to dec decimal places, return string with suf suffix.
+    ''' round a number to dec decimal places, return string with suf suffix. '''
     if dec > 0: dec += 1
     stnum = str(num)
     rounded = stnum + suf
@@ -118,8 +123,9 @@ def fmt ( num, dec=0, suf=''):
     return rounded
 
 def print_walk_full_options ( visible, options, allow_quitting ):
-# print visible pages, options taken by users and their intersection (for use
-# during analysis walks).
+    ''' print visible pages, options taken by users and their intersection
+    for use during analysis walks).
+    '''
     print("popularity of pages:\n\tvisible:")
     for p in visible:
         amount = 0
@@ -139,7 +145,7 @@ def print_walk_full_options ( visible, options, allow_quitting ):
             print("\t\t"+o.name, pc(options[o]))
 
 def print_sim_log_comparison ( sim_path, log_path ):
-# compare the paths taken by a simulation, and an analysis walk
+    ''' compare the paths taken by a simulation, and an analysis walk. '''
     print("-------------------------------------------------------------------")
     print("sim                               log")
     print("-------------------------------------------------------------------")
@@ -155,7 +161,9 @@ def print_sim_log_comparison ( sim_path, log_path ):
         print(s_name + " "*left_pad + l_name)
 
 def print_cache ( cache ):
-# print a cache, currently with max depth of two elements between type & value.
+    ''' print a cache, currently with max depth of two elements between type &
+    value.
+    '''
     for t in cache:
         for elem in cache[t]:
             if type(cache[t][elem]) is defaultdict:

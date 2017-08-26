@@ -5,6 +5,9 @@ import condition
 import ls
 
 class LogicalCondition (condition.Condition):
+    ''' a condition that evaluates two variables with a logical operator (AND,
+    OR).
+    '''
     def __init__ ( self, id, operand, conditions ):
         self.id = id
         self.type = "logical"
@@ -12,7 +15,7 @@ class LogicalCondition (condition.Condition):
         self.conditions = conditions
 
     def check ( self, vars, conds, locs=None, userLoc=None ):
-    # check the condition
+        ''' check the condition. '''
         if self.operand == "AND":
             for c in self.conditions:
                 if not ls.get(conds, c).check(vars, conds, locs, userLoc): return False

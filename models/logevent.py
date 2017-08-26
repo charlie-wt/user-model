@@ -11,6 +11,7 @@ class LogEvent (base.Base):
         self.data = data
 
 def make_time ( string, legacy=False ):
+    ''' turn string in json's time format into datetime object. '''
     if legacy:
         return datetime.strptime(string, "%Y-%m-%dT%X.000Z")
     else:

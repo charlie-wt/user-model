@@ -5,6 +5,7 @@ import function
 import ls
 
 class ChainFunction (function.Function):
+    ''' a function that executes a list of other functions. '''
     def __init__ ( self, id, conditions, functions ):
         self.id = id
         self.type = "chain"
@@ -12,6 +13,7 @@ class ChainFunction (function.Function):
         self.functions = functions
 
     def execute ( self, story, reading, user=None ):
+        ''' execute the function. '''
         if not self.conditions_pass(reading.vars, story.conditions, story.locations, user.loc): return
         if not self.functions: return
 

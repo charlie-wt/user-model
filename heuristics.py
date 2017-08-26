@@ -10,13 +10,15 @@ import ls
 import mapping as mp
 import printer as pt
 
-##### heuristics #############
-# a set of functions by which to judge a page's appealingness. To be used in
-# ranking algorithms, primarily.
-##############################
+'''
+heuristics
+
+a set of functions by which to judge a page's appealingness. To be used in
+ranking algorithms, primarily.
+'''
 
 def distance ( page, user, story, cache=None ):
-# straight line distance from user -> page.
+    ''' straight line distance from user -> page. '''
     prnt=False
     page_loc = page.get_loc(story)
     us_page = user.page()
@@ -43,12 +45,12 @@ def distance ( page, user, story, cache=None ):
     return dist
 
 def visits ( page, user, story=None, cache=None ):
-# has the user visited this node before?
+    ''' has the user visited this node before? '''
 #    print('looking for', page.id, 'in', [ p.id for p in user.path ], ':', ls.count(user.path, page.id))
     return ls.count(user.path, page.id)
 
 def walk_dist ( page, user, story, cache=None ):
-# walking distance, via roads (osrm).
+    ''' walking distance, via roads (osrm). '''
     prnt=False
     page_loc = page.get_loc(story)
     us_page = user.page()
@@ -76,7 +78,7 @@ def walk_dist ( page, user, story, cache=None ):
     return dist
 
 def altitude ( page, user, story, cache=None ):
-# altitude of page
+    ''' altitude of page. '''
     prnt=False
     page_loc = page.get_loc(story)
     if page_loc is None:
@@ -96,7 +98,7 @@ def altitude ( page, user, story, cache=None ):
     return alt
 
 def points_of_interest ( page, user, story, cache=None ):
-# get the number of points of interest near a page
+    ''' get the number of points of interest near a page. '''
     prnt=False
     page_loc = page.get_loc(story)
     if page_loc is None: page_loc = user.loc
@@ -113,7 +115,7 @@ def points_of_interest ( page, user, story, cache=None ):
     return poi
 
 def mentioned ( page, user, story, cache=None ):
-# how much the title of 'page' is mentioned by the previous page.
+    ''' how much the title of 'page' is mentioned by the previous page. '''
     # use tf-idf (term frequency, inverse document frequency) for this.
     us_page = user.page()
     prnt=False

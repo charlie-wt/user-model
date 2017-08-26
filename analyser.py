@@ -16,12 +16,14 @@ import traverser as tr
 import location as lc
 import heuristics as hs
 
-##### analyser ###############
-# various functions to analyse a set of readings of a story.
-##############################
+'''
+analyser
+
+various functions to analyse a set of readings of a story.
+'''
 
 def compare_paths ( story, store1, store2, prnt=False ):
-# compare two paths taken through a story.
+    ''' compare two paths taken through a story. '''
 # TODO - don't just take into account the final path - also probabilities along
 #        the way.
     # convert paths to lists
@@ -34,7 +36,7 @@ def compare_paths ( story, store1, store2, prnt=False ):
     return difference
 
 def path_similarity ( story, store1, store2, prnt=False ):
-# get the proportional similarity between two paths
+    ''' get the proportional similarity between two paths. '''
     minimum = 0
     maximum = max(len(store1), len(store2))
     possible_range = maximum - minimum
@@ -46,8 +48,9 @@ def path_similarity ( story, store1, store2, prnt=False ):
     return similarity
 
 def levenshtein ( s1, s2 ):
-# get the edit distance between two strings
-# based off implementation @ https://en.wikipedia.org/wiki/Levenshtein_distance#Iterative_with_two_matrix_rows
+    ''' get the edit distance between two strings.
+    based off implementation @ https://en.wikipedia.org/wiki/Levenshtein_distance#Iterative_with_two_matrix_rows
+    '''
 
     # v0: row above the current row in the matrix.
     #     initialise to top row; row where s1 = ""
@@ -71,7 +74,7 @@ def levenshtein ( s1, s2 ):
     return v0[-1]
 
 def levenshtein_similarity ( s1, s2, prnt=False ):
-# get proportional similarity between two strings
+    ''' get proportional similarity between two strings. '''
     minimum = 0
     maximum = max(len(s1), len(s2))
     possible_range = maximum - minimum
@@ -83,7 +86,7 @@ def levenshtein_similarity ( s1, s2, prnt=False ):
     return similarity
 
 def page_visits ( story, stores, prnt=False ):
-# find out how many times each page was visited for 1-n readings.
+    ''' find out how many times each page was visited for 1-n readings. '''
     if type(stores[0]) is not list: stores = [stores]
     total_visits = {}
     for p in story.pages: total_visits[p] = 0
@@ -102,8 +105,9 @@ def page_visits ( story, stores, prnt=False ):
     return total_visits
 
 def most_visited ( story, stores, prnt=False ):
-# get a list of pages & the proportion of times they were visited, ordered as
-# tuples.
+    ''' get a list of pages & the proportion of times they were visited, ordered
+    as tuples.
+    '''
     visits = page_visits(story, stores)
 
     # get proportions
@@ -121,7 +125,9 @@ def most_visited ( story, stores, prnt=False ):
     return proportions
 
 def log_most_visited ( story, ppr, prnt=False ):
-# similar to most_visited, but take in a 'paths per reading' list from a log.
+    ''' similar to most_visited, but take in a 'paths per reading' list from a
+    log.
+    '''
     # count up the number of visits per page
     visits = {}
     for p in story.pages: visits[p] = 0
@@ -144,7 +150,7 @@ def log_most_visited ( story, ppr, prnt=False ):
     return proportions
 
 def get_unreachables ( story, stores=None, cache=None, prnt=False ):
-# for a bunch of readings, return the pages that were never reached.
+    ''' for a bunch of readings, return the pages that were never reached. '''
     if stores is None: stores = tr.traverse(story, n=150, cache=cache)
     visits = page_visits(story, stores)
     unreachables = [ p for p in visits if visits[p] == 0 ]
@@ -159,7 +165,7 @@ def get_unreachables ( story, stores=None, cache=None, prnt=False ):
     return unreachables
 
 def distance_travelled ( story, stores, prnt=False ):
-# total distance travelled while walking the given route of the story
+    ''' total distance travelled while walking the given route of the story. '''
     if type(stores[0]) is not list: stores = [stores]
     distances = []
 
@@ -197,7 +203,7 @@ def distance_travelled ( story, stores, prnt=False ):
     return distances
 
 def branching_factor ( story, stores, prnt=False ):
-# get the average number of choices from any given page.
+    ''' get the average number of choices from any given page. '''
     total = 0
 
     for s in stores:
@@ -210,7 +216,9 @@ def branching_factor ( story, stores, prnt=False ):
 
 def filter_readings ( story, epr, max_metres_per_second=5, legacy=False,
                       prnt=False ):
-# take an events per reading dictionary, and filter out illegitimate ones
+    ''' take an events per reading dictionary, and filter out illegitimate
+    ones.
+    '''
     filtered = {}
     reading = rd.Reading("reading-0", story)
     user = us.User("user-0")
@@ -293,7 +301,9 @@ def filter_readings ( story, epr, max_metres_per_second=5, legacy=False,
     return filtered
 
 def measure_ranker ( story, ppr, ranker, cache=None, prnt=False ):
-# see how the ordering of a ranker measures up against the choices made in logs.
+    ''' see how the ordering of a ranker measures up against the choices made in
+    logs.
+    '''
     if cache is None: cache = ch.cache()
     # simple list to store the index of each choice, in chronological order.
     options_taken = []

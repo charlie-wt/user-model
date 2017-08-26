@@ -33,12 +33,14 @@ import record as rc
 import user as us
 import reading as rd
 
-##### importer ###############
-# a set of functions to import various structures from json files.
-##############################
+'''
+importer
+
+a set of functions to import various structures from json files.
+'''
 
 def story_from_json ( filename, prnt=False ):
-# load a story in from a .json file
+    ''' load a story in from a .json file. '''
     # read the file, and convert to a json object
     filename = ex.clip_filename(filename, 'json')
     file = open(filename+".json", 'r', encoding='utf-8')
@@ -176,8 +178,9 @@ def location_from_json ( json ):
             float(json["radius"]))
 
 def path_events_from_json ( filename, story=None, legacy=False, prnt=False):
-# read a log file and return a dictionary containing the paths taken through the
-# specified story, per reading.
+    ''' read a log file and return a dictionary containing the paths taken
+    through the specified story, per reading.
+    '''
     # load file
     filename = ex.clip_filename(filename, 'json')
     logfile = open(filename+".json", 'r', encoding='utf-8')
@@ -223,8 +226,9 @@ def log_event_from_json ( json, legacy=False ):
             json["data"])
 
 def path_pages_from_json ( filename, story, legacy=False, prnt=False ):
-# same as path_events_from_json, but the dictionary contains lists of pages,
-# instead of lists of events
+    ''' same as path_events_from_json, but the dictionary contains lists of
+    pages, instead of lists of events.
+    '''
     epr = path_events_from_json(filename, story, legacy, False)
     ppr = {}
 
@@ -240,7 +244,7 @@ def filtered_paths_from_json ( filename, story, legacy=False, prnt=False ):
     return an.filter_readings(story, epr, legacy=legacy, prnt=prnt)
 
 def cache_from_csv ( filename, prnt=False ):
-# read in a heuristics cache from a .csv file.
+    ''' read in a heuristics cache from a .csv file. '''
     filename = ex.clip_filename(filename, 'csv')
     cache = ch.cache()
 
@@ -358,14 +362,14 @@ def stores_from_json ( filename, story, prnt=False ):
     return stores
 
 def merge_paths_per_readings ( ppr1, ppr2 ):
-# put two paths_per_reading dictionaries together.
-# TODO - extend this to arbitrary length.
+    ''' put two paths_per_reading dictionaries together. '''
+    # TODO - extend this to arbitrary length.
     new = ppr1.copy()
     new.update(ppr2)
     return new
 
 def num ( string ):
-# try and convert a string to a number (but leave it if you can't)
+    ''' try and convert a string to a number (but leave it if you can't). '''
     try:
         return int(string)
     except:

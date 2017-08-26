@@ -6,9 +6,11 @@ from urllib.error import HTTPError
 import json
 import time
 
-##### mapping ################
-# functions to work out mapping-related stuff, like walk routes & altitude.
-##############################
+'''
+mapping
+
+functions to work out mapping-related stuff, like walk routes & altitude.
+'''
 
 routing_client = None
 elevation_client = None
@@ -56,8 +58,10 @@ features = {
 }
 
 def dist ( loc1, loc2, prnt=False ):
-# get walking distance between pages
-# note: must be running osrm http backend @ localhost:5000 for this to work
+    ''' get walking distance between pages. '''
+    ''' note: must be running osrm http backend @ localhost:5000 for this to
+    work.
+    '''
     global routing_client
     if not routing_client:
         routing_client = osrm.Client(
@@ -75,7 +79,7 @@ def dist ( loc1, loc2, prnt=False ):
     return dist
 
 def alt ( loc, prnt=False ):
-# get altitude of lat/lon
+    ''' get altitude of lat/lon. '''
     global elevation_client
     if not elevation_client:
         elevation_client = srtm.get_data()
@@ -91,7 +95,9 @@ def alt ( loc, prnt=False ):
     return ele
 
 def poi ( loc, radius=100, prnt=False ):
-# find the number of points of interest from within [radius]m of [loc]
+    ''' find the number of points of interest from within [radius]m of
+    [loc].
+    '''
     prnt=False
     # form query
     url = "http://overpass-api.de/api/interpreter"

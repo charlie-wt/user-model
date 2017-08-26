@@ -11,14 +11,18 @@ import decider as dc
 import ls
 import cache as ch
 
-##### traverser ##############
-# for simulating a user moving through a story.
-##############################
+'''
+traverser
+
+for simulating a user moving through a story.
+'''
 
 def traverse ( story, ranker=rk.rand, decider=dc.rand, n=1, cache=None,
                     max_steps=50, prnt=False ):
-# simulate a user walking through a story n times, making decisions. return n
-# lists of records (pages taken and probabilities of each option from that page)
+    ''' simulate a user walking through a story n times, making decisions.
+    return n lists of records (pages taken and probabilities of each option
+    from that page).
+    '''
     reading = rd.Reading("reading-0", story)
     user = us.User("user-0")
     stores = []
@@ -67,13 +71,13 @@ def traverse ( story, ranker=rk.rand, decider=dc.rand, n=1, cache=None,
     return stores if len(stores) > 1 else stores[0]
 
 def reset ( story, reading, user ):
-# for using the same user/reading in multiple traversals
+    ''' for using the same user/reading in multiple traversals. '''
     user.__init__(user.id)
     reading.__init__(reading.id, story)
 
 def traverse_log ( story, paths_per_reading, max_steps=50, allow_quitting=False,
                    reading=None, user=None, prnt=False):
-# traverse a story based on the most popular user choices.
+    ''' traverse a story based on the most popular user choices. '''
     if len(paths_per_reading) == 0:
         raise ValueError("can't walk "+story.name+"; no logged readings.")
     if reading is None: reading = rd.Reading("reading-0", story)
@@ -152,7 +156,9 @@ def traverse_log ( story, paths_per_reading, max_steps=50, allow_quitting=False,
     return path
 
 def get_path_distribution ( page, ppr, prnt=False ):
-# return dictionary of page : proportion of times it was picked from given page.
+    ''' return dictionary of page : proportion of times it was picked from
+    given page.
+    '''
     options = {}
 
     # count up visits to each page from [page] for each reading.
@@ -176,11 +182,13 @@ def get_path_distribution ( page, ppr, prnt=False ):
     return options
 
 def get_path_distribution_discourage_loops ( page, ppr, path, prnt=False ):
-# return dictionary of page : proportion of times it was picked from given page.
-# TODO - bit of a hack to stop the analysis walk from looping around the same
-#        page forever (to see this, try 'The Titanic Criminal In Southampton',
-#        but replace the call to this function in walk() with a call to
-#        get_path_distribution).
+    ''' return dictionary of page : proportion of times it was picked from
+    given page.
+    '''
+    # TODO - bit of a hack to stop the analysis walk from looping around the same
+    #        page forever (to see this, try 'The Titanic Criminal In Southampton',
+    #        but replace the call to this function in walk() with a call to
+    #        get_path_distribution).
     options = {}
 
     # count up visits to each page from [page] for each reading.
@@ -210,6 +218,8 @@ def get_path_distribution_discourage_loops ( page, ppr, path, prnt=False ):
     return options
 
 def pick_most_likely ( options ):
-# for a dictionary of page : likelihood, return the page with the highest.
+    ''' for a dictionary of page : likelihood, return the page with the
+    highest.
+    '''
     if len(options) == 0: return None
     return max(options, key = lambda o : options[o])

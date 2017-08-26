@@ -1,6 +1,8 @@
-##### ls #####################
-# a few simple functions to help with manipulating lists.
-##############################
+'''
+ls
+
+a few simple functions to help with manipulating lists.
+'''
 
 def get ( ls, id ):
     for item in ls:

@@ -5,6 +5,7 @@ import function
 import ls
 
 class IncrementFunction (function.Function):
+    ''' a function that increments a variable by a certain amount. '''
     def __init__ ( self, id, conditions, variable, value ):
         self.id = id
         self.type = "increment"
@@ -13,6 +14,7 @@ class IncrementFunction (function.Function):
         self.value = value
 
     def execute ( self, story, reading, user=None ):
+        ''' execute the function. '''
         if not self.conditions_pass(reading.vars, story.conditions, story.locations, user.loc): return
 
         var = ls.get(reading.vars, self.variable)
