@@ -23,7 +23,7 @@ def fill_options ( options, visible ):
         if p not in options: options[p] = 0
 
 def add ( store, page, options, visible=None ):
-    ''' create a new record and add to a store (list of records). '''
+    ''' create a new record and add to a store (list of Records). '''
     it = Record(page, options, visible)
     store.append(it)
     return it

@@ -27,16 +27,20 @@ def print_user_state ( user ):
     print("user is now at page '"+user.page().name+"',",
           "and is at location ("+str(user.lat())+", "+str(user.lon())+").")
 
-def print_visible ( vis, story, us ):
+def print_visible ( vis, story, us=None ):
     ''' print the list of visible pages in a story. '''
     print("\tvisible pages:")
     for p in vis:
         page_loc = p.get_loc(story)
-        if page_loc is not None:
-            dist = lc.metres(us.loc, page_loc)
-            print("\t" + p.id + " : " + p.name + " -> " + str(int(dist)) + " metres away.")
+        print("\t" + p.id + " : " + p.name, end="")
+        if us is not None:
+            if page_loc is not None:
+                dist = lc.metres(us.loc, page_loc)
+                print(" -> " + str(int(dist)) + " metres away.")
+            else:
+                print(", which can be accessed from anywhere.")
         else:
-            print("\t" + p.id + " : " + p.name + ", which can be accessed from anywhere.")
+            print(".")
 
 def print_all_paths ( stores, story=None, print_id=False ):
     ''' print all the paths taken through a story. '''
@@ -52,26 +56,37 @@ def print_pages ( pages, story=None, print_id=False ):
     for p in pages: print((p.id+" : " if print_id else "") + \
                           (p.name if type(p) is pg.Page else "---"))
 
-def print_log_paths ( story, paths ):
+def print_paths_per_reading ( story, paths_per_reading ):
     ''' print paths per reading, as output by log importer. '''
-    print("Paths through "+story.name+", for", len(paths), "readings:")
-    for r in paths.keys():
+    ppr = paths_per_reading
+    print("Paths through "+story.name+", for", len(ppr), "readings:")
+    for r in ppr.keys():
         print("reading "+r+":")
-        for p in paths[r]:
+        for p in ppr[r]:
             print("\t", p.id, ":", p.name)
 
-def print_event_path ( story, path ):
-    ''' print the path of events taken through a story by a real user. '''
-    if len(path) is 0: return
+def print_events_per_reading ( story, events_per_reading ):
+    ''' print the paths of events taken through a story by a real user. '''
+    epr = events_per_reading
+    if len(epr) is 0: return
+    legacy = False
+    for r in epr:
+        if "cardId" in epr[r][0].data:
+            legacy = True
+        break
+    page_id = "cardId" if legacy else "pageId"
+    page_name = "cardLabel" if legacy else "pageName"
 
-    print("Path taken by user through "+story.name+":")
-    for pg in path:
-        page = ls.get(story.pages, pg.data["cardId"])
-        print(pg.date, ":", pg.data["cardId"], ": ", end="")
-        if page is not None:
-            print(page.name)
-        else:
-            print(pg.data["cardLabel"], "("+pg.data["cardId"]+")", "(NOT FOUND)")
+    print("Paths through "+story.name+", for, ", len(epr), "readings:")
+    for r in epr:
+        print('reading '+r+':')
+        for pg in epr[r]:
+            page = ls.get(story.pages, pg.data[page_id])
+            print(pg.date, ":", pg.data[page_id], ": ", end="")
+            if page is not None:
+                print(page.name)
+            else:
+                print(pg.data[page_name], "("+pg.data[page_id]+")", "(NOT FOUND)")
 
 def print_page_ranking ( pages, probs ):
     ''' print pages & their probabilities. Assumes desired ordering. '''
@@ -98,33 +113,9 @@ def print_store ( store ):
     for r in store:
         print_options(r.options, r.page)
 
-def pc ( num, dec=0 ):
-    ''' percentify a 0-1 fraction. '''
-    if dec > 0: dec += 1
-    percent = str(num*100)
-    rounded = percent+"%"
-    if "." in percent and dec != -1:
-        rounded = percent[:percent.index(".")+dec]+"%"
-    return " "+rounded if num < 0.1 else rounded
-
-def truncate ( word, length=16, ellipses=True ):
-    ''' truncate a word to a certain length. '''
-    shortened = word[:length]
-    if ellipses:
-        shortened = shortened[:-3] + '...'
-    return shortened
-
-def fmt ( num, dec=0, suf=''):
-    ''' round a number to dec decimal places, return string with suf suffix. '''
-    if dec > 0: dec += 1
-    stnum = str(num)
-    rounded = stnum + suf
-    if '.' in stnum and dec != -1: rounded = stnum[:stnum.index('.')+dec] + suf
-    return rounded
-
 def print_walk_full_options ( visible, options, allow_quitting ):
     ''' print visible pages, options taken by users and their intersection
-    for use during analysis walks).
+    for use during log traversals).
     '''
     print("popularity of pages:\n\tvisible:")
     for p in visible:
@@ -145,7 +136,9 @@ def print_walk_full_options ( visible, options, allow_quitting ):
             print("\t\t"+o.name, pc(options[o]))
 
 def print_sim_log_comparison ( sim_path, log_path ):
-    ''' compare the paths taken by a simulation, and an analysis walk. '''
+    ''' compare the paths taken by a simulation and a log traversal. '''
+    if type(sim_path[0]) == rc.Record: sim_path = [ r.page for r in sim_path ]
+    if type(log_path[0]) == rc.Record: log_path = [ r.page for r in log_path ]
     print("-------------------------------------------------------------------")
     print("sim                               log")
     print("-------------------------------------------------------------------")
@@ -171,3 +164,27 @@ def print_cache ( cache ):
                     print('\t', t, ':', elem, ':', elem2, ':', cache[t][elem][elem2])
             else:
                 print('\t', t, ':', elem, ':', cache[t][elem])
+
+def pc ( num, dec=0 ):
+    ''' percentify a 0-1 fraction. '''
+    if dec > 0: dec += 1
+    percent = str(num*100)
+    rounded = percent+"%"
+    if "." in percent and dec != -1:
+        rounded = percent[:percent.index(".")+dec]+"%"
+    return " "+rounded if num < 0.1 else rounded
+
+def fmt ( num, dec=0, suf=''):
+    ''' round a number to dec decimal places, return string with suf suffix. '''
+    if dec > 0: dec += 1
+    stnum = str(num)
+    rounded = stnum + suf
+    if '.' in stnum and dec != -1: rounded = stnum[:stnum.index('.')+dec] + suf
+    return rounded
+
+def truncate ( word, length=16, ellipses=True ):
+    ''' truncate a word to a certain length. '''
+    shortened = word[:length]
+    if ellipses and len(word) > length:
+        shortened = shortened[:-3] + '...'
+    return shortened

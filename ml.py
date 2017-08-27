@@ -145,8 +145,8 @@ def normalise_inputs ( inputs ):
     return inputs
 
 def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
-             batch_size=None, num_folds = 1, train_prop=0.9, prnt=False,
-             exclude_poi=False ):
+             batch_size=None, num_folds = 1, train_prop=0.9, exclude_poi=False,
+             prnt=False ):
     # setup
     data = formalise(story, ppr, cache, exclude_poi=exclude_poi)
     models = []
@@ -265,8 +265,8 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     return average
 
 def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
-             batch_size=None, num_folds = 1, train_prop=0.9, prnt=False,
-             exclude_poi=False ):
+             batch_size=None, num_folds = 1, train_prop=0.9, exclude_poi=False,
+             prnt=False ):
     # TODO - output model almost seems to do exactly the wrong thing
     # setup
     data = formalise(story, ppr, cache, exclude_poi=exclude_poi)
@@ -410,7 +410,7 @@ def batches ( data, batch_size ):
     return [ data[i*bs:(i+1)*bs] for i in range(nb) ]
 
 def nn ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
-         batch_size=None, num_hidden_layers = 2, train_prop=0.9, num_folds=1,
+         batch_size=None, num_hidden_layers = 2, num_folds=1, train_prop=0.9,
          prnt=False, exclude_poi=False ):
     # setup
     data = formalise(story, ppr, cache, exclude_poi=exclude_poi)
@@ -474,7 +474,7 @@ def nn ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     model = net(x, w, b)
     # our cost function, to see how far from the truth we are:
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=model))
-    # our gradient descent optimizer (to minimize cost via. changing w & b):
+    # our optimizer (to minimize cost via. changing w & b):
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
     for i in range(num_folds):

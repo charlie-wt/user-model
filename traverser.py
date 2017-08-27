@@ -76,12 +76,12 @@ def reset ( story, reading, user ):
     reading.__init__(reading.id, story)
 
 def traverse_log ( story, paths_per_reading, max_steps=50, allow_quitting=False,
-                   reading=None, user=None, prnt=False):
+                   prnt=False):
     ''' traverse a story based on the most popular user choices. '''
     if len(paths_per_reading) == 0:
         raise ValueError("can't walk "+story.name+"; no logged readings.")
-    if reading is None: reading = rd.Reading("reading-0", story)
-    if user is None: user = us.User("user-0")
+    reading = rd.Reading("reading-0", story)
+    user = us.User("user-0")
 
     # setup
     visible = pg.update_all(story.pages, story, reading, user)
@@ -185,10 +185,10 @@ def get_path_distribution_discourage_loops ( page, ppr, path, prnt=False ):
     ''' return dictionary of page : proportion of times it was picked from
     given page.
     '''
-    # TODO - bit of a hack to stop the analysis walk from looping around the same
-    #        page forever (to see this, try 'The Titanic Criminal In Southampton',
-    #        but replace the call to this function in walk() with a call to
-    #        get_path_distribution).
+    # TODO - bit of a hack to stop the log traversal from looping around the
+    #        same page forever (to see this, try 'The Titanic Criminal In
+    #        Southampton', but replace the call to this function in
+    #        traverse_log() with a call to get_path_distribution).
     options = {}
 
     # count up visits to each page from [page] for each reading.

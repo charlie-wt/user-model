@@ -34,9 +34,9 @@ manual_heuristics = {
     'b': 0.00000
 }
 net = {}
-reg_lin_no_poi = {}
+#reg_lin_no_poi = {}
 reg = {}
-reg_no_poi = {}
+#reg_no_poi = {}
 
 def rand ( user, story, pages, cache=None ):
     ''' random. '''
@@ -246,7 +246,7 @@ def linreg ( user, story, pages, cache=None ):
     return options
 
 def nn ( user, story, pages, cache=None ):
-    ''' use logistic regression model to predict the page to choose. '''
+    ''' use neural network model to predict the page to choose. '''
     import ml
     import numpy as np
     if not net: raise ValueError('Please initialise neural network.')
@@ -259,7 +259,7 @@ def nn ( user, story, pages, cache=None ):
 #    inputs = ml.normalise_inputs(ml.make_input(story, user, choices, cache, True))
     inputs = ml.make_input(story, user, choices, cache, True)
 
-    # apply regression
+    # apply neural network
     results = []
     idx = 1
     for p in inputs:
