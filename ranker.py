@@ -34,9 +34,9 @@ manual_heuristics = {
     'b': 0.00000
 }
 net = {}
-#reg_lin_no_poi = {}
 reg = {}
-#reg_no_poi = {}
+means = []
+stddevs = []
 
 def rand ( user, story, pages, cache=None ):
     ''' random. '''
@@ -87,32 +87,32 @@ def rank_by ( heuristic, inverse=False, no_loops=False ):
 
 def dist ( user, story, pages, cache=None ):
     ''' shortest straight line distance. '''
-    fn = rank_by(hs.distance, True, True)
+    fn = rank_by(hs.distance, True, False)
     return fn(user, story, pages, cache)
 
 def walk_dist ( user, story, pages, cache=None ):
     ''' shortest walking distance, via roads. '''
-    fn = rank_by(hs.walk_dist, True, True)
+    fn = rank_by(hs.walk_dist, True, False)
     return fn(user, story, pages, cache)
 
 def visits ( user, story, pages, cache=None ):
     ''' prefer the least visited page. '''
-    fn = rank_by(hs.visits, True, True)
+    fn = rank_by(hs.visits, True, False)
     return fn(user, story, pages, cache)
 
 def alt ( user, story, pages, cache=None ):
     ''' prefer to go downhill. '''
-    fn = rank_by(hs.altitude, True, True)
+    fn = rank_by(hs.altitude, True, False)
     return fn(user, story, pages, cache)
 
 def poi ( user, story, pages, cache=None ):
     ''' prefer pages with more nearby points of interest. '''
-    fn = rank_by(hs.points_of_interest, False, True)
+    fn = rank_by(hs.points_of_interest, False, False)
     return fn(user, story, pages, cache)
 
 def mentioned ( user, story, pages, cache=None ):
     ''' prefer pages with names mentioned more by the current page's text. '''
-    fn = rank_by(hs.mentioned, False, True)
+    fn = rank_by(hs.mentioned, False, False)
     return fn(user, story, pages, cache)
 
 def logreg ( user, story, pages, cache=None ):
@@ -132,14 +132,11 @@ def logreg ( user, story, pages, cache=None ):
     # apply regression
     results = []
     idx = 1
-    for p in inputs:
+    for x in inputs:
         # y = w*x + b
-        # TODO - perhaps instead of just using the 'yes' amount, do yes - no?
-        #        Then even if both are high, you don't end up thinking the page
-        #        is too desirable.
-        yes = sum([ p[i]*model['w'][i][1] for i in range(len(p)) ])
+        yes = sum([ x[i]*model['w'][i][1] for i in range(len(x)) ])
         yes += model['b'][1]
-        no = sum([ p[i]*model['w'][i][0] for i in range(len(p)) ])
+        no = sum([ x[i]*model['w'][i][0] for i in range(len(x)) ])
         no += model['b'][0]
         output = yes - no
         results.append(output)
@@ -174,7 +171,7 @@ def logreg ( user, story, pages, cache=None ):
 def linreg ( user, story, pages, cache=None ):
     ''' use linear regression model to predict the page to choose. '''
     import ml
-    model = manual_heuristics
+    model = reg
     if not model: raise ValueError('Please initialise regression parameters.')
     name = user.page().name if user.page() else '--start--'
     if prnt: print('options from', name+':')
@@ -182,23 +179,38 @@ def linreg ( user, story, pages, cache=None ):
     choices = pages
 #    choices = [ p for p in pages if hs.visits(p, user) == 0 ]
 
-    inputs = ml.normalise_inputs(ml.make_input(story, user, choices, cache, True))
-#    inputs = ml.make_input(story, user, choices, cache, True)
+    inputs = ml.make_input(story, user, choices, cache, exclude_poi=False)
 
-#    if prnt:
-#        print('inputs: [')
-#        for row in range(len(inputs)):
-#            print('\t', inputs[row])
-#        print(']')
+    # normalise inputs
+#    print(inputs[0][0], '-> ', end='')
+    for col in range(len(inputs[0])):
+        vals = [ row[col] for row in inputs ]
+        mean = means[col]
+        stddev = stddevs[col]
+        if stddev == 0: stddev = 1
+        vals = [ (v - mean)/stddev for v in vals ]
+        for row, val in zip(inputs, vals):
+            row[col] = val
+#    print(inputs[0][0])
+
+    if prnt:
+        print('inputs: [')
+        for row in range(len(inputs)):
+            print('\t', inputs[row])
+        print(']')
+
     # ugly - make all inputs > 0
-    smallests = [0]*len(inputs[0])
-    for column in range(len(inputs[0])):
-        smallests[column] = min([ inputs[row][column] for row in range(len(inputs)) ])
+#    smallests = [0]*len(inputs[0])
+#    for column in range(len(inputs[0])):
+#        smallests[column] = min([ inputs[row][column] for row in range(len(inputs)) ])
+
 #    if prnt: print('smallests:', smallests)
-    for row in range(len(inputs)):
-        for column in range(len(inputs[row])):
-            inputs[row][column] += abs(smallests[column])
-            if inputs[row][column] < 0 and prnt: print('!!!don\'t work!!!')
+
+#    for row in range(len(inputs)):
+#        for column in range(len(inputs[row])):
+#            inputs[row][column] += abs(smallests[column])
+#            if inputs[row][column] < 0 and prnt: print('!!!don\'t work!!!')
+
 #    if prnt:
 #        print('inputs: [')
 #        for row in range(len(inputs)):
@@ -208,20 +220,25 @@ def linreg ( user, story, pages, cache=None ):
     # apply regression
     results = []
     idx = 1
-    for p in inputs:
+    for x in inputs:
         # y = w*x + b
-        output = sum([ p[i]*model['w'][i] for i in range(len(p)) ])
+        output = sum([ x[i]*model['w'][i] for i in range(len(x)) ])
+#        print(x[0], '*', model['w'][0], '=', (x[0]*model['w'][0]))
         output += model['b']
         results.append(float(output))
 
     # get rid of negative values - we're just taking the max anyway, and they mess things up :(
-    smallest = abs(min(results))
-    for i in range(len(results)):
-        if prnt:
-            print(pt.fmt(results[i], dec=2), '+',
-                  pt.fmt(smallest, dec=2), '->',
-                  pt.fmt(results[i]+smallest, dec=2))
-        results[i] += smallest
+    if min(results) < 0:
+        smallest = abs(min(results))
+        for i in range(len(results)):
+            if prnt:
+#                 print(pt.fmt(results[i], dec=2), '+',
+#                       pt.fmt(smallest, dec=2), '->',
+#                       pt.fmt(results[i]+smallest, dec=2))
+                print(results[i], '+',
+                      smallest, '->',
+                      results[i]+smallest)
+            results[i] += smallest
 
     # normalise (softmax)
     factor = 1 / sum(results) if sum(results) != 0 else 1

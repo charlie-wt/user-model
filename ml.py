@@ -135,6 +135,8 @@ def normalise_inputs ( inputs ):
         vals = [ row[col] for row in inputs ]
         mean = np.mean(vals, axis=0)
         stddev = np.std(vals, axis=0)
+        rk.means.append(mean)
+        rk.stddevs.append(stddev)
         if stddev == 0: stddev = 1
 #        print('vals =', vals[:10], '...')
         vals = [ (v - mean)/stddev for v in vals ]
@@ -269,7 +271,7 @@ def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
              prnt=False ):
     # TODO - output model almost seems to do exactly the wrong thing
     # setup
-    data = formalise(story, ppr, cache, exclude_poi=exclude_poi)
+    data = formalise(story, ppr, cache, exclude_poi=exclude_poi, normalise=True)
     models = []
     cross_validate = num_folds > 1
     regularisation_lambda = 0.01
@@ -293,8 +295,8 @@ def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     Ys = data[1]
 
     # TODO - this is the opposite of good (but gives better results)
-    for i in range(len(Ys)):
-        Ys[i] = 0 if Ys[i] else 1
+#    for i in range(len(Ys)):
+#        Ys[i] = 0 if Ys[i] else 1
 
     # define tensorflow graph
     x  = tf.placeholder(tf.float32, [None, num_features])
@@ -331,6 +333,7 @@ def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
             bxs = batches(Xtr, batch_size)
             bys = batches(Ytr, batch_size)
             for epoch in range(epochs):
+#                print('w0:', sess.run(w[0]))
                 av_cost = 0
 
                 for j in range(num_batches):
@@ -343,9 +346,11 @@ def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
                         }
                     )
                     av_cost += c / num_batches
+#                    sess.run(tf.check_numerics(w, '!!!'))
 
-#                if prnt and not cross_validate:
-#                    print('epoch', (epoch+1), 'cost =', av_cost)
+                if prnt and not cross_validate:
+#                    print('w0:', sess.run(w[0]))
+                    print('epoch', (epoch+1), 'cost =', av_cost)
 
             # testing
             err = tf.square(model - y_)
