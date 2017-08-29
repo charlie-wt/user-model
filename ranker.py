@@ -1,6 +1,3 @@
-#import sys, os
-#sys.path.append(os.path.join(sys.path[0], "models"))
-
 import heuristics as hs
 import ls
 import printer as pt
@@ -23,12 +20,12 @@ manual_heuristics = {
          -5.00000,          # walk dist
         -10.00000,          # visits
          -0.05000,          # alt
-#         0.10000,          # poi
+         0.10000,          # poi
           0.05000,          # mention
         -50.00000,          # ranking - walk dist
         -10.00000,          # ranking - visits
          -0.10000,          # ranking - alt
-#        -0.15000,          # ranking - poi
+        -0.15000,          # ranking - poi
          -0.30000           # ranking - mention
     ],
     'b': 0.00000
@@ -123,15 +120,18 @@ def logreg ( user, story, pages, cache=None ):
     import ml
     model = logreg_model
     if not model: raise ValueError('Please initialise regression parameters.')
-    name = user.page().name if user.page() else '--start--'
-    if prnt: print('options from', name+':')
+    if prnt:
+        name = user.page().name if user.page() else '--start--'
+        print('options from', name+':')
 
+    # get inputs in proper form
     choices = pages
-    inputs = ml.make_input(story, user, choices, cache, True)
+    inputs = ml.make_input(story, user, choices, cache, exclude_poi=False)
+    if means and stddevs:
+        inputs = ml.normalise_inputs(inputs, in_means=means, in_stddevs=stddevs)
 
     # apply regression
     results = []
-    idx = 1
     for x in inputs:
         # y = w*x + b
         yes = sum([ x[i]*model['w'][i][1] for i in range(len(x)) ])
@@ -139,18 +139,19 @@ def logreg ( user, story, pages, cache=None ):
         no = sum([ x[i]*model['w'][i][0] for i in range(len(x)) ])
         no += model['b'][0]
         output = yes - no
-        results.append(output)
+        results.append(float(output))
 
     # get rid of negative values - they mess up the softmax :(
-    smallest = abs(min(results))
-    for i in range(len(results)):
-        results[i] += smallest
+    if min(results) < 0:
+        lowest = abs(min(results))
+        for i in range(len(results)):
+            results[i] += lowest
 
     # normalise (softmax)
     factor = 1 / sum(results) if sum(results) != 0 else 1
     chances = [ r * factor for r in results ]
 
-    # avoid having only 0.0 chance for everything
+    # avoid having 0.0 chance for everything
     if chances == [0] * len(chances):
         equal_chance = 1 / len(chances)
         chances = [equal_chance] * len(chances)
@@ -180,7 +181,9 @@ def linreg ( user, story, pages, cache=None ):
     # get inputs in proper form
     choices = pages
     inputs = ml.make_input(story, user, choices, cache, exclude_poi=False)
-    inputs = ml.normalise_inputs(inputs, in_means=means, in_stddevs=stddevs)
+    if means and stddevs:
+        # TODO - what to do about manual_heuristics? don't have access to ppr.
+        inputs = ml.normalise_inputs(inputs, in_means=means, in_stddevs=stddevs)
 
     # apply regression
     results = []
@@ -228,11 +231,12 @@ def nn ( user, story, pages, cache=None ):
     if prnt: print('options from', name+':')
 
     choices = pages
-    inputs = ml.make_input(story, user, choices, cache, True)
+    inputs = ml.make_input(story, user, choices, cache, exclude_poi=False)
+    if means and stddevs:
+        inputs = ml.normalise_inputs(inputs, in_means=means, in_stddevs=stddevs)
 
     # apply neural network
     results = []
-    idx = 1
     for p in inputs:
         prediction = _net(np.array(p), np.array(model['w']), np.array(model['b']))
         yes = prediction[1]
@@ -241,9 +245,10 @@ def nn ( user, story, pages, cache=None ):
         results.append(output)
 
     # get rid of negative values - we're just taking the max anyway, and they mess things up :(
-    smallest = abs(min(results))
-    for i in range(len(results)):
-        results[i] += smallest
+    if min(results) < 0:
+        lowest = abs(min(results))
+        for i in range(len(results)):
+            results[i] += lowest
 
     # normalise (softmax)
     factor = 1 / sum(results) if sum(results) != 0 else 1

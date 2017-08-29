@@ -22,7 +22,7 @@ ml
 machine learning stuff.
 '''
 
-def formalise ( story, ppr, cache=None, prnt=False, normalise=True,
+def formalise ( story, ppr, cache=None, prnt=False, normalise=False,
                 exclude_poi=False, enforce_ordering=True ):
     ''' put list of pages (forming a path) into a form that can be interpreted
     by ml.
@@ -158,23 +158,22 @@ def normalise_inputs ( inputs,
     return normed
 
 def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
-             batch_size=None, num_folds = 1, train_prop=0.9, exclude_poi=False,
+             batch_size=1, num_folds=1, train_prop=0.9, exclude_poi=False,
              prnt=False ):
     # setup
     data = formalise(story, ppr, cache, exclude_poi=exclude_poi)
     models = []
     cross_validate = num_folds > 1
     regularisation_lambda = 0.01
+    # just for the benefit of the rankers
+    if not rk.means or not rk.stddevs:
+        normalise_inputs(data[0], out_means=rk.means, out_stddevs=rk.stddevs)
 
     # get info about data
     if batch_size is None: batch_size=len(data[0])
     num_features = len(data[0][0])  # the heuristics and rankings describing a page.
     num_classes = max(data[1])+1    # to choose, or not to choose a page.
     num_samples = len(data[0])      # number of movements between pages.
-
-    # Xs & Ys: total inputs and true labels, for all samples.
-    Xs = data[0]
-    Ys = one_hot(data[1], num_classes)
 
     # size of training/testing set; do for cross validation if cross_validate.
     if cross_validate:
@@ -183,6 +182,10 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     else:
         num_training = int(train_prop * num_samples)
         num_testing = num_samples - num_training
+
+    # Xs & Ys: total inputs and true labels, for all samples.
+    Xs = data[0]
+    Ys = one_hot(data[1], num_classes)
 
     # define tensorflow graph
     x  = tf.placeholder(tf.float32, [None, num_features])
@@ -210,6 +213,12 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
         # Xts & Yts: testing set
         Xts = Xs[i*num_testing:(i+1)*num_testing]
         Yts = Ys[i*num_testing:(i+1)*num_testing]
+
+        # normalise input sets. use training set's means/standard deviations
+        mn = []
+        sd = []
+        Xtr = normalise_inputs(Xtr, out_means=mn, out_stddevs=sd)
+        Xts = normalise_inputs(Xts, in_means=mn, in_stddevs=sd)
 
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
@@ -255,30 +264,33 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
         av_b = [0, 0]
         for i in range(len(models)):
             for j in range(num_features):
-                av_w[j][0] += models[i]['w'][j][0]
-                av_w[j][1] += models[i]['w'][j][1]
-            av_b[0] += models[i]['b'][0]
-            av_b[1] += models[i]['b'][1]
+                av_w[j] += models[i]['w'][j][:2]
+            av_b += models[i]['b'][:2]
         for i in range(num_features):
-            av_w[i][0] /= len(models)
-            av_w[i][1] /= len(models)
-        av_b[0] /= len(models)
-        av_b[1] /= len(models)
+            av_w[i] /= len(models)
+        av_b /= len(models)
         average = {
             'w': av_w,
             'b': av_b,
         }
         if prnt:
             print('average model:')
-            print('w =', average['w'])
-            print('b =', average['b'])
+            print('w = [')
+            for w in average['w']:
+                print('\t', str(w[0])+',', str(w[1])+',')
+            print(']')
+            print('b = [')
+            b = average['b']
+            print('\t', str(b[0])+',', str(b[1])+',')
+            print(']')
     else:
         average = models[0]
 
+    rk.logreg_model = average
     return average
 
 def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
-             batch_size=None, num_folds=1, train_prop=0.9, exclude_poi=False,
+             batch_size=1, num_folds=1, train_prop=0.9, exclude_poi=False,
              prnt=False ):
     # setup
     data = formalise(story, ppr, cache, exclude_poi=exclude_poi, normalise=False)
@@ -286,12 +298,12 @@ def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     cross_validate = num_folds > 1
     regularisation_lambda = 0.01
     # just for the benefit of the rankers
-    normed = (normalise_inputs(data[0], out_means=rk.means, out_stddevs=rk.stddevs), data[1])
+    if not rk.means or not rk.stddevs:
+        normalise_inputs(data[0], out_means=rk.means, out_stddevs=rk.stddevs)
 
     # get info about data
     if batch_size is None: batch_size=len(data[0])
     num_features = len(data[0][0])  # the heuristics and rankings describing a page.
-    num_classes = 1
     num_samples = len(data[0])      # number of movements between pages.
 
     # size of training/testing set; do for cross validation if cross_validate.
@@ -311,8 +323,8 @@ def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     y_ = tf.placeholder(tf.float32, [None])
 
     # model weights
-    w = tf.Variable(tf.zeros([num_features, num_classes]))
-    b = tf.Variable(tf.zeros([num_classes]))
+    w = tf.Variable(tf.zeros([num_features, 1]))
+    b = tf.Variable(tf.zeros([1]))
 
     # construct model
     # model calculates y, to test against y_ for cost. Is essentially y=mx+c.
@@ -353,15 +365,12 @@ def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
                     # perform gradient descent optimisation on model.
                     _, c = sess.run(
                         [gd, cost],
-                        feed_dict = {
-                            x: bxs[j],
-                            y_: bys[j]
-                        }
+                        feed_dict = { x: bxs[j], y_: bys[j] }
                     )
                     av_cost += c / num_batches
 
-                if prnt and not cross_validate:
-                    print('epoch', (epoch+1), 'cost =', av_cost)
+#                if prnt and not cross_validate:
+#                    print('epoch', (epoch+1), 'cost =', av_cost)
 
             # testing
             err = tf.square(model - y_)
@@ -382,7 +391,7 @@ def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
 
     # get average model from cross-validated set of models.
     if cross_validate:
-        av_w = [0] * num_features
+        av_w = [ 0 for i in range(num_features) ]
         av_b = [0]
         for model in models:
             for j in range(num_features):
@@ -396,9 +405,10 @@ def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
             'b': av_b,
         }
         if prnt:
-            print('average model:')
-            print('w =', average['w'])
-            print('b =', average['b'])
+            print('average model:\nw = [')
+            for w in average['w']:
+                print('\t', str(w)+',')
+            print(']\nb = [\n\t', average['b'], '\n]')
     else:
         average = models[0]
 
@@ -427,23 +437,22 @@ def batches ( data, batch_size ):
     return [ data[i*bs:(i+1)*bs] for i in range(nb) ]
 
 def nn ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
-         batch_size=None, num_hidden_layers = 2, num_folds=1, train_prop=0.9,
-         prnt=False, exclude_poi=False ):
+         batch_size=1, num_hidden_layers = 2, hidden_layer_size=5, num_folds=1,
+         train_prop=0.9, exclude_poi=False, prnt=False ):
     # setup
-    data = formalise(story, ppr, cache, exclude_poi=exclude_poi)
+    data = formalise(story, ppr, cache, exclude_poi=exclude_poi, normalise=False)
     models = []
     cross_validate = num_folds > 1
     regularisation_lambda = 0.01
+    # just for the benefit of the rankers
+    if not rk.means or not rk.stddevs:
+        normalise_inputs(data[0], out_means=rk.means, out_stddevs=rk.stddevs)
 
     # get info about data
     if batch_size is None: batch_size=len(data[0])
     num_features = len(data[0][0])  # the heuristics and rankings describing a page.
     num_classes = max(data[1])+1    # to choose, or not to choose a page.
     num_samples = len(data[0])      # number of movements between pages.
-
-    # Xs & Ys: total inputs and true labels, for all samples.
-    Xs = data[0]
-    Ys = one_hot(data[1], num_classes)
 
     # size of training/testing set; do for cross validation if cross_validate.
     if cross_validate:
@@ -452,6 +461,10 @@ def nn ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     else:
         num_training = int(train_prop * num_samples)
         num_testing = num_samples - num_training
+
+    # Xs & Ys: total inputs and true labels, for all samples.
+    Xs = data[0]
+    Ys = one_hot(data[1], num_classes)
 
     # define tensorflow graph
     x  = tf.placeholder(tf.float32, [None, num_features])
@@ -476,12 +489,11 @@ def nn ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     w = []
     b = []
     previous_size = num_features
-    hidden_size = 5
     for i in range(num_hidden_layers):
         # initialise weights & biases for hidden layers
-        w.append(tf.Variable(tf.random_normal([ previous_size, hidden_size ])))
-        b.append(tf.Variable(tf.random_normal([ hidden_size ])))
-        previous_size = hidden_size
+        w.append(tf.Variable(tf.random_normal([ previous_size, hidden_layer_size ])))
+        b.append(tf.Variable(tf.random_normal([ hidden_layer_size ])))
+        previous_size = hidden_layer_size
     # output layer
     w.append(tf.Variable(tf.random_normal([ previous_size, num_classes ])))
     b.append(tf.Variable(tf.random_normal([ num_classes ])))
@@ -502,6 +514,12 @@ def nn ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
         # Xts & Yts: testing set
         Xts = Xs[i*num_testing:(i+1)*num_testing]
         Yts = Ys[i*num_testing:(i+1)*num_testing]
+
+        # normalise input sets. use training set's means/standard deviations
+        mn = []
+        sd = []
+        Xtr = normalise_inputs(Xtr, out_means=mn, out_stddevs=sd)
+        Xts = normalise_inputs(Xts, in_means=mn, in_stddevs=sd)
 
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
@@ -575,4 +593,5 @@ def nn ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
         for bias in average['b']:
             print(bias)
 
+    rk.net_model = average
     return average
