@@ -33,8 +33,11 @@ manual_heuristics = {
     ],
     'b': 0.00000
 }
-net = {}
-reg = {}
+
+# for internal use by ml and ranker functions
+logreg_model = {}
+linreg_model = {}
+net_model = {}
 means = []
 stddevs = []
 
@@ -118,15 +121,12 @@ def mentioned ( user, story, pages, cache=None ):
 def logreg ( user, story, pages, cache=None ):
     ''' use logistic regression model to predict the page to choose. '''
     import ml
-    model = reg
+    model = logreg_model
     if not model: raise ValueError('Please initialise regression parameters.')
     name = user.page().name if user.page() else '--start--'
     if prnt: print('options from', name+':')
 
     choices = pages
-#    choices = [ p for p in pages if hs.visits(p, user) == 0 ]
-
-#    inputs = ml.normalise_inputs(ml.make_input(story, user, choices, cache, True))
     inputs = ml.make_input(story, user, choices, cache, True)
 
     # apply regression
@@ -141,7 +141,7 @@ def logreg ( user, story, pages, cache=None ):
         output = yes - no
         results.append(output)
 
-    # get rid of negative values - we're just taking the max anyway, and they mess things up :(
+    # get rid of negative values - they mess up the softmax :(
     smallest = abs(min(results))
     for i in range(len(results)):
         results[i] += smallest
@@ -171,80 +171,36 @@ def logreg ( user, story, pages, cache=None ):
 def linreg ( user, story, pages, cache=None ):
     ''' use linear regression model to predict the page to choose. '''
     import ml
-    model = reg
+    model = linreg_model
     if not model: raise ValueError('Please initialise regression parameters.')
-    name = user.page().name if user.page() else '--start--'
-    if prnt: print('options from', name+':')
-
-    choices = pages
-#    choices = [ p for p in pages if hs.visits(p, user) == 0 ]
-
-    inputs = ml.make_input(story, user, choices, cache, exclude_poi=False)
-
-    # normalise inputs
-#    print(inputs[0][0], '-> ', end='')
-    for col in range(len(inputs[0])):
-        vals = [ row[col] for row in inputs ]
-        mean = means[col]
-        stddev = stddevs[col]
-        if stddev == 0: stddev = 1
-        vals = [ (v - mean)/stddev for v in vals ]
-        for row, val in zip(inputs, vals):
-            row[col] = val
-#    print(inputs[0][0])
-
     if prnt:
-        print('inputs: [')
-        for row in range(len(inputs)):
-            print('\t', inputs[row])
-        print(']')
+        name = user.page().name if user.page() else '--start--'
+        print('options from', name+':')
 
-    # ugly - make all inputs > 0
-#    smallests = [0]*len(inputs[0])
-#    for column in range(len(inputs[0])):
-#        smallests[column] = min([ inputs[row][column] for row in range(len(inputs)) ])
-
-#    if prnt: print('smallests:', smallests)
-
-#    for row in range(len(inputs)):
-#        for column in range(len(inputs[row])):
-#            inputs[row][column] += abs(smallests[column])
-#            if inputs[row][column] < 0 and prnt: print('!!!don\'t work!!!')
-
-#    if prnt:
-#        print('inputs: [')
-#        for row in range(len(inputs)):
-#            print('\t', inputs[row])
-#        print(']')
+    # get inputs in proper form
+    choices = pages
+    inputs = ml.make_input(story, user, choices, cache, exclude_poi=False)
+    inputs = ml.normalise_inputs(inputs, in_means=means, in_stddevs=stddevs)
 
     # apply regression
     results = []
-    idx = 1
     for x in inputs:
         # y = w*x + b
         output = sum([ x[i]*model['w'][i] for i in range(len(x)) ])
-#        print(x[0], '*', model['w'][0], '=', (x[0]*model['w'][0]))
         output += model['b']
         results.append(float(output))
 
-    # get rid of negative values - we're just taking the max anyway, and they mess things up :(
+    # get rid of negative values - they mess up the softmax :(
     if min(results) < 0:
-        smallest = abs(min(results))
+        lowest = abs(min(results))
         for i in range(len(results)):
-            if prnt:
-#                 print(pt.fmt(results[i], dec=2), '+',
-#                       pt.fmt(smallest, dec=2), '->',
-#                       pt.fmt(results[i]+smallest, dec=2))
-                print(results[i], '+',
-                      smallest, '->',
-                      results[i]+smallest)
-            results[i] += smallest
+            results[i] += lowest
 
     # normalise (softmax)
     factor = 1 / sum(results) if sum(results) != 0 else 1
     chances = [ r * factor for r in results ]
 
-    # avoid having only 0.0 chance for everything
+    # avoid having 0.0 chance for everything
     if chances == [0] * len(chances):
         equal_chance = 1 / len(chances)
         chances = [equal_chance] * len(chances)
@@ -266,22 +222,19 @@ def nn ( user, story, pages, cache=None ):
     ''' use neural network model to predict the page to choose. '''
     import ml
     import numpy as np
-    if not net: raise ValueError('Please initialise neural network.')
+    model = net_model
+    if not model: raise ValueError('Please initialise neural network.')
     name = user.page().name if user.page() else '--start--'
     if prnt: print('options from', name+':')
 
     choices = pages
-#    choices = [ p for p in pages if hs.visits(p, user) == 0 ]
-
-#    inputs = ml.normalise_inputs(ml.make_input(story, user, choices, cache, True))
     inputs = ml.make_input(story, user, choices, cache, True)
 
     # apply neural network
     results = []
     idx = 1
     for p in inputs:
-        prediction = _net(np.array(p), np.array(net['w']), np.array(net['b']))
-#        print('prediction:', prediction)
+        prediction = _net(np.array(p), np.array(model['w']), np.array(model['b']))
         yes = prediction[1]
         no = prediction[0]
         output = yes - no
@@ -313,6 +266,8 @@ def nn ( user, story, pages, cache=None ):
     for p in [ p for p in pages if p not in options ]:
         options[p] = 0
     return options
+
+    return inputs
 
 def _net ( x, w, b ):
     ''' run a neural net (defined by the weight & bias arrays) on an input. '''

@@ -83,7 +83,7 @@ def formalise ( story, ppr, cache=None, prnt=False, normalise=True,
         raise ValueError('Story supplied to formalise contains no choices.')
 
     if normalise:
-        normalise_inputs(xs)
+        xs = normalise_inputs(xs)
 
     return (xs, ys)
 
@@ -130,21 +130,32 @@ def make_input ( story, user, pages, cache=None, exclude_poi=False ):
 
     return xs
 
-def normalise_inputs ( inputs ):
-    for col in range(len(inputs[0])):
-        vals = [ row[col] for row in inputs ]
-        mean = np.mean(vals, axis=0)
-        stddev = np.std(vals, axis=0)
-        rk.means.append(mean)
-        rk.stddevs.append(stddev)
-        if stddev == 0: stddev = 1
-#        print('vals =', vals[:10], '...')
-        vals = [ (v - mean)/stddev for v in vals ]
-        for row, val in zip(inputs, vals):
-            row[col] = val
-#        print('vals =', vals[:10], '...')
+def normalise_inputs ( inputs,
+                       in_means=None,  in_stddevs=None,
+                       out_means=None, out_stddevs=None ):
+    ''' normalise the inputs. if in_means/stddevs is set, use their values as
+    the means and standard deviations of each of the features/columns of the
+    inputs. If out_means/stddevs is set, write the means and standard
+    deviations of each column to them.
+    '''
+    num_rows = len(inputs)
+    num_cols = len(inputs[0])
+    normed = inputs[:]
 
-    return inputs
+    for col in range(num_cols):
+        old_vals = [ row[col] for row in inputs ]
+
+        mean = np.mean(old_vals, axis=0) if in_means is None else in_means[col]
+        stddev = np.std(old_vals, axis=0) if in_stddevs is None else in_stddevs[col]
+
+        if out_means is not None: out_means.append(mean)
+        if out_stddevs is not None: out_stddevs.append(stddev)
+        if stddev == 0: stddev = 1
+
+        new_vals = [ (v - mean)/stddev for v in old_vals ]
+        for row, val in zip(range(num_rows), new_vals):
+            normed[row][col] = val
+    return normed
 
 def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
              batch_size=None, num_folds = 1, train_prop=0.9, exclude_poi=False,
@@ -267,14 +278,15 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     return average
 
 def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
-             batch_size=None, num_folds = 1, train_prop=0.9, exclude_poi=False,
+             batch_size=None, num_folds=1, train_prop=0.9, exclude_poi=False,
              prnt=False ):
-    # TODO - output model almost seems to do exactly the wrong thing
     # setup
-    data = formalise(story, ppr, cache, exclude_poi=exclude_poi, normalise=True)
+    data = formalise(story, ppr, cache, exclude_poi=exclude_poi, normalise=False)
     models = []
     cross_validate = num_folds > 1
     regularisation_lambda = 0.01
+    # just for the benefit of the rankers
+    normed = (normalise_inputs(data[0], out_means=rk.means, out_stddevs=rk.stddevs), data[1])
 
     # get info about data
     if batch_size is None: batch_size=len(data[0])
@@ -293,10 +305,6 @@ def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     # Xs & Ys: total inputs and true labels, for all samples.
     Xs = data[0]
     Ys = data[1]
-
-    # TODO - this is the opposite of good (but gives better results)
-#    for i in range(len(Ys)):
-#        Ys[i] = 0 if Ys[i] else 1
 
     # define tensorflow graph
     x  = tf.placeholder(tf.float32, [None, num_features])
@@ -325,6 +333,12 @@ def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
         Xts = Xs[i*num_testing:(i+1)*num_testing]
         Yts = Ys[i*num_testing:(i+1)*num_testing]
 
+        # normalise input sets. use training set's means/standard deviations
+        mn = []
+        sd = []
+        Xtr = normalise_inputs(Xtr, out_means=mn, out_stddevs=sd)
+        Xts = normalise_inputs(Xts, in_means=mn, in_stddevs=sd)
+
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
 
@@ -333,7 +347,6 @@ def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
             bxs = batches(Xtr, batch_size)
             bys = batches(Ytr, batch_size)
             for epoch in range(epochs):
-#                print('w0:', sess.run(w[0]))
                 av_cost = 0
 
                 for j in range(num_batches):
@@ -346,10 +359,8 @@ def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
                         }
                     )
                     av_cost += c / num_batches
-#                    sess.run(tf.check_numerics(w, '!!!'))
 
                 if prnt and not cross_validate:
-#                    print('w0:', sess.run(w[0]))
                     print('epoch', (epoch+1), 'cost =', av_cost)
 
             # testing
@@ -391,6 +402,7 @@ def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     else:
         average = models[0]
 
+    rk.linreg_model = average
     return average
 
 def one_hot ( data, num_classes=None ):
