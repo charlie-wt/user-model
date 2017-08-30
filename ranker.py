@@ -20,12 +20,12 @@ manual_heuristics = {
          -5.00000,          # walk dist
         -10.00000,          # visits
          -0.05000,          # alt
-         0.10000,          # poi
+          0.10000,          # poi
           0.05000,          # mention
         -50.00000,          # ranking - walk dist
         -10.00000,          # ranking - visits
          -0.10000,          # ranking - alt
-        -0.15000,          # ranking - poi
+         -0.15000,          # ranking - poi
          -0.30000           # ranking - mention
     ],
     'b': 0.00000
@@ -182,7 +182,6 @@ def linreg ( user, story, pages, cache=None ):
     choices = pages
     inputs = ml.make_input(story, user, choices, cache, exclude_poi=False)
     if means and stddevs:
-        # TODO - what to do about manual_heuristics? don't have access to ppr.
         inputs = ml.normalise_inputs(inputs, in_means=means, in_stddevs=stddevs)
 
     # apply regression
@@ -294,3 +293,12 @@ def _net ( x, w, b ):
     output = neuron(layer_input, w[-1], b[-1])
 
     return output
+
+def normalise_inputs ( story, paths_per_reading, cache=None, exclude_poi=False ):
+    ''' for the machine learning rankers, inputs must first be normalised.
+    However, in order to do this they need the mean and standard deviation of
+    the training set (ie. the logged readings). This function sets those values.
+    '''
+    import ml
+    data = ml.formalise(story, paths_per_reading, cache, exclude_poi=exclude_poi)
+    ml.normalise_inputs(data[0], out_means=means, out_stddevs=stddevs)
