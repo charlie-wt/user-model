@@ -157,14 +157,15 @@ def normalise_inputs ( inputs,
             normed[row][col] = val
     return normed
 
-def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
-             batch_size=1, num_folds=1, train_prop=0.9, exclude_poi=False,
-             prnt=False ):
+def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=100,
+             batch_size=1, num_folds=1, train_prop=0.9, random_weights=False,
+             convergence_threshold = 0.0001, exclude_poi=False, prnt=False ):
     # setup
     data = formalise(story, ppr, cache, exclude_poi=exclude_poi)
     models = []
     cross_validate = num_folds > 1
     regularisation_lambda = 0.01
+    check_convergence = convergence_threshold and convergence_threshold > 0
     # just for the benefit of the rankers
     if not rk.means or not rk.stddevs:
         normalise_inputs(data[0], out_means=rk.means, out_stddevs=rk.stddevs)
@@ -192,8 +193,12 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     y_ = tf.placeholder(tf.float32, [None, num_classes])
 
     # model weights
-    w = tf.Variable(tf.zeros([num_features, num_classes]))
-    b = tf.Variable(tf.zeros([num_classes]))
+    if random_weights:
+        w = tf.Variable(tf.random_normal([num_features, num_classes]))
+        b = tf.Variable(tf.random_normal([num_classes]))
+    else:
+        w = tf.Variable(tf.zeros([num_features, num_classes]))
+        b = tf.Variable(tf.zeros([num_classes]))
 
     # construct model
     # model calculates y, to test against y_ for cost. Is essentially y=mx+c.
@@ -227,6 +232,7 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
             num_batches = math.ceil(num_training / batch_size)
             bxs = batches(Xtr, batch_size)
             bys = batches(Ytr, batch_size)
+            old_cost = None
             for epoch in range(epochs):
                 av_cost = 0
 
@@ -238,8 +244,15 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
                     )
                     av_cost += c / num_batches
 
-#                if prnt and not cross_validate:
-#                    print('epoch', (epoch+1), 'cost =', av_cost)
+                if prnt and not cross_validate:
+                    print('epoch', (epoch+1), 'cost =', av_cost)
+                # check for convergence of the model
+                if check_convergence:
+                    if old_cost and abs(av_cost - old_cost) < convergence_threshold:
+                        if prnt: print('convergence reached at epoch', epoch+1)
+                        break
+                    else:
+                        old_cost = av_cost
 
             # testing
             correct_prediction = tf.equal(tf.argmax(model, 1), tf.argmax(y_, 1))
@@ -249,8 +262,8 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
                 print((' for model '+str(i+1)+':') if cross_validate else ':')
                 print('w =', sess.run(w))
                 print('b =', sess.run(b))
-                if train_prop < 1:
-                    print('accuracy:', pt.pc(acc.eval({ x: Xts, y_: Yts }), dec=2))
+                if cross_validate or (not cross_validate and train_prop < 1):
+                    print('accuracy:', pt.pc(acc.eval({ x:Xts, y_:Yts }),dec=2))
 
             models.append({
                 'w': sess.run(w),
@@ -289,14 +302,15 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     rk.logreg_model = average
     return average
 
-def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
-             batch_size=1, num_folds=1, train_prop=0.9, exclude_poi=False,
-             prnt=False ):
+def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=100,
+             batch_size=1, num_folds=1, train_prop=0.9, random_weights=False,
+             convergence_threshold = 0.0001, exclude_poi=False, prnt=False ):
     # setup
     data = formalise(story, ppr, cache, exclude_poi=exclude_poi, normalise=False)
     models = []
     cross_validate = num_folds > 1
     regularisation_lambda = 0.01
+    check_convergence = convergence_threshold and convergence_threshold > 0
     # just for the benefit of the rankers
     if not rk.means or not rk.stddevs:
         normalise_inputs(data[0], out_means=rk.means, out_stddevs=rk.stddevs)
@@ -323,8 +337,12 @@ def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
     y_ = tf.placeholder(tf.float32, [None])
 
     # model weights
-    w = tf.Variable(tf.zeros([num_features, 1]))
-    b = tf.Variable(tf.zeros([1]))
+    if random_weights:
+        w = tf.Variable(tf.random_normal([num_features, 1]))
+        b = tf.Variable(tf.random_normal([1]))
+    else:
+        w = tf.Variable(tf.zeros([num_features, 1]))
+        b = tf.Variable(tf.zeros([1]))
 
     # construct model
     # model calculates y, to test against y_ for cost. Is essentially y=mx+c.
@@ -358,6 +376,7 @@ def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
             num_batches = math.ceil(num_training / batch_size)
             bxs = batches(Xtr, batch_size)
             bys = batches(Ytr, batch_size)
+            old_cost = None
             for epoch in range(epochs):
                 av_cost = 0
 
@@ -369,8 +388,15 @@ def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
                     )
                     av_cost += c / num_batches
 
-#                if prnt and not cross_validate:
-#                    print('epoch', (epoch+1), 'cost =', av_cost)
+                if prnt and not cross_validate:
+                    print('epoch', (epoch+1), 'cost =', av_cost)
+                # check for convergence of the model
+                if check_convergence:
+                    if old_cost and abs(av_cost - old_cost) < convergence_threshold:
+                        if prnt: print('convergence reached at epoch', epoch+1)
+                        break
+                    else:
+                        old_cost = av_cost
 
             # testing
             err = tf.square(model - y_)
@@ -436,14 +462,16 @@ def batches ( data, batch_size ):
     nb = math.ceil(len(data)/batch_size)
     return [ data[i*bs:(i+1)*bs] for i in range(nb) ]
 
-def nn ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
+def nn ( story, ppr, cache=None, learning_rate=0.01, epochs=100,
          batch_size=1, num_hidden_layers = 2, hidden_layer_size=5, num_folds=1,
-         train_prop=0.9, exclude_poi=False, prnt=False ):
+         train_prop=0.9, convergence_threshold=0.0001, exclude_poi=False,
+         prnt=False ):
     # setup
     data = formalise(story, ppr, cache, exclude_poi=exclude_poi, normalise=False)
     models = []
     cross_validate = num_folds > 1
     regularisation_lambda = 0.01
+    check_convergence = convergence_threshold and convergence_threshold > 0
     # just for the benefit of the rankers
     if not rk.means or not rk.stddevs:
         normalise_inputs(data[0], out_means=rk.means, out_stddevs=rk.stddevs)
@@ -528,6 +556,7 @@ def nn ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
             num_batches = math.ceil(num_training / batch_size)
             bxs = batches(Xtr, batch_size)
             bys = batches(Ytr, batch_size)
+            old_cost = None
             for epoch in range(epochs):
                 av_cost = 0
 
@@ -541,6 +570,14 @@ def nn ( story, ppr, cache=None, learning_rate=0.01, epochs=25,
 
                 if prnt and not cross_validate:
                     print('epoch', (epoch+1), 'cost =', av_cost)
+                # check for convergence of the model
+                if check_convergence:
+                    if old_cost and abs(av_cost - old_cost) < convergence_threshold:
+                        if prnt: print('convergence reached at epoch', epoch+1)
+                        break
+                    else:
+                        old_cost = av_cost
+
 
             # testing
             correct_prediction = tf.equal(tf.argmax(model, 1), tf.argmax(y_, 1))
