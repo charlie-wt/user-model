@@ -26,7 +26,7 @@ def traverse ( story, ranker=rk.rand, decider=dc.rand, n=1, cache=None,
     reading = rd.Reading("reading-0", story)
     user = us.User("user-0")
     stores = []
-    if cache is None: cache = ch.cache()
+    if cache is None: cache = ch.Cache()
 
     for i in range(n):
         visible = pg.update_all(story.pages, story, reading, user)

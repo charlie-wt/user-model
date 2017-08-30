@@ -93,7 +93,7 @@ def text_info_plot ( ax, story, ppr=None, stores=None, sim_store=None,
     ''' some basic stats on a story, shown via text. '''
     hide_graph_stuff(ax)
     cells = []
-    if cache is None: cache = ch.cache()
+    if cache is None: cache = ch.Cache()
 
     # number of readings
     if ppr is not None:
@@ -301,7 +301,7 @@ def show_main_three ( story, ppr, stores, sim_store, log_store, ranker,
 
 def show_all ( story, ppr=None, stores=None, sim_store=None, log_store=None,
                ranker=None, cache=None ):
-    if cache is None: cache = ch.cache()
+    if cache is None: cache = ch.Cache()
     ''' everything in one window. '''
     # basic window stuff
     mpl.rcParams['toolbar'] = 'none'

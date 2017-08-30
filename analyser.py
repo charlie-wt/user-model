@@ -304,7 +304,7 @@ def measure_ranker ( story, ppr, ranker, cache=None, prnt=False ):
     ''' see how the ordering of a ranker measures up against the choices made in
     logs.
     '''
-    if cache is None: cache = ch.cache()
+    if cache is None: cache = ch.Cache()
     # simple list to store the index of each choice, in chronological order.
     options_taken = []
 

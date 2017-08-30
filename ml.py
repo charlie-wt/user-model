@@ -41,7 +41,7 @@ def formalise ( story, ppr, cache=None, prnt=False, normalise=False,
     # create stuff
     reading = rd.Reading("reading-0", story)
     user = us.User("user-0")
-    if cache is None: cache = ch.cache()
+    if cache is None: cache = ch.Cache()
 
     # put user in the middle at the start?
     visible = pg.update_all(story.pages, story, reading, user)

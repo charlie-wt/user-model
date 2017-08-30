@@ -246,7 +246,7 @@ def filtered_paths_from_json ( filename, story, legacy=False, prnt=False ):
 def cache_from_csv ( filename, prnt=False ):
     ''' read in a heuristics cache from a .csv file. '''
     filename = ex.clip_filename(filename, 'csv')
-    cache = ch.cache()
+    cache = ch.Cache()
 
     def recurse ( cache, row ):
     # add elements of the csv row to the cache deeply
@@ -274,7 +274,7 @@ def cache_from_json ( filename, prnt=False ):
         jsonfile.close()
         json_object = json.loads(data)
 
-        cache = ch.cache()
+        cache = ch.Cache()
         cache.update(json_object)
 
     if prnt:

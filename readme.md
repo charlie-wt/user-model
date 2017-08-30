@@ -91,7 +91,7 @@ This can be useful for having both old and new logs loaded at the same time.
 #### **Making a cache**
 It is recommended (but not required) to make a cache, which stores the heuristics calculated for each page. This prevents the need to recalculate heuristics when doing many readings. To make a cache:
 ```python
-myCache = cache.cache()
+myCache = cache.Cache()
 ```
 
 #### **Simulating a reading**
