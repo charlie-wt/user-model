@@ -309,6 +309,21 @@ def filter_readings ( epr, max_metres_per_second=5, legacy=False,
 
     return filtered
 
+def readings_by_stories ( paths_per_reading, stories, prnt=False ):
+    ''' return the readings from paths_per_reading that were of one of the given
+    stories.
+    '''
+    if type(stories) is not list: stories = [stories]
+    filtered = {}
+    for reading in paths_per_reading:
+        if reading.story in stories:
+            filtered[reading] = paths_per_reading[reading]
+    if prnt:
+        print('got', len(filtered), 'readings for the stor'+
+              ('ies ' if len(stories) != 1 else 'y '), end='')
+        pt.print_stories(stories)
+    return filtered
+
 def measure_ranker ( story, ppr, ranker, cache=None, prnt=False ):
     ''' see how the ordering of a ranker measures up against the choices made in
     logs.

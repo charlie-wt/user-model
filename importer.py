@@ -262,7 +262,7 @@ def filtered_paths_from_json ( filename, stories, legacy=False, demo_mode=False,
     ''' combine path_events_from_json with analyser.filter_paths. '''
     def fun ( filename, legacy ):
         epr = path_events_from_json(filename, stories, legacy, prnt=False)
-        return an.filter_readings(epr, legacy=legacy, demo_mode=demo_mode, prnt=prnt)
+        return an.filter_readings(epr, legacy=legacy, demo_mode=demo_mode, prnt=False)
 
     if type(filename) is str:
         ppr = fun(filename, legacy)
