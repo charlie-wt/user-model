@@ -239,9 +239,9 @@ def path_pages_from_json ( filename, story, legacy=False, prnt=False ):
     if prnt: print("Found", len(ppr), "readings for", story.name+".")
     return ppr
 
-def filtered_paths_from_json ( filename, story, legacy=False, prnt=False ):
-    epr = path_events_from_json(filename, story, legacy, False)
-    return an.filter_readings(story, epr, legacy=legacy, prnt=prnt)
+def filtered_paths_from_json ( filename, story, legacy=False, demo_mode=False, prnt=False ):
+    epr = path_events_from_json(filename, story, legacy, prnt=False)
+    return an.filter_readings(story, epr, legacy=legacy, demo_mode=demo_mode, prnt=prnt)
 
 def cache_from_csv ( filename, prnt=False ):
     ''' read in a heuristics cache from a .csv file. '''

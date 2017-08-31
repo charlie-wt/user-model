@@ -215,7 +215,7 @@ def branching_factor ( story, stores, prnt=False ):
     return bf
 
 def filter_readings ( story, epr, max_metres_per_second=5, legacy=False,
-                      prnt=False ):
+                      demo_mode=False, prnt=False ):
     ''' take an events per reading dictionary, and filter out illegitimate
     ones.
     '''
@@ -239,11 +239,13 @@ def filter_readings ( story, epr, max_metres_per_second=5, legacy=False,
         removed = False
 
         # 1 : if reading was done by a dev
-        if reading_id in dev_ids:
-            removed = True
-            if prnt: print("removing", reading_id+": has dev id")
+        if not demo_mode:
+            user_id = epr[reading_id][0].user
+            if user_id in dev_ids:
+                removed = True
+                if prnt: print("removing", reading_id+": user has dev id")
 
-        if removed: continue
+            if removed: continue
 
         # 2 : if the reading is empty
         pages = pg.from_log_events(story, epr[reading_id], legacy)
@@ -281,12 +283,17 @@ def filter_readings ( story, epr, max_metres_per_second=5, legacy=False,
         # 4 : if user travelled at a speed greater than max_metres_per_second
         av_dist = dist / len(pages)
         av_duration = (epr[reading_id][-1].date - epr[reading_id][0].date) / len(pages)
-        if av_duration.total_seconds() < av_dist / max_metres_per_second:
+        if demo_mode:
+            bad_speed = av_duration.total_seconds() > av_dist / max_metres_per_second
+        else:
+            bad_speed = av_duration.total_seconds() < av_dist / max_metres_per_second
+        if bad_speed:
             removed = True
             if prnt:
                 if av_duration.total_seconds() > 0:
                     av_speed = av_dist / av_duration.total_seconds()
-                    print("removing", reading_id+": moved too fast",
+                    fast_or_slow = "slow" if demo_mode else "fast"
+                    print("removing", reading_id+": moved too", fast_or_slow,
                           "(average speed was "+pt.fmt(av_speed,dec=1)+"m/s).")
                 else:
                     print("removing", reading_id+": reading lasted 0 seconds.")
@@ -297,7 +304,9 @@ def filter_readings ( story, epr, max_metres_per_second=5, legacy=False,
         # if we've made it this far, the reading's (probably) valid
         filtered[reading_id] = pages
 
-    if prnt: print("found", len(filtered), "real readings for", story.name)
+    if prnt: print("found", len(filtered),
+                   ("demo-mode" if demo_mode else "real"), "reading"+
+                   ("s" if len(filtered) != 1 else ""), "for", story.name)
     return filtered
 
 def measure_ranker ( story, ppr, ranker, cache=None, prnt=False ):
