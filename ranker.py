@@ -294,11 +294,11 @@ def _net ( x, w, b ):
 
     return output
 
-def normalise_inputs ( story, paths_per_reading, cache=None, exclude_poi=False ):
+def normalise_inputs ( paths_per_reading, cache=None, exclude_poi=False ):
     ''' for the machine learning rankers, inputs must first be normalised.
     However, in order to do this they need the mean and standard deviation of
     the training set (ie. the logged readings). This function sets those values.
     '''
     import ml
-    data = ml.formalise(story, paths_per_reading, cache, exclude_poi=exclude_poi)
+    data = ml.formalise(paths_per_reading, cache, exclude_poi=exclude_poi)
     ml.normalise_inputs(data[0], out_means=means, out_stddevs=stddevs)

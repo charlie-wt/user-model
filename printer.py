@@ -165,6 +165,23 @@ def print_cache ( cache ):
             else:
                 print('\t', t, ':', elem, ':', cache[t][elem])
 
+def print_filtered_paths_count ( stories, ppr, demo_mode ):
+    ''' print the number (and type) of paths returned by
+    importer.filtered_paths_from_json, along with the stories loaded.
+    '''
+    story_names = [ s.name for s in stories ]
+    names_print = ""
+    for i in range(len(story_names)):
+        names_print += story_names[i]
+        if i == len(story_names) - 2:
+            names_print += ' & '
+        elif i < len(story_names) - 2:
+            names_print += ', '
+    print("found", len(ppr),
+         ("demo-mode" if demo_mode else "real"), "reading"+
+         ("s" if len(ppr) != 1 else "")+
+         (" for "+names_print+"." if len(story_names) >= 1 else "."))
+
 def pc ( num, dec=0 ):
     ''' percentify a 0-1 fraction. '''
     if dec > 0: dec += 1

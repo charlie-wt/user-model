@@ -86,6 +86,14 @@ def story_from_json ( filename, prnt=False ):
     if prnt: pt.print_story(sto)
     return sto
 
+def stories_from_json ( filenames, prnt=False ):
+    ''' load a list of stories from their json files. '''
+    stories = []
+    for name in filenames:
+        stories.append(story_from_json(name, prnt=False))
+    if prnt: print('loaded', len(filenames), 'stories from json.')
+    return stories
+
 def page_from_json ( json ):
     return page.Page(
             json["id"],
@@ -177,10 +185,11 @@ def location_from_json ( json ):
             float(json["lon"]),
             float(json["radius"]))
 
-def path_events_from_json ( filename, story=None, legacy=False, prnt=False):
+def path_events_from_json ( filename, stories, legacy=False, prnt=False):
     ''' read a log file and return a dictionary containing the paths taken
     through the specified story, per reading.
     '''
+    if type(stories) is not list: stories = [stories]
     # load file
     filename = ex.clip_filename(filename, 'json')
     logfile = open(filename+".json", 'r', encoding='utf-8')
@@ -190,13 +199,11 @@ def path_events_from_json ( filename, story=None, legacy=False, prnt=False):
     read_page_tag = 'playreadingcard' if legacy else 'PageRead'
 
     # get a list of event objects for moving through the story
+    story_ids = [ s.id for s in stories ]
     events = []
     for e in logs_json:
         if e["type"] == read_page_tag:
-            if story is not None:
-                if e["data"]["storyId"] == story.id:
-                    events.append(log_event_from_json(e, legacy))
-            else:
+            if e["data"]["storyId"] in story_ids:
                 events.append(log_event_from_json(e, legacy))
     events.sort(key = lambda e: e.date)
 
@@ -204,15 +211,21 @@ def path_events_from_json ( filename, story=None, legacy=False, prnt=False):
     # epr = { reading_id1 : [ event_1, ..., event_n ], reading_id2 : ... }
     epr = {}
     for e in events:
-        if e.data["readingId"] not in epr:
-            epr[e.data["readingId"]] = [e]
+        if ls.get(epr, e.data["readingId"]) is None:
+#        if e.data["readingId"] not in epr:
+            story = ls.get(stories, e.data["storyId"])
+            reading = rd.Reading(e.data["readingId"], story)
+#            epr[e.data["readingId"]] = [e]
+            epr[reading] = [e]
             continue
-        if e.id not in epr[e.data["readingId"]]:
-            epr[e.data["readingId"]].append(e)
+#        if e.id not in epr[e.data["readingId"]]:
+        reading = ls.get(epr, e.data["readingId"])
+        if e.id not in epr[reading]:
+            epr[reading].append(e)
 
     if prnt:
         print("Found", len(epr), "readings", end="")
-        if story is not None: print(" for", story.name+".")
+        if len(stories) == 1: print(" for", stories[0].name+".")
         else: print(".")
 
     return epr
@@ -225,23 +238,47 @@ def log_event_from_json ( json, legacy=False ):
             json["type"],
             json["data"])
 
-def path_pages_from_json ( filename, story, legacy=False, prnt=False ):
+def path_pages_from_json ( filename, stories, legacy=False, prnt=False ):
     ''' same as path_events_from_json, but the dictionary contains lists of
     pages, instead of lists of events.
     '''
-    epr = path_events_from_json(filename, story, legacy, False)
+#    if type(stories) is not list: stories = [stories]
+    epr = path_events_from_json(filename, stories, legacy, False)
     ppr = {}
 
     for r in epr:
+#        story = ls.get(stories, epr[r][0].data["storyId"])
+        story = r.story
         pages = page.from_log_events(story, epr[r], legacy)
         ppr[r] = pages
 
-    if prnt: print("Found", len(ppr), "readings for", story.name+".")
+    if prnt:
+        print("Found", len(ppr), "readings", end="")
+        if len(stories) == 1: print(" for", stories[0].name+".")
+        else: print(".")
     return ppr
 
-def filtered_paths_from_json ( filename, story, legacy=False, demo_mode=False, prnt=False ):
-    epr = path_events_from_json(filename, story, legacy, prnt=False)
-    return an.filter_readings(story, epr, legacy=legacy, demo_mode=demo_mode, prnt=prnt)
+def filtered_paths_from_json ( filename, stories, legacy=False, demo_mode=False, prnt=False ):
+    ''' combine path_events_from_json with analyser.filter_paths. '''
+    def fun ( filename, legacy ):
+        epr = path_events_from_json(filename, stories, legacy, prnt=False)
+        return an.filter_readings(epr, legacy=legacy, demo_mode=demo_mode, prnt=prnt)
+
+    if type(filename) is str:
+        ppr = fun(filename, legacy)
+    elif type(filename) is list:
+        ppr = {}
+        for name in filename:
+            ppr.update(fun(name, legacy))
+    else:        # is a dict of { 'logs-1.json' : is_legacy, ... }
+        ppr = {}
+        for name, is_legacy in filename.items():
+            ppr.update(fun(name, is_legacy))
+
+    if prnt:
+        pt.print_filtered_paths_count(stories, ppr, demo_mode)
+
+    return ppr
 
 def cache_from_csv ( filename, prnt=False ):
     ''' read in a heuristics cache from a .csv file. '''
@@ -283,6 +320,22 @@ def cache_from_json ( filename, prnt=False ):
         print(']')
 
     return cache
+
+def caches_from_csv (filenames, prnt=False ):
+    ''' load a list of caches from their csv files. '''
+    caches = []
+    for name in filenames:
+        caches.append(cache_from_csv(name, prnt=False))
+    if prnt: print('loaded', len(filenames), 'caches from csv.')
+    return caches
+
+def caches_from_json (filenames, prnt=False ):
+    ''' load a list of caches from their json files. '''
+    caches = []
+    for name in filenames:
+        caches.append(cache_from_json(name, prnt=False))
+    if prnt: print('loaded', len(filenames), 'caches from json.')
+    return caches
 
 def stores_from_csv ( filename, story, prnt=False ):
     # load file
@@ -361,11 +414,11 @@ def stores_from_json ( filename, story, prnt=False ):
 
     return stores
 
-def merge_paths_per_readings ( ppr1, ppr2 ):
+def merge_paths_per_readings ( pprs ):
     ''' put two paths_per_reading dictionaries together. '''
-    # TODO - extend this to arbitrary length.
-    new = ppr1.copy()
-    new.update(ppr2)
+    new = pprs[0].copy()
+    for ppr in pprs:
+        new.update(ppr)
     return new
 
 def num ( string ):

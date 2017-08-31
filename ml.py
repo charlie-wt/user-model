@@ -22,7 +22,7 @@ ml
 machine learning stuff.
 '''
 
-def formalise ( story, ppr, cache=None, prnt=False, normalise=False,
+def formalise ( ppr, cache=None, prnt=False, normalise=False,
                 exclude_poi=False, enforce_ordering=True ):
     ''' put list of pages (forming a path) into a form that can be interpreted
     by ml.
@@ -32,34 +32,36 @@ def formalise ( story, ppr, cache=None, prnt=False, normalise=False,
 
     # possibly order ppr (by reading name), for consistent learned models.
     if enforce_ordering:
-        ppr = OrderedDict(sorted(ppr.items(), key = lambda e: e[0]))
+        ppr = OrderedDict(sorted(ppr.items(), key = lambda e: e[0].id))
 
     if prnt: print('formalised path data:')
     xs = []
     ys = []
 
     # create stuff
-    reading = rd.Reading("reading-0", story)
+#    reading = rd.Reading("reading-0", story)
     user = us.User("user-0")
     if cache is None: cache = ch.Cache()
-
-    # put user in the middle at the start?
-    visible = pg.update_all(story.pages, story, reading, user)
-    locs = (0, 0)
-    count = 0
-    for p in visible:
-        loc = p.get_loc(story)
-        if loc:
-            locs = (locs[0]+loc[0], locs[1]+loc[1])
-            count += 1
-    if count != 0:
-        locs = (locs[0]/count, locs[1]/count)
-        user.loc = locs
 
     # perform reading
     count = 1
     for r in ppr:
         path = ppr[r]
+        story = r.story
+        reading = rd.Reading("temp-reading", story)
+        # put user in the middle at the start?
+        visible = pg.update_all(story.pages, story, reading, user)
+        locs = (0, 0)
+        have_location = 0
+        for p in visible:
+            loc = p.get_loc(story)
+            if loc:
+                locs = (locs[0]+loc[0], locs[1]+loc[1])
+                have_location += 1
+        if have_location != 0:
+            locs = (locs[0]/have_location, locs[1]/have_location)
+            user.loc = locs
+
         visible = pg.update_all(story.pages, story, reading, user)
         for i in range(len(path)):
             # calculate heuristics (and rankings) for each option, and store
@@ -80,7 +82,7 @@ def formalise ( story, ppr, cache=None, prnt=False, normalise=False,
         if prnt: print('---')
 
     if len(ys) == 0:
-        raise ValueError('Story supplied to formalise contains no choices.')
+        raise ValueError('Stories supplied to formalise contains no choices.')
 
     if normalise:
         xs = normalise_inputs(xs)
@@ -157,11 +159,11 @@ def normalise_inputs ( inputs,
             normed[row][col] = val
     return normed
 
-def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=100,
+def logreg ( ppr, cache=None, learning_rate=0.01, epochs=100,
              batch_size=1, num_folds=1, train_prop=0.9, random_weights=False,
              convergence_threshold = 0.0001, exclude_poi=False, prnt=False ):
     # setup
-    data = formalise(story, ppr, cache, exclude_poi=exclude_poi)
+    data = formalise(ppr, cache, exclude_poi=exclude_poi)
     models = []
     cross_validate = num_folds > 1
     regularisation_lambda = 0.01
@@ -302,11 +304,11 @@ def logreg ( story, ppr, cache=None, learning_rate=0.01, epochs=100,
     rk.logreg_model = average
     return average
 
-def linreg ( story, ppr, cache=None, learning_rate=0.01, epochs=100,
+def linreg ( ppr, cache=None, learning_rate=0.01, epochs=100,
              batch_size=1, num_folds=1, train_prop=0.9, random_weights=False,
              convergence_threshold = 0.0001, exclude_poi=False, prnt=False ):
     # setup
-    data = formalise(story, ppr, cache, exclude_poi=exclude_poi, normalise=False)
+    data = formalise(ppr, cache, exclude_poi=exclude_poi, normalise=False)
     models = []
     cross_validate = num_folds > 1
     regularisation_lambda = 0.01
@@ -462,12 +464,12 @@ def batches ( data, batch_size ):
     nb = math.ceil(len(data)/batch_size)
     return [ data[i*bs:(i+1)*bs] for i in range(nb) ]
 
-def nn ( story, ppr, cache=None, learning_rate=0.01, epochs=100,
+def nn ( ppr, cache=None, learning_rate=0.01, epochs=100,
          batch_size=1, num_hidden_layers = 2, hidden_layer_size=5, num_folds=1,
          train_prop=0.9, convergence_threshold=0.0001, exclude_poi=False,
          prnt=False ):
     # setup
-    data = formalise(story, ppr, cache, exclude_poi=exclude_poi, normalise=False)
+    data = formalise(ppr, cache, exclude_poi=exclude_poi, normalise=False)
     models = []
     cross_validate = num_folds > 1
     regularisation_lambda = 0.01
