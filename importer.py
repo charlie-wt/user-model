@@ -273,9 +273,9 @@ def filtered_paths_from_json ( filenames, stories, demo_mode=False,
                                speed_threshold=5, prnt=False ):
     ''' combine path_events_from_json with analyser.filter_paths. '''
     if type(filenames) is not list: filenames = [filenames]
+    if type(stories) is not list: stories = [stories]
 
     def fun ( filename ):
-        print('passing', filename, '&', stories)
         epr = path_events_from_json(filename, stories, prnt=False)
         return an.filter_readings(epr, demo_mode, speed_threshold, prnt=False)
 

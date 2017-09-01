@@ -69,27 +69,19 @@ paths_per_reading = importer.filtered_paths_from_JSON('My Log File', myStory)
 ```
 This will look for developer user IDs, see if the sequence of paths taken is possible within the constraints of the story and see how fast the user would have been going to determine if a reading may have been in demo-mode. These readings are filtered out.
 
-There is also the `legacy` option to both of these functions (a boolean). If your logs use the old format (ie. if they talk about 'cards'), this must be set to `True`. For newer logs, it can be left as `False` (the default).
-
 These functions will return a dictionary of the format:
 ```python
 paths_per_reading = {
-    'reading1-id': [ Page1, Page2, Page3, ..., PageN ]
+    'Reading1': [ Page1, Page2, Page3, ..., PageN ]
     ...
-    'reading1-id': [ Page1, Page2, Page3, ..., PageN ]
+    'Reading2': [ Page1, Page2, Page3, ..., PageN ]
 }
 ```
 
-Where each page is a `Page` object (not just an ID).
+Where each reading is a `Reading` object, and each page a `Page` object.
 
-To merge two of these dictionaries:
-```python
-paths_per_reading = importer.merge_paths_per_readings(ppr1, ppr2)
-```
-This can be useful for having both old and new logs loaded at the same time.
-
-#### **Making a cache**
-It is recommended (but not required) to make a cache, which stores the heuristics calculated for each page. This prevents the need to recalculate heuristics when doing many readings. To make a cache:
+#### **Making a Cache**
+It is recommended (but not required) to make a `Cache`, which stores the heuristics calculated for each page. This prevents the need to recalculate heuristics when doing many readings. To make a `Cache`:
 ```python
 myCache = cache.Cache()
 ```
@@ -99,15 +91,15 @@ To simulate a reading of the story:
 ```python
 sim_store = traverser.traverse(myStory, rankerFun, deciderFun, cache=myCache)
 ```
-**`rankerFun`** is a function that will take a bunch of pages and produce a score of how 'appealing' each page is. There are several ranker functions in the `ranker` module, for instance `rand` (random), `walk_dist` (walking distance) or `logreg` (logistic regression). Note: before using any machine learning-based rankers (`linreg`, `logreg` or `nn`), their models must be initialised. This is discussed elsewhere.
+**`rankerFun`** is a function that will take a bunch of pages and produce a score of how 'appealing' each page is. There are several ranker functions in the `ranker` module, for instance `rand` (random), `walk_dist` (walking distance) or `logreg` (logistic regression). *Note:* before using any machine learning-based rankers (`linreg`, `logreg` or `nn`), their models must be initialised. This is discussed [here](https://github.com/charlie-wt/user-model/wiki/Ranker#using-a-machine-learning-ranker).
 
 **`deciderFun`** is a function that takes the output of rankerFun and uses it to choose the next page. There are two decider functions provided in the `decider` module: `rand` (which uses a random number to choose, where pages with a higher score are more likely to be chosen) and `best`, which simply chooses the page with the highest score.
 
-The cache is optional, but recommended.
+The Cache is optional, but recommended.
 
-There are a few other, optional parameters. You can choose the maximum number of steps before the simulation gives up with `max_steps` (default 50). You can specify your own `User` or `Reading` with `user` and `reading`. You can print the progress of the simulation with `prnt`.
+There are a few other, optional parameters. You can choose the maximum number of steps before the simulation gives up with `max_steps` (default 50). You can print the progress of the simulation with `prnt`.
 
-The function returns a list of `Record`s. These contain a page (where the user was at this point) and a dictionary of 'options' (the scores of the pages they could go to next).
+The function returns a list of `Record`s. These contain a `Page` (where the user was at this point) and a dictionary of 'options' (the scores of the pages they could go to next).
 
 #### **Simulating many readings**
 To simulate *n* readings:

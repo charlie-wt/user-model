@@ -3,11 +3,8 @@ import usermodel as um
 # === SETUP ===
 # load our story from its .json file, store it in a Story object
 story = um.importer.story_from_json('json/Notes on an Illegible City')
-# load two user logs from different files (one in the old format, one in the new format)
-ppr_new = um.importer.filtered_paths_from_json("json/new-logs", story, prnt=True)
-ppr_old = um.importer.filtered_paths_from_json("json/old-logs", story, legacy=True, prnt=True)
-# merge the imported logs together into a single paths_per_reading dictionary
-paths_per_reading = um.importer.merge_paths_per_readings(ppr_new, ppr_old)
+# load two user logs from different files.
+paths_per_reading = um.importer.filtered_paths_from_json(['json/old-logs', 'json/new-logs'], story, prnt=True)
 # create a cache, to store our calculated heuristic values
 cache = um.cache.Cache()
 
@@ -16,8 +13,8 @@ cache = um.cache.Cache()
 log_store = um.traverser.traverse_log(story, paths_per_reading)
 
 # === TRAIN MACHINE LEARNING MODEL ===
-# train a neural network. - NOTE: this will take a while if 'exclude_poi' is False (which it is by default)
-#um.ml.nn(story, paths_per_reading, cache, num_hidden_layers=5, prnt=True)
+# train a neural network. - NOTE: this will take a long time if 'exclude_poi' is False (which it is by default)
+#um.ml.nn(paths_per_reading, cache, prnt=True)
 
 # === SIMULATE SOME READINGS ===
 # choose our ranker and decider functions
