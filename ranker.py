@@ -17,16 +17,16 @@ prnt=False
 
 manual_heuristics = {
     'w': [
-         -5.00000,          # walk dist
-        -10.00000,          # visits
-         -0.05000,          # alt
-          0.10000,          # poi
-          0.05000,          # mention
-        -50.00000,          # ranking - walk dist
-        -10.00000,          # ranking - visits
-         -0.10000,          # ranking - alt
-         -0.15000,          # ranking - poi
-         -0.30000           # ranking - mention
+         -0.50000,          # walk dist
+         -1.00000,          # visits
+         -0.00200,          # alt
+          0.00200,          # poi
+          0.00200,          # mention
+          1.00000,          # ranking - walk dist
+          3.00000,          # ranking - visits
+          0.05000,          # ranking - alt
+          0.05000,          # ranking - poi
+          0.20000           # ranking - mention
     ],
     'b': 0.00000
 }
