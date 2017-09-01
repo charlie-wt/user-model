@@ -214,8 +214,7 @@ def branching_factor ( story, stores, prnt=False ):
     if prnt: print("average branching factor for", story.name+":", bf)
     return bf
 
-def filter_readings ( epr, max_metres_per_second=5, legacy=False,
-                      demo_mode=False, prnt=False ):
+def filter_readings ( epr, demo_mode=False, speed_threshold=5, prnt=False ):
     ''' take an events per reading dictionary, and filter out illegitimate
     ones.
     '''
@@ -251,7 +250,7 @@ def filter_readings ( epr, max_metres_per_second=5, legacy=False,
             if removed: continue
 
         # 2 : if the reading is empty
-        pages = pg.from_log_events(story, epr[reading], legacy)
+        pages = pg.from_log_events(story, epr[reading])
         if len(pages) == 0:
             removed = True
             if prnt: print("removing", reading.id+": empty reading")
@@ -272,7 +271,7 @@ def filter_readings ( epr, max_metres_per_second=5, legacy=False,
                 if prnt: print("removing", reading.id+": impossible reading")
                 break
 
-        #     (also count up the total distance travelled here.)
+            # (also count up the total distance travelled here.)
             dest_loc = p.get_loc(story)
             if dest_loc is not None:
                 dist += lc.metres(curr_loc, dest_loc)
@@ -283,13 +282,13 @@ def filter_readings ( epr, max_metres_per_second=5, legacy=False,
 
         if removed: continue
 
-        # 4 : if user travelled at a speed greater than max_metres_per_second
+        # 4 : if user travelled at a speed greater than speed_threshold
         av_dist = dist / len(pages)
         av_duration = (epr[reading][-1].date - epr[reading][0].date) / len(pages)
         if demo_mode:
-            bad_speed = av_duration.total_seconds() > av_dist / max_metres_per_second
+            bad_speed = av_duration.total_seconds() > av_dist / speed_threshold
         else:
-            bad_speed = av_duration.total_seconds() < av_dist / max_metres_per_second
+            bad_speed = av_duration.total_seconds() < av_dist / speed_threshold
         if bad_speed:
             removed = True
             if prnt:

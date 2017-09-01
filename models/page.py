@@ -56,16 +56,19 @@ def update_all ( pages, story, reading, user ):
         if page.visible: visible.append(page)
     return visible
 
-def from_log_event ( story, logEvent, legacy=False ):
+def from_log_event ( story, logEvent ):
     ''' turn 'go to page' log event into a page. '''
-    page_id_tag = 'cardId' if legacy else 'pageId'
-    return ls.get(story.pages, logEvent.data[page_id_tag])
+    if 'pageId' in logEvent.data:
+        return ls.get(story.pages, logEvent.data['pageId'])
+    elif 'cardId' in logEvent.data:
+        return ls.get(story.pages, logEvent.data['cardId'])
+    return None
 
-def from_log_events ( story, logEvents, legacy=False ):
+def from_log_events ( story, logEvents ):
     ''' turn 'go to page' log events into pages. '''
     pages = []
     for le in logEvents:
-        new_page = from_log_event(story, le, legacy)
+        new_page = from_log_event(story, le)
         if new_page is not None: pages.append(new_page)
     return pages
 

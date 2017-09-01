@@ -185,24 +185,40 @@ def location_from_json ( json ):
             float(json["lon"]),
             float(json["radius"]))
 
-def path_events_from_json ( filename, stories, legacy=False, prnt=False):
+def path_events_from_json ( filename, stories, prnt=False):
     ''' read a log file and return a dictionary containing the paths taken
     through the specified story, per reading.
     '''
     if type(stories) is not list: stories = [stories]
+    legacy = None
     # load file
     filename = ex.clip_filename(filename, 'json')
     logfile = open(filename+".json", 'r', encoding='utf-8')
     logs = logfile.read()
     logfile.close()
     logs_json = json.loads(logs)
-    read_page_tag = 'playreadingcard' if legacy else 'PageRead'
+
+    def is_read_page ( event_type ):
+        ''' figure out if this event is a 'page read' event, and if the log is
+        in the legacy format or not.
+        '''
+        nonlocal legacy
+        if legacy is not None:
+            return event_type == 'playreadingcard' if legacy else event_type == 'PageRead'
+        else:
+            if event_type == 'playreadingcard':
+                legacy = True
+                return True
+            elif event_type == 'PageRead':
+                legacy = False
+                return True
+            return False
 
     # get a list of event objects for moving through the story
     story_ids = [ s.id for s in stories ]
     events = []
     for e in logs_json:
-        if e["type"] == read_page_tag:
+        if is_read_page(e["type"]):
             if e["data"]["storyId"] in story_ids:
                 events.append(log_event_from_json(e, legacy))
     events.sort(key = lambda e: e.date)
@@ -212,13 +228,10 @@ def path_events_from_json ( filename, stories, legacy=False, prnt=False):
     epr = {}
     for e in events:
         if ls.get(epr, e.data["readingId"]) is None:
-#        if e.data["readingId"] not in epr:
             story = ls.get(stories, e.data["storyId"])
             reading = rd.Reading(e.data["readingId"], story)
-#            epr[e.data["readingId"]] = [e]
             epr[reading] = [e]
             continue
-#        if e.id not in epr[e.data["readingId"]]:
         reading = ls.get(epr, e.data["readingId"])
         if e.id not in epr[reading]:
             epr[reading].append(e)
@@ -230,7 +243,7 @@ def path_events_from_json ( filename, stories, legacy=False, prnt=False):
 
     return epr
 
-def log_event_from_json ( json, legacy=False ):
+def log_event_from_json ( json, legacy ):
     return logevent.LogEvent(
             json["id"],
             json["user"],
@@ -238,18 +251,16 @@ def log_event_from_json ( json, legacy=False ):
             json["type"],
             json["data"])
 
-def path_pages_from_json ( filename, stories, legacy=False, prnt=False ):
+def path_pages_from_json ( filename, stories, prnt=False ):
     ''' same as path_events_from_json, but the dictionary contains lists of
     pages, instead of lists of events.
     '''
-#    if type(stories) is not list: stories = [stories]
-    epr = path_events_from_json(filename, stories, legacy, False)
+    epr = path_events_from_json(filename, stories, False)
     ppr = {}
 
     for r in epr:
-#        story = ls.get(stories, epr[r][0].data["storyId"])
         story = r.story
-        pages = page.from_log_events(story, epr[r], legacy)
+        pages = page.from_log_events(story, epr[r])
         ppr[r] = pages
 
     if prnt:
@@ -258,22 +269,19 @@ def path_pages_from_json ( filename, stories, legacy=False, prnt=False ):
         else: print(".")
     return ppr
 
-def filtered_paths_from_json ( filename, stories, legacy=False, demo_mode=False, prnt=False ):
+def filtered_paths_from_json ( filenames, stories, demo_mode=False,
+                               speed_threshold=5, prnt=False ):
     ''' combine path_events_from_json with analyser.filter_paths. '''
-    def fun ( filename, legacy ):
-        epr = path_events_from_json(filename, stories, legacy, prnt=False)
-        return an.filter_readings(epr, legacy=legacy, demo_mode=demo_mode, prnt=False)
+    if type(filenames) is not list: filenames = [filenames]
 
-    if type(filename) is str:
-        ppr = fun(filename, legacy)
-    elif type(filename) is list:
-        ppr = {}
-        for name in filename:
-            ppr.update(fun(name, legacy))
-    else:        # is a dict of { 'logs-1.json' : is_legacy, ... }
-        ppr = {}
-        for name, is_legacy in filename.items():
-            ppr.update(fun(name, is_legacy))
+    def fun ( filename ):
+        print('passing', filename, '&', stories)
+        epr = path_events_from_json(filename, stories, prnt=False)
+        return an.filter_readings(epr, demo_mode, speed_threshold, prnt=False)
+
+    ppr = {}
+    for name in filenames:
+        ppr.update(fun(name))
 
     if prnt:
         pt.print_filtered_paths_count(stories, ppr, demo_mode)
