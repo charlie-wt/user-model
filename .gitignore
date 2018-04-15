@@ -5,5 +5,5 @@ json
 caches
 *.swp
 *.json
-*.csv
+/*.csv
 test.py
