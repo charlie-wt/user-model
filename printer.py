@@ -61,7 +61,7 @@ def print_paths_per_reading ( story, paths_per_reading ):
     ppr = paths_per_reading
     print("Paths through "+story.name+", for", len(ppr), "readings:")
     for r in ppr.keys():
-        print("reading "+r+":")
+        print("reading "+r.id+":")
         for p in ppr[r]:
             print("\t", p.id, ":", p.name)
 

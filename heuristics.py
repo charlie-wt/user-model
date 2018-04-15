@@ -49,6 +49,20 @@ def visits ( page, user, story=None, cache=None ):
 #    print('looking for', page.id, 'in', [ p.id for p in user.path ], ':', ls.count(user.path, page.id))
     return ls.count(user.path, page.id)
 
+def distance_and_visits ( page, user, story, cache=None ):
+    ''' straight line distance from user -> page, exponentially dampened according to number of visits'''
+    dampening_factor = 1.5
+
+    d = distance(page, user, story, cache)
+    v = visits(page, user, story, cache)
+
+    combined = d
+
+    if v > 0:
+        combined = d * (dampening_factor ** v)
+
+    return combined
+
 def walk_dist ( page, user, story, cache=None ):
     ''' walking distance, via roads (osrm). '''
     prnt=False

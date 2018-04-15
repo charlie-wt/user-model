@@ -185,56 +185,58 @@ def location_from_json ( json ):
             float(json["lon"]),
             float(json["radius"]))
 
-def path_events_from_json ( filename, stories, prnt=False):
+def path_events_from_json ( filename, stories, prnt=False ):
     ''' read a log file and return a dictionary containing the paths taken
     through the specified story, per reading.
     '''
     if type(stories) is not list: stories = [stories]
-    legacy = None
-    # load file
-    filename = ex.clip_filename(filename, 'json')
-    logfile = open(filename+".json", 'r', encoding='utf-8')
-    logs = logfile.read()
-    logfile.close()
-    logs_json = json.loads(logs)
-
-    def is_read_page ( event_type ):
-        ''' figure out if this event is a 'page read' event, and if the log is
-        in the legacy format or not.
-        '''
-        nonlocal legacy
-        if legacy is not None:
-            return event_type == 'playreadingcard' if legacy else event_type == 'PageRead'
-        else:
-            if event_type == 'playreadingcard':
-                legacy = True
-                return True
-            elif event_type == 'PageRead':
-                legacy = False
-                return True
-            return False
-
-    # get a list of event objects for moving through the story
-    story_ids = [ s.id for s in stories ]
-    events = []
-    for e in logs_json:
-        if is_read_page(e["type"]):
-            if e["data"]["storyId"] in story_ids:
-                events.append(log_event_from_json(e, legacy))
-    events.sort(key = lambda e: e.date)
-
-    # convert list into dictionary, arranged per reading
-    # epr = { reading_id1 : [ event_1, ..., event_n ], reading_id2 : ... }
+    if type(filename) is not list: filename = [filename]
     epr = {}
-    for e in events:
-        if ls.get(epr, e.data["readingId"]) is None:
-            story = ls.get(stories, e.data["storyId"])
-            reading = rd.Reading(e.data["readingId"], story)
-            epr[reading] = [e]
-            continue
-        reading = ls.get(epr, e.data["readingId"])
-        if e.id not in epr[reading]:
-            epr[reading].append(e)
+    for fname in filename:
+        legacy = None
+        # load file
+        filename = ex.clip_filename(fname, 'json')
+        logfile = open(fname+".json", 'r', encoding='utf-8')
+        logs = logfile.read()
+        logfile.close()
+        logs_json = json.loads(logs)
+
+        def is_read_page ( event_type ):
+            ''' figure out if this event is a 'page read' event, and if the log is
+            in the legacy format or not.
+            '''
+            nonlocal legacy
+            if legacy is not None:
+                return event_type == 'playreadingcard' if legacy else event_type == 'PageRead'
+            else:
+                if event_type == 'playreadingcard':
+                    legacy = True
+                    return True
+                elif event_type == 'PageRead':
+                    legacy = False
+                    return True
+                return False
+
+        # get a list of event objects for moving through the story
+        story_ids = [ s.id for s in stories ]
+        events = []
+        for e in logs_json:
+            if is_read_page(e["type"]):
+                if e["data"]["storyId"] in story_ids:
+                    events.append(log_event_from_json(e, legacy))
+        events.sort(key = lambda e: e.date)
+
+        # convert list into dictionary, arranged per reading
+        # epr = { reading_id1 : [ event_1, ..., event_n ], reading_id2 : ... }
+        for e in events:
+            if ls.get(epr, e.data["readingId"]) is None:
+                story = ls.get(stories, e.data["storyId"])
+                reading = rd.Reading(e.data["readingId"], story)
+                epr[reading] = [e]
+                continue
+            reading = ls.get(epr, e.data["readingId"])
+            if e.id not in epr[reading]:
+                epr[reading].append(e)
 
     if prnt:
         print("Found", len(epr), "readings", end="")
@@ -421,6 +423,65 @@ def stores_from_json ( filename, story, prnt=False ):
                        ('s' if len(stores) > 1 else ''), 'from json.')
 
     return stores
+
+def linreg_from_csv ( filename, prnt=False ):
+    filename = ex.clip_filename(filename, 'csv')
+    linreg = { 'w': [], 'b': None }
+
+    with open(filename+".csv", 'r', encoding='utf-8') as csvfile:
+        reader = csv.reader(csvfile)
+
+        for weight in reader:
+            if not weight: break
+            linreg['w'].append(float(weight[0]))
+
+        linreg['b'] = float(next(reader)[0])
+
+    if prnt: print('read in linreg:\n', linreg)
+
+    return linreg
+
+def logreg_from_csv ( filename, prnt=False ):
+    filename = ex.clip_filename(filename, 'csv')
+    logreg = { 'w': [], 'b': [] }
+
+    with open(filename+".csv", 'r', encoding='utf-8') as csvfile:
+        reader = csv.reader(csvfile)
+
+        for weights in reader:
+            if not weights: break
+            logreg['w'].append([ float(weights[0]), float(weights[1]) ])
+
+        bias = next(reader)
+        logreg['b'] = [ float(bias[0]), float(bias[1]) ]
+
+    if prnt: print('read in logreg:\n', logreg)
+
+    return logreg
+
+def nn_from_csv ( filename, prnt=False ):
+    import numpy as np
+    filename = ex.clip_filename(filename, 'csv')
+    nn = { 'w' : [], 'b': [] }
+
+    with open(filename+".csv", 'r', encoding='utf-8') as csvfile:
+        reader = csv.reader(csvfile)
+
+        curr_layer = -1
+        for row in reader:
+            if row[0][0] == 'w':
+                layer = int(row[0][1])
+                if curr_layer == layer:
+                    nn['w'][layer].append([ float(w) for w in row[1:] ])
+                else:
+                    nn['w'].append([[ float(w) for w in row[1:] ]])
+                    curr_layer = layer
+            else:
+                nn['b'].append([ float(b) for b in row[1:] ])
+
+    if prnt: print('read in nn:\n', nn)
+
+    return nn
 
 def merge_paths_per_readings ( pprs ):
     ''' put two paths_per_reading dictionaries together. '''

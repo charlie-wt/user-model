@@ -465,7 +465,7 @@ def batches ( data, batch_size ):
     return [ data[i*bs:(i+1)*bs] for i in range(nb) ]
 
 def nn ( ppr, cache=None, learning_rate=0.01, epochs=100,
-         batch_size=1, num_hidden_layers = 5, hidden_layer_size=5, num_folds=1,
+         batch_size=1, num_hidden_layers=5, hidden_layer_size=5, num_folds=1,
          train_prop=0.9, convergence_threshold=0.0001, exclude_poi=False,
          prnt=False ):
     # setup

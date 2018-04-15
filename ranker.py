@@ -100,6 +100,11 @@ def visits ( user, story, pages, cache=None ):
     fn = rank_by(hs.visits, True, False)
     return fn(user, story, pages, cache)
 
+def dist_and_visits ( user, story, pages, cache=None ):
+    ''' shortest straight line distance. '''
+    fn = rank_by(hs.distance_and_visits, True, False)
+    return fn(user, story, pages, cache)
+
 def alt ( user, story, pages, cache=None ):
     ''' prefer to go downhill. '''
     fn = rank_by(hs.altitude, True, False)
